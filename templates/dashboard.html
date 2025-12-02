@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Rekomendasi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script>Chart.register(ChartDataLabels);</script>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-soft: #e0f2f1;
+      --ink: #0f172a;
+      --muted: #475569;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+      background: #f5f6fa;
+      color: var(--ink);
+    }
+    .btn-main {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.55rem 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+    }
+    .btn-main:hover { transform: translateY(-1px); background: #0d5f58; }
+    .btn-ghost {
+      padding: 0.5rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-weight: 600;
+      color: var(--ink);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-ghost:hover { background: #f8fafc; border-color: #d9e2ec; }
+    .table-sticky thead th {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      z-index: 10;
+    }
+    .scroll-shadow {
+      position: relative;
+      overflow: auto;
+    }
+    .scroll-shadow::after {
+      content: '';
+      position: sticky;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(0,0,0,0.06));
+      pointer-events: none;
+    }
+    .brand-mark {
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+    }
+    .footer-bar { background: #0f766e; color: #fff; }
+    .footer-badge { background: rgba(255,255,255,0.16); }
+    .toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast {
+      min-width: 220px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      opacity: 0.95;
+    }
+    .toast.toast-success { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
+    .toast.toast-error { background: #fef2f2; color: #b91c1c; border-color: #fecdd3; }
+    .toast.toast-warning { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .toast.toast-info { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .nav-shell {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 6px 20px rgba(15, 118, 110, 0.07);
+    }
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      position: relative;
+    }
+    .nav-link {
+      position: relative;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      transition: color 0.15s ease;
+      z-index: 10;
+    }
+    .nav-link:hover { color: #0f766e; }
+    .nav-link.is-active { color: #0f766e; }
+    .nav-link.nav-danger { color: #dc2626; }
+    .nav-link.nav-danger:hover { color: #b91c1c; }
+    .nav-indicator {
+      position: absolute;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      opacity: 0.15;
+      transition: transform 0.25s ease, width 0.25s ease;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.06);
+      padding: 20px;
+    }
+    .pill {
+      border-radius: 9999px;
+      padding: 0.45rem 0.95rem;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      transition: all 0.15s ease;
+    }
+    .pill-active {
+      background: var(--primary-soft);
+      border-color: #99f6e4;
+      color: #0f766e;
+      font-weight: 700;
+    }
+  </style>
+  <script>
+    function toggleCluster(algoIdx, label) {
+      document.querySelectorAll(`[data-cluster-block="${algoIdx}"]`).forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll(`[data-cluster-btn="${algoIdx}"]`).forEach(btn => {
+        btn.classList.remove('pill-active');
+      });
+      document.querySelectorAll(`[data-cluster-block="${algoIdx}"][data-label="${label}"]`).forEach(el => el.classList.remove('hidden'));
+      const activeBtn = document.querySelector(`[data-cluster-btn="${algoIdx}"][data-label="${label}"]`);
+      if (activeBtn) activeBtn.classList.add('pill-active');
+    }
+  </script>
+</head>
+<body>
+  <header class="bg-white/90 backdrop-blur shadow-sm border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl brand-mark flex items-center justify-center font-extrabold text-lg">SR</div>
+        <div>
+          <p class="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.14em]">SIREKPRODI</p>
+          <h1 class="text-xl font-bold text-slate-900">Dashboard Sekolah &amp; Prodi</h1>
+        </div>
+      </div>
+      {% set current = request.endpoint %}
+      <nav class="nav-shell">
+        <div class="nav-links">
+          <div class="nav-indicator" id="nav-indicator"></div>
+          <a href="{{ url_for('dashboard') }}" class="nav-link {% if current == 'dashboard' %}is-active{% endif %}" data-nav-link>Dashboard</a>
+          <a href="{{ url_for('upload') }}" class="nav-link {% if current == 'upload' %}is-active{% endif %}" data-nav-link>Upload</a>
+          <a href="{{ url_for('pelatihan_model') }}" class="nav-link {% if current == 'pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
+          <a href="{{ url_for('logout') }}"
+             class="nav-link nav-danger"
+             data-nav-link
+             data-confirm
+             data-confirm-title="Konfirmasi Logout"
+             data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
+             data-confirm-accent="red">
+            Logout
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <div id="toast-anchor"></div>
+    <section class="card flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.14em]">Ringkasan</p>
+        <h2 class="text-2xl font-bold text-slate-900 leading-snug">Pilih prodi, ubah cluster, dan fokus pada sekolah yang paling prospektif.</h2>
+        <p class="text-sm text-slate-600">Filter cepat berada di sini; konten utama di bawah agar mata tidak lelah.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 min-w-[240px]">
+        <div class="p-3 rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-800">
+          <p class="text-xs font-semibold uppercase">Model Aktif</p>
+          <p class="text-lg font-bold">K-Means</p>
+        </div>
+        <div class="p-3 rounded-2xl border border-blue-100 bg-blue-50 text-blue-800">
+          <p class="text-xs font-semibold uppercase">Filter Prodi</p>
+          <p class="text-lg font-bold">{{ selected_prodi if selected_prodi != 'all' else 'Semua Prodi' }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:sticky lg:top-4 lg:z-20">
+      <div>
+        <p class="text-xs font-semibold text-emerald-600 uppercase tracking-[0.12em]">Filter Cepat</p>
+        <p class="text-sm text-slate-600">Atur cluster, prodi, dan jumlah baris sebelum menjelajah grafik & tabel.</p>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-slate-700">Cluster:</span>
+          <div class="flex gap-2">
+            {% for lbl in ['A','B','C'] %}
+            <button type="button"
+                    data-cluster-btn="global"
+                    data-label="{{ lbl }}"
+                    class="pill {% if lbl == 'A' %}pill-active{% endif %}">
+              {{ lbl }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if prodi_list %}
+        <form method="get" class="flex items-center gap-2">
+          <label class="text-sm font-semibold text-slate-700">Prodi:</label>
+          <select name="prodi" onchange="this.form.submit()" class="pill text-sm pr-8">
+            <option value="all" {% if selected_prodi == 'all' %}selected{% endif %}>Semua Prodi</option>
+            {% for prodi in prodi_list %}
+            <option value="{{ prodi }}" {% if selected_prodi == prodi %}selected{% endif %}>{{ prodi }}</option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="tampilkan" value="{{ request.args.get('tampilkan', 'top10') }}">
+        </form>
+        {% endif %}
+
+        <form method="get" class="flex items-center gap-2">
+          <label class="text-sm font-semibold text-slate-700">Baris:</label>
+          <select name="tampilkan" onchange="this.form.submit()" class="pill text-sm pr-8">
+            <option value="top10" {% if request.args.get('tampilkan', 'top10') == 'top10' %}selected{% endif %}>10 Teratas</option>
+            <option value="semua" {% if request.args.get('tampilkan') == 'semua' %}selected{% endif %}>Semua Sekolah</option>
+          </select>
+          <input type="hidden" name="prodi" value="{{ selected_prodi }}">
+        </form>
+      </div>
+    </section>
+
+    <section class="space-y-6">
+      {% set algoritmas = [kmeans_data] %}
+      {% for algo in algoritmas %}
+      {% set algo_index = loop.index0 %}
+      <div class="card space-y-4" data-algo-index="{{ algo_index }}">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">{{ algo.algoritma }}</p>
+            <h3 class="text-xl font-bold text-slate-900">Analitik Cluster</h3>
+            <p class="text-sm text-slate-600">Ringkas, rapi, dan responsif. Pindah cluster lewat tombol di kanan.</p>
+          </div>
+          <div class="flex gap-2">
+            {% for lbl in ['A','B','C'] %}
+            <button type="button" data-cluster-btn="{{ algo_index }}" data-label="{{ lbl }}" onclick="toggleCluster({{ algo_index }}, '{{ lbl }}')" class="pill {% if lbl == 'A' %}pill-active{% endif %}">Cluster {{ lbl }}</button>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% for label in ['A', 'B', 'C'] %}
+        <div data-cluster-block="{{ algo_index }}" data-label="{{ label }}" class="{% if label != 'A' %}hidden{% endif %} space-y-4">
+          <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{ algo.deskripsi_cluster[label] }}</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div class="card shadow-none border border-slate-100">
+              <p class="text-xs text-slate-500 font-semibold uppercase">Total Mahasiswa</p>
+              <p class="text-2xl font-bold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
+            </div>
+            <div class="card shadow-none border border-slate-100">
+              <p class="text-xs text-slate-500 font-semibold uppercase">Rata-rata IPK</p>
+              <p class="text-2xl font-bold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
+            </div>
+            <div class="card shadow-none border border-slate-100">
+              <p class="text-xs text-slate-500 font-semibold uppercase">Kota IPK Tertinggi</p>
+              <p class="text-base font-semibold text-slate-900">{{ algo[label].kota_terbaik }}</p>
+            </div>
+            <div class="card shadow-none border border-slate-100">
+              <p class="text-xs text-slate-500 font-semibold uppercase">Sekolah Terbaik</p>
+              <p class="text-base font-semibold text-slate-900">{{ algo[label].sekolah_terbaik }}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card shadow-none border border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-semibold text-slate-800">Jumlah Mahasiswa per Kota (Top 10)</h4>
+              </div>
+              <canvas id="lineChart_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+            </div>
+            <div class="card shadow-none border border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-semibold text-slate-800">Distribusi IPK Mahasiswa</h4>
+              </div>
+              <canvas id="barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+            </div>
+          </div>
+
+          <div class="card shadow-none border border-slate-100">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-lg font-semibold text-slate-900">Sekolah Rekomendasi</h4>
+            </div>
+            <div class="scroll-shadow rounded-xl">
+              <table class="min-w-full text-sm table-sticky">
+                <thead>
+                  <tr class="text-left text-slate-500 uppercase text-xs">
+                    <th class="py-2 pr-3">Asal Sekolah</th>
+                    <th class="py-2 pr-3 text-right">Mahasiswa</th>
+                    <th class="py-2 pr-3 text-right">IPK Rata-rata</th>
+                    <th class="py-2 pr-3 text-right">Standar Deviasi</th>
+                    <th class="py-2 pr-3">Kota</th>
+                    <th class="py-2 pr-3">Provinsi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  {% for row in algo[label].tabel_rekomendasi %}
+                  <tr class="hover:bg-slate-50 odd:bg-slate-50/60">
+                    <td class="py-2 pr-3 font-semibold text-slate-900">{{ row['ASAL SEKOLAH'] }}</td>
+                    <td class="py-2 pr-3 text-right font-semibold text-slate-900">{{ row['mahasiswa'] }}</td>
+                    <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['ipk']) }}</td>
+                    <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['deviasi']) }}</td>
+                    <td class="py-2 pr-3">{{ row['KOTA SEKOLAH'] }}</td>
+                    <td class="py-2 pr-3">{{ row['PROVINSI SEKOLAH'] }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </section>
+
+    {% if prodi_column_available %}
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="card space-y-3">
+        <div>
+          <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Fitur 1 • K-Means</p>
+          <h3 class="text-xl font-bold text-slate-900">Prodi di Sekolah Unggulan</h3>
+          <p class="text-sm text-slate-600">Tiga prodi terbaik di sekolah unggulan untuk prioritas promosi.</p>
+        </div>
+        <div class="space-y-3">
+          {% if rekom_prodi_per_sekolah %}
+            {% for item in rekom_prodi_per_sekolah %}
+            <div class="border border-slate-100 rounded-xl p-4 space-y-2 h-full flex flex-col">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="text-xs text-slate-500 font-semibold uppercase">Sekolah</p>
+                  <h4 class="text-lg font-bold text-slate-900">{{ item.sekolah }}</h4>
+                  <p class="text-xs text-slate-500">{{ item.kota }}, {{ item.provinsi }}</p>
+                </div>
+                <div class="text-right text-xs text-slate-500">
+                  <p>IPK Rata-rata</p>
+                  <p class="text-xl font-bold text-slate-900">{{ '%.2f'|format(item.ipk_mean) }}</p>
+                  <p>Mahasiswa: {{ item.mahasiswa }}</p>
+                </div>
+              </div>
+              <div class="grid gap-2 max-h-48 overflow-auto pr-1">
+                {% for prodi in item.top_prodi %}
+                <div class="flex items-center justify-between text-sm bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                  <span class="font-semibold text-slate-900">{{ prodi.prodi }}</span>
+                  <span class="text-xs text-slate-600">IPK {{ '%.2f'|format(prodi.ipk) }} • {{ prodi.mahasiswa }} mhs</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="text-sm text-slate-600">Belum ada data prodi yang bisa dihitung.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card space-y-3">
+        <div>
+          <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Fitur 2 • K-Means</p>
+          <h3 class="text-xl font-bold text-slate-900">Sekolah Sasaran per Prodi</h3>
+          <p class="text-sm text-slate-600">Sekolah prioritas untuk tiap prodi berdasarkan performa alumni.</p>
+        </div>
+        <div class="space-y-3">
+          {% if rekom_sekolah_per_prodi %}
+            {% for item in rekom_sekolah_per_prodi %}
+            <div class="border border-slate-100 rounded-xl p-4 space-y-2 h-full flex flex-col">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs font-semibold text-slate-500 uppercase">Prodi</p>
+                  <h4 class="text-lg font-bold text-slate-900">{{ item.prodi }}</h4>
+                  <p class="text-xs text-slate-500">Rata IPK: {{ '%.2f'|format(item.ipk_mean) }}</p>
+                </div>
+                <div class="text-right text-xs text-slate-500">Total mahasiswa: {{ item.total_mahasiswa }}</div>
+              </div>
+              <div class="space-y-2 max-h-48 overflow-auto pr-1">
+                {% for sekolah in item.top_sekolah %}
+                <div class="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="font-semibold text-slate-900">{{ sekolah.sekolah }}</span>
+                    <span class="text-xs text-slate-600">{{ sekolah.kota }}, {{ sekolah.provinsi }}</span>
+                  </div>
+                  <div class="text-xs text-slate-600">IPK {{ '%.2f'|format(sekolah.ipk) }} • {{ sekolah.mahasiswa }} mhs</div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="text-sm text-slate-600">Belum ada data sekolah sasaran.</div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+    {% else %}
+    <section class="card">
+      <p class="text-sm text-slate-700">Kolom Program Studi tidak ditemukan pada model aktif, sehingga rekomendasi prodi belum dapat ditampilkan.</p>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="w-full bg-white border-t border-gray-200 shadow-sm mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-4 text-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-xl brand-mark flex items-center justify-center font-bold text-white text-sm">SR</div>
+        <div>
+          <p class="font-semibold text-slate-900">SIREKPRODI</p>
+          <p class="text-xs text-slate-600">Sistem rekomendasi promosi prodi berbasis data sekolah &amp; prodi. Mempercepat analisis cluster, rekomendasi target sekolah, dan pilihan prodi unggulan.</p>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 md:items-end">
+        <div class="flex flex-wrap gap-3 text-xs text-slate-600">
+          <a href="{{ url_for('dashboard') }}" class="hover:text-emerald-700">Dashboard</a>
+          <a href="{{ url_for('upload') }}" class="hover:text-emerald-700">Upload</a>
+          <a href="{{ url_for('pelatihan_model') }}" class="hover:text-emerald-700">Pelatihan Model</a>
+        </div>
+        <div class="text-xs text-slate-500">© 2025 SIREKPRODI. All rights reserved.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal konfirmasi -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <div id="confirm-icon" class="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">!</div>
+        <div class="space-y-1">
+          <h3 id="confirm-title" class="text-lg font-bold text-slate-900">Konfirmasi</h3>
+          <p id="confirm-message" class="text-sm text-slate-600">Apakah Anda yakin?</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel" type="button" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
+        <a id="confirm-action" href="#" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow">Lanjutkan</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    {% set algoritmas = [kmeans_data] %}
+    {% for algo in algoritmas %}
+      {% set algo_index = loop.index0 %}
+      {% for label in ['A', 'B', 'C'] %}
+
+        new Chart(document.getElementById('barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
+          type: 'bar',
+          data: {
+            labels: {{ algo[label].distribusi_ipk | map(attribute='jumlah') | list | tojson }},
+            datasets: [{
+              label: 'Jumlah Mahasiswa',
+              data: {{ algo[label].distribusi_ipk | map(attribute='count') | list | tojson }},
+              backgroundColor: '#0f766e'
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                anchor: 'end', align: 'top', color: '#0f172a',
+                font: { weight: 'bold', size: 10 },
+                formatter: val => val > 0 ? val : ''
+              }
+            },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
+              x: { title: { display: true, text: 'Rentang IPK' } }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+
+        new Chart(document.getElementById('lineChart_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
+          type: 'line',
+          data: {
+            labels: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute='kota') | list | tojson }},
+            datasets: [{
+              label: 'Jumlah Mahasiswa',
+              data: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute='jumlah') | list | tojson }},
+              borderColor: '#0ea5e9',
+              backgroundColor: 'rgba(14,165,233,0.18)',
+              fill: true,
+              tension: 0.35
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
+              x: {}
+            }
+          }
+        });
+
+      {% endfor %}
+    {% endfor %}
+
+    // Global cluster toggle: sinkronkan tombol dan konten untuk semua algoritma
+    const globalClusterBtns = document.querySelectorAll('[data-cluster-btn="global"]');
+    function setGlobalCluster(label) {
+      globalClusterBtns.forEach(b => b.classList.toggle('pill-active', b.dataset.label === label));
+    }
+
+    globalClusterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const label = btn.dataset.label;
+        setGlobalCluster(label);
+        document.querySelectorAll('[data-algo-index]').forEach(el => toggleCluster(el.dataset.algoIndex, label));
+      });
+    });
+
+    // Sinkronkan jika tombol cluster di dalam kartu algoritma diklik
+    document.querySelectorAll('[data-cluster-btn]:not([data-cluster-btn="global"])').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const label = btn.dataset.label;
+        setGlobalCluster(label);
+        document.querySelectorAll('[data-algo-index]').forEach(el => toggleCluster(el.dataset.algoIndex, label));
+      });
+    });
+
+    // Modal konfirmasi generik (logout, dll.)
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmMessage = document.getElementById('confirm-message');
+    const confirmAction = document.getElementById('confirm-action');
+    const confirmCancel = document.getElementById('confirm-cancel');
+    const confirmIcon = document.getElementById('confirm-icon');
+
+    const accentMap = {
+      red: { bg: 'bg-red-100', text: 'text-red-600', btn: 'bg-red-600 hover:bg-red-700' },
+      amber: { bg: 'bg-amber-100', text: 'text-amber-600', btn: 'bg-amber-600 hover:bg-amber-700' },
+      green: { bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'bg-emerald-600 hover:bg-emerald-700' }
+    };
+
+    function showConfirm(url, title, message, accent = 'red') {
+      const tone = accentMap[accent] || accentMap.red;
+      confirmTitle.textContent = title;
+      confirmMessage.textContent = message;
+      confirmAction.href = url;
+
+      // reset & apply accent
+      confirmIcon.className = `h-10 w-10 rounded-xl flex items-center justify-center text-xl ${tone.bg} ${tone.text}`;
+      confirmAction.className = `px-4 py-2 rounded-lg text-white shadow ${tone.btn}`;
+
+      confirmModal.classList.remove('hidden');
+    }
+
+    function hideConfirm() {
+      confirmModal.classList.add('hidden');
+    }
+
+    confirmCancel?.addEventListener('click', hideConfirm);
+    confirmModal?.addEventListener('click', (e) => {
+      if (e.target === confirmModal) hideConfirm();
+    });
+
+    document.querySelectorAll('[data-confirm]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        showConfirm(
+          link.href,
+          link.dataset.confirmTitle || 'Konfirmasi',
+          link.dataset.confirmMessage || 'Lanjutkan aksi ini?',
+          link.dataset.confirmAccent || 'red'
+        );
+      });
+    });
+
+    // Sliding navbar indicator
+    const navShell = document.querySelector('.nav-shell');
+    const navLinksWrap = navShell?.querySelector('.nav-links');
+    const navLinks = navShell?.querySelectorAll('[data-nav-link]') || [];
+    const navIndicator = navShell?.querySelector('#nav-indicator');
+    let navActive = navShell?.querySelector('.nav-link.is-active') || navLinks[0];
+
+    function moveIndicator(link) {
+      if (!navLinksWrap || !navIndicator || !link) return;
+      const wrapRect = navLinksWrap.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      navIndicator.style.width = `${linkRect.width}px`;
+      navIndicator.style.transform = `translateX(${linkRect.left - wrapRect.left}px)`;
+    }
+
+    function setActive(link) {
+      navActive = link;
+      navLinks.forEach(l => l.classList.toggle('is-active', l === link));
+      moveIndicator(link);
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('mouseenter', () => moveIndicator(link));
+      link.addEventListener('mouseleave', () => moveIndicator(navActive));
+      link.addEventListener('click', () => setActive(link));
+    });
+
+    window.addEventListener('resize', () => moveIndicator(navActive));
+    moveIndicator(navActive);
+
+    // Toast flash messages
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+    const flashMessages = {{ get_flashed_messages(with_categories=true) | tojson }};
+    const typeClass = (t) => t === 'error' ? 'toast-error' : t === 'warning' ? 'toast-warning' : t === 'info' ? 'toast-info' : 'toast-success';
+    function showToast(type, message) {
+      const el = document.createElement('div');
+      el.className = `toast ${typeClass(type)}`;
+      el.textContent = message;
+      toastContainer.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    flashMessages.forEach(([cat, msg]) => showToast(cat, msg));
+  </script>
+</body>
+</html>

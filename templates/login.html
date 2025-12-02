@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Login - Sistem Rekomendasi</title>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen w-full relative bg-slate-950 overflow-hidden">
+
+  <!-- Background Image -->
+  <div class="absolute inset-0 bg-cover bg-center scale-105 blur-[2px]" style="background-image: url('{{ url_for('static', filename='bg_login.jpg') }}');"></div>
+
+  <!-- Overlay -->
+  <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-indigo-900/70 to-slate-900/70"></div>
+  <div class="absolute top-20 -left-10 h-48 w-48 bg-indigo-500/30 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-12 right-8 h-60 w-60 bg-cyan-400/25 rounded-full blur-3xl"></div>
+
+  <!-- Konten -->
+  <div class="relative z-10 min-h-screen flex flex-col lg:flex-row items-center justify-center px-6 lg:px-16 py-10">
+
+    <!-- Kiri: Judul -->
+    <div class="w-full lg:w-1/2 text-white space-y-5 lg:pr-12 mb-10 lg:mb-0">
+      <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide border border-white/20">
+        🎯 Sistem Rekomendasi Target Promosi
+      </span>
+      <h1 class="text-4xl lg:text-5xl font-extrabold leading-tight drop-shadow-lg">
+        Kenali sekolah & prodi paling potensial secara instan.
+      </h1>
+      <p class="text-sm lg:text-base text-slate-100/90 max-w-xl leading-relaxed">
+        Dashboard berbasis clustering membantu tim promosi Politeknik Negeri Malang menentukan prioritas sekolah dan program studi dengan data yang terus diperbarui.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs lg:text-sm text-slate-100/90">
+        <div class="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl border border-white/10 backdrop-blur">
+          <span class="text-lg">⚡</span>
+          <div>
+            <p class="font-semibold">Cepat & berbasis data</p>
+            <p class="text-[11px] text-slate-200/80">Optimasi K-Means & FCM untuk hasil akurat.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl border border-white/10 backdrop-blur">
+          <span class="text-lg">🛡️</span>
+          <div>
+            <p class="font-semibold">Aman & privat</p>
+            <p class="text-[11px] text-slate-200/80">Autentikasi lokal, data tidak keluar sistem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kanan: Form Login -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center">
+      <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 lg:p-10 space-y-8">
+        <div class="space-y-2 text-center">
+          <p class="text-xs font-semibold text-indigo-600 uppercase tracking-[0.08em]">Masuk sebagai administrator</p>
+          <h2 class="text-2xl font-bold text-slate-900">Login Dashboard</h2>
+          <p class="text-sm text-slate-500">Kelola data, latih model, dan terapkan prodi yang paling prospektif.</p>
+        </div>
+        <form method="POST" class="space-y-4">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Username</label>
+            <input name="username" placeholder="Masukkan username" class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90" required>
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Password</label>
+            <input name="password" type="password" placeholder="Masukkan password" class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90" required>
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-3 rounded-lg font-semibold shadow-lg shadow-indigo-200 transition">
+            Masuk ke Dashboard
+          </button>
+        </form>
+        <div class="text-xs text-center text-slate-500 leading-relaxed">
+          Dibangun untuk tim promosi Polinema • Insight siap pakai untuk keputusan yang lebih cepat.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
