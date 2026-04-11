@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.metrics import davies_bouldin_score, silhouette_score
 from sklearn.metrics import pairwise_distances
 import random
 import os
@@ -16,6 +15,11 @@ def prepare_data(df):
     if df.empty:
         raise ValueError("DataFrame kosong! Tidak bisa diproses.")
 
+    # Buang kolom turunan dari model sebelumnya agar tidak memicu NaN (Cluster, Distance, Membership, dsb.)
+    derived_cols = [c for c in df.columns if c.startswith("Distance_to_") or c.startswith("Membership_")]
+    derived_cols += ['Cluster', 'DBI_SCORE', 'SILHOUETTE_SCORE']
+    df = df.drop(columns=[c for c in derived_cols if c in df.columns], errors='ignore')
+
     label_encoders = {}
     categorical_cols = ['ASAL SEKOLAH', 'KOTA SEKOLAH', 'PROVINSI SEKOLAH']
     optional_categorical = ['PROGRAM STUDI']
@@ -28,25 +32,51 @@ def prepare_data(df):
         elif col in categorical_cols:
             raise ValueError(f"Kolom kategorikal '{col}' tidak ditemukan di DataFrame!")
 
-    numeric_df = df.select_dtypes(include=[np.number])
+    numeric_df = df.select_dtypes(include=[np.number]).copy()
+    numeric_df = numeric_df.apply(pd.to_numeric, errors='coerce')
+    numeric_df = numeric_df.replace([np.inf, -np.inf], np.nan)
+
+    all_nan_cols = [c for c in numeric_df.columns if numeric_df[c].isna().all()]
+    if all_nan_cols:
+        print(f"⚠️ Menghapus kolom numerik kosong: {all_nan_cols}")
+        numeric_df = numeric_df.drop(columns=all_nan_cols)
+        df = df.drop(columns=all_nan_cols, errors='ignore')
+
     if numeric_df.empty:
         raise ValueError("Tidak ada kolom numerik yang tersedia untuk scaling!")
 
+    medians = numeric_df.median()
+    numeric_df = numeric_df.fillna(medians)
+
+    if numeric_df.isna().any().any():
+        remaining = int(numeric_df.isna().sum().sum())
+        print(f"⚠️ Masih ada {remaining} nilai NaN setelah isi median, mengisi dengan 0 (fallback).")
+        numeric_df = numeric_df.fillna(0)
+
+    if numeric_df.isna().any().any():
+        na_rows = numeric_df[numeric_df.isna().any(axis=1)].index
+        print(f"⚠️ Menghapus {len(na_rows)} baris yang tetap mengandung NaN setelah imputasi.")
+        numeric_df = numeric_df.drop(index=na_rows).reset_index(drop=True)
+        df = df.drop(index=na_rows).reset_index(drop=True)
+
+    # Sinkronkan kembali ke df sumber
+    df.loc[:, numeric_df.columns] = numeric_df
+
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(numeric_df)
+    df_scaled = np.nan_to_num(df_scaled, nan=0.0, posinf=0.0, neginf=0.0)
 
     return df_scaled, label_encoders, scaler
 
 
 def evaluate_scores_kmeans(data, centroids, n_clusters):
+    """
+    Gunakan inertia (sum of squared distances) sebagai skor GA.
+    Lebih cepat dibanding DBI/Silhouette karena tidak perlu jarak antar-label.
+    """
     kmeans = KMeans(n_clusters=n_clusters, init=centroids, n_init=1)
     kmeans.fit(data)
-    labels = kmeans.labels_
-    if len(set(labels)) < 2:
-        return float('inf'), -1
-    dbi = davies_bouldin_score(data, labels)
-    sil = silhouette_score(data, labels)
-    return dbi, sil
+    return kmeans.inertia_
 
 
 def crossover(parent1, parent2):
@@ -56,22 +86,22 @@ def crossover(parent1, parent2):
     return child1, child2
 
 
-def genetic_algorithm_kmeans(data, n_clusters=3, pop_size=30, mutation_rate=0.01, max_stagnant=30):
-    population = np.random.rand(pop_size, n_clusters, data.shape[1])
+def genetic_algorithm_kmeans(data, n_clusters=3, pop_size=30, mutation_rate=0.05, max_stagnant=30):
+    # Menggunakan distribusi normal (mean 0, std 1) selaras dengan hasil StandardScaler
+    # Menghindarkan penempatan titik centroid awal yang bias di area [0,1]
+    population = np.random.normal(0, 1, size=(pop_size, n_clusters, data.shape[1]))
     best_centroids = None
-    best_dbi = np.inf
-    best_sil = -1
+    best_inertia = np.inf
     stagnant = 0
     gen = 0
 
     while stagnant < max_stagnant:
         scores = [evaluate_scores_kmeans(data, ind, n_clusters) for ind in population]
-        ranked = sorted(zip(scores, population), key=lambda x: x[0][0])  # sort by DBI
-        (current_dbi, current_sil), current_best_centroids = ranked[0]
+        ranked = sorted(zip(scores, population), key=lambda x: x[0])  # sort by inertia (lebih kecil lebih baik)
+        current_inertia, current_best_centroids = ranked[0]
 
-        if current_dbi < best_dbi:
-            best_dbi = current_dbi
-            best_sil = current_sil
+        if current_inertia < best_inertia:
+            best_inertia = current_inertia
             best_centroids = current_best_centroids
             stagnant = 0
         else:
@@ -87,82 +117,95 @@ def genetic_algorithm_kmeans(data, n_clusters=3, pop_size=30, mutation_rate=0.01
 
         for i in range(pop_size):
             if random.random() < mutation_rate:
-                population[i] += np.random.normal(0, 0.1, size=population[i].shape)
+                # Memperbesar kekuatan noise mutasi
+                population[i] += np.random.normal(0, 0.5, size=population[i].shape)
 
-        print(f"Gen {gen + 1}: DBI = {best_dbi:.4f} | Silhouette = {best_sil:.4f}")
         gen += 1
 
-    return best_centroids, best_dbi, best_sil
+    return best_centroids, best_inertia
 
 
 def jalankan_kmeans(df, n_clusters=3, save_path="models/model_utama/"):
-    from clustering.preprocessing import prepare_data  # pastikan ada
-    
-    df_scaled, le_map, scaler = prepare_data(df)
-    best_centroids, best_dbi, best_sil = genetic_algorithm_kmeans(df_scaled, n_clusters=n_clusters)
-    kmeans = KMeans(n_clusters=n_clusters, init=best_centroids, n_init=1).fit(df_scaled)
-    df['Cluster'] = kmeans.labels_
-
-    centroid_dist = pairwise_distances(df_scaled, kmeans.cluster_centers_)
-    for i in range(n_clusters):
-        df[f'Distance_to_Centroid_{i}'] = centroid_dist[:, i]
-    df['Distance_to_Assigned_Centroid'] = centroid_dist[np.arange(len(df)), kmeans.labels_]
-
-    # ✅ Ganti path output ke save_path
     os.makedirs(save_path, exist_ok=True)
+    
+    total_inertia = 0
+    
+    # 1. Siapkan kolom baseline pada Dataframe Utama
+    df['Cluster'] = 0
+    for i in range(n_clusters):
+        df[f'Distance_to_Centroid_{i}'] = 0.0
+    df['Distance_to_Assigned_Centroid'] = 0.0
+    
+    if 'PROGRAM STUDI' not in df.columns:
+        print("⚠️ Kolom PROGRAM STUDI tidak ada! Menjalankan mode Global (Fallback).")
+        df_scaled, le_map, scaler = prepare_data(df)
+        best_centroids, best_inertia = genetic_algorithm_kmeans(df_scaled, n_clusters=n_clusters)
+        total_inertia = best_inertia
+        kmeans = KMeans(n_clusters=n_clusters, init=best_centroids, n_init=1).fit(df_scaled)
+        df['Cluster'] = kmeans.labels_
+        centroid_dist = pairwise_distances(df_scaled, kmeans.cluster_centers_)
+        for i in range(n_clusters):
+            df[f'Distance_to_Centroid_{i}'] = centroid_dist[:, i]
+        df['Distance_to_Assigned_Centroid'] = centroid_dist[np.arange(len(df)), kmeans.labels_]
+    else:
+        # 2. Mode Clustering Per Prodi
+        prodi_groups = df.groupby('PROGRAM STUDI')
+        print(f"🔄 Memulai clustering terisolasi untuk {len(prodi_groups)} Program Studi...")
+        
+        for prodi_name, subset in prodi_groups:
+            idx = subset.index
+            
+            if len(subset) < n_clusters:
+                print(f"  -> [Abaikan] {prodi_name}: {len(subset)} baris (<{n_clusters})")
+                continue # Biarkan bernilai 0
+                
+            try:
+                df_scaled, _, _ = prepare_data(subset)
+            except Exception as e:
+                print(f"  -> [Error] {prodi_name}: {e}")
+                continue
+                
+            print(f"  -> Memproses {prodi_name}: {len(subset)} baris. Memutar GA {n_clusters} Kluster...")
+            # Populasi dan max_stagnant dikurangi sedikit agar tidak memakan waktu berjam-jam untuk puluhan prodi
+            best_centroids, best_inertia = genetic_algorithm_kmeans(df_scaled, n_clusters=n_clusters, pop_size=20, max_stagnant=15)
+            total_inertia += best_inertia
+            
+            # Map KMeans
+            kmeans = KMeans(n_clusters=n_clusters, init=best_centroids, n_init=1).fit(df_scaled)
+            df.loc[idx, 'Cluster'] = kmeans.labels_
+            
+            # Distance Logic per Subset Index (loc)
+            centroid_dist = pairwise_distances(df_scaled, kmeans.cluster_centers_)
+            for i in range(n_clusters):
+                df.loc[idx, f'Distance_to_Centroid_{i}'] = centroid_dist[:, i]
+            df.loc[idx, 'Distance_to_Assigned_Centroid'] = centroid_dist[np.arange(len(subset)), kmeans.labels_]
+
     output_path = os.path.join(save_path, f"hasil_kmeans_{n_clusters}_cluster.xlsx")
-    df['DBI_SCORE'] = best_dbi
-    df['SILHOUETTE_SCORE'] = best_sil
     df.to_excel(output_path, index=False)
 
-    # ✅ Simpan versi .pkl juga (untuk dashboard)
     with open(os.path.join(save_path, f"hasil_kmeans_3cluster.pkl"), "wb") as f:
-        pickle.dump({"data": df}, f)  # wajib dict dengan key 'data'
+        pickle.dump({"data": df}, f)
 
-    print("✅ KMeans + GA selesai, hasil disimpan:", output_path)
+    print("\n✅ KMeans + GA (Per-Prodi) selesai, hasil disimpan:", output_path)
 
-    # Statistik cetakan kamu tetap dipertahankan
-    print("\n🧾 Statistik Lengkap untuk KMeans + GA")
-    print(f"Total DBI: {best_dbi:.4f}")
-    print(f"Total Silhouette Score: {best_sil:.4f}\n")
+    # Menyingkat keluaran stat agar tidak nge-print baris sangat panjang di konsol
+    print("\n🧾 Statistik Singkat KMeans + GA")
+    print(f"Total Inertia Gabungan (Semua Prodi): {total_inertia:.4f}")
+    if total_inertia > 0:
+        print("\nDistribusi Global Cluster (%) :")
+        print(df['Cluster'].value_counts(normalize=True).mul(100).round(1))
 
-    for i in range(n_clusters):
-        cluster_data = df[df['Cluster'] == i]
-        print(f"Cluster {i}:")
-        print(f"  - Jumlah titik: {len(cluster_data)}")
-        print(f"  - Rata-rata jarak ke centroid (Kepadatan): {cluster_data[f'Distance_to_Centroid_{i}'].mean():.2f}")
-        pemisahan = pairwise_distances(kmeans.cluster_centers_).mean()
-        print(f"  - Rata-rata jarak antar centroid (Pemisahan): {pemisahan:.2f}")
-        print(f"  - Centroid: {kmeans.cluster_centers_[i]}")
-
-    print("\nPersentase Jumlah Data di Masing-Masing Cluster:")
-    print(df['Cluster'].value_counts(normalize=True).mul(100).round(1))
-
-    for col in ['ASAL SEKOLAH', 'KOTA SEKOLAH', 'PROVINSI SEKOLAH', 'NILAI KESELURUHAN']:
-        if col in df.columns:
-            print(f"\nDominasi untuk kolom {col}:")
-            print(df.groupby('Cluster')[col].agg(lambda x: x.mode().iloc[0] if not x.mode().empty else 'N/A'))
-
-    print("\nRata-Rata 'NILAI KESELURUHAN' di Setiap Cluster:")
-    print(df.groupby('Cluster')['NILAI KESELURUHAN'].mean())
-
-    print("\nStatistik Deskriptif 'NILAI KESELURUHAN':")
-    print(df.groupby('Cluster')['NILAI KESELURUHAN'].agg(['mean', 'median', lambda x: x.mode().iloc[0], 'min', 'max']).rename(columns={'<lambda_0>': 'mode'}))
-
-    # Ekspor detail per cluster
+    # Ekspor summary
     for i in range(n_clusters):
         df_cluster = df[df['Cluster'] == i].copy()
+        if df_cluster.empty: continue
+        
         df_cluster_group = df_cluster.groupby(['ASAL SEKOLAH', 'KOTA SEKOLAH', 'PROVINSI SEKOLAH']).agg(
             Cluster=('Cluster', 'first'),
             **{
                 'Jumlah Mahasiswa': ('NILAI KESELURUHAN', 'count'),
                 'Nilai Mean': ('NILAI KESELURUHAN', 'mean'),
-                'Nilai Median': ('NILAI KESELURUHAN', 'median'),
-                'Nilai Modus': ('NILAI KESELURUHAN', lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan),
-                'Nilai Min': ('NILAI KESELURUHAN', 'min'),
-                'Nilai Max': ('NILAI KESELURUHAN', 'max'),
                 'Nilai Range': ('NILAI KESELURUHAN', lambda x: x.max() - x.min()),
-                'Deviasi Standar': ('NILAI KESELURUHAN', 'std'),
             }
         ).reset_index()
 

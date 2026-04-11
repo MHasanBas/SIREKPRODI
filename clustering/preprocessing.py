@@ -62,7 +62,7 @@ def proses_upload_data(folder_path):
 
             if 'STATUS' in df_new.columns:
                 df_new['STATUS'] = df_new['STATUS'].astype(str).str.upper().str.strip()
-                df_new = df_new[df_new['STATUS'] == 'AKTIF']  # hanya mahasiswa aktif
+                df_new = df_new[df_new['STATUS'].isin(['AKTIF', 'LULUS'])]
 
             df_new = df_new.dropna(subset=['IPK'])
             df_new = df_new[df_new['IPK'] != 0]

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Rekomendasi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script>Chart.register(ChartDataLabels);</script>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-soft: #e0f2f1;
+      --ink: #0f172a;
+      --muted: #475569;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+      background: #f5f6fa;
+      color: var(--ink);
+    }
+
+    .btn-main {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.55rem 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+    }
+
+    .btn-main:hover {
+      transform: translateY(-1px);
+      background: #0d5f58;
+    }
+
+    .btn-ghost {
+      padding: 0.5rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-weight: 600;
+      color: var(--ink);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-ghost:hover {
+      background: #f8fafc;
+      border-color: #d9e2ec;
+    }
+
+    .table-sticky thead th {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      z-index: 10;
+    }
+
+    .scroll-shadow {
+      position: relative;
+      overflow: auto;
+    }
+
+    .scroll-shadow::after {
+      content: '';
+      position: sticky;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.06));
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+    }
+
+    .footer-bar {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .footer-badge {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      min-width: 220px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      opacity: 0.95;
+    }
+
+    .toast.toast-success {
+      background: #ecfdf3;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .toast.toast-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecdd3;
+    }
+
+    .toast.toast-warning {
+      background: #fff7ed;
+      color: #c2410c;
+      border-color: #fed7aa;
+    }
+
+    .toast.toast-info {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    .nav-shell {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 6px 20px rgba(15, 118, 110, 0.07);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      position: relative;
+    }
+
+    .nav-link {
+      position: relative;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      transition: color 0.15s ease;
+      z-index: 10;
+    }
+
+    .nav-link:hover {
+      color: #0f766e;
+    }
+
+    .nav-link.is-active {
+      color: #0f766e;
+    }
+
+    .nav-link.nav-danger {
+      color: #dc2626;
+    }
+
+    .nav-link.nav-danger:hover {
+      color: #b91c1c;
+    }
+
+    .nav-indicator {
+      position: absolute;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      opacity: 0.15;
+      transition: transform 0.25s ease, width 0.25s ease;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.06);
+      padding: 20px;
+    }
+
+    .pill {
+      border-radius: 9999px;
+      padding: 0.45rem 0.95rem;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      transition: all 0.15s ease;
+    }
+
+    .pill-active {
+      background: var(--primary-soft);
+      border-color: #99f6e4;
+      color: #0f766e;
+      font-weight: 700;
+    }
+  </style>
+  <script>
+    function toggleCluster(algoIdx, label) {
+      document.querySelectorAll(`[data-cluster-block="${algoIdx}"]`).forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll(`[data-cluster-btn="${algoIdx}"]`).forEach(btn => {
+        btn.classList.remove('pill-active');
+      });
+      document.querySelectorAll(`[data-cluster-block="${algoIdx}"][data-label="${label}"]`).forEach(el => el.classList.remove('hidden'));
+      const activeBtn = document.querySelector(`[data-cluster-btn="${algoIdx}"][data-label="${label}"]`);
+      if (activeBtn) activeBtn.classList.add('pill-active');
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</head>
+
+<body>
+  <header class="bg-white/90 backdrop-blur shadow-sm border-b border-gray-100 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl brand-mark flex items-center justify-center font-extrabold text-lg">SR</div>
+        <div>
+          <p class="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.14em]">SIREKPRODI</p>
+          <h1 class="text-xl font-bold text-slate-900">Dashboard Sekolah &amp; Prodi</h1>
+        </div>
+      </div>
+      {% set current = request.endpoint %}
+      <nav class="nav-shell">
+        <div class="nav-links">
+          <div class="nav-indicator" id="nav-indicator"></div>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}"
+            data-nav-link>Dashboard</a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}" data-nav-link>Data Cluster</a>
+          <a href="{{ url_for('upload.upload') }}" class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}"
+            data-nav-link>Upload</a>
+          <a href="{{ url_for('model.pelatihan_model') }}"
+            class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
+          <a href="{{ url_for('auth.logout') }}" class="nav-link nav-danger" data-nav-link data-confirm
+            data-confirm-title="Konfirmasi Logout"
+            data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
+            data-confirm-accent="red">
+            Logout
+          </a>
+        </div>
+      </nav>
+      <button onclick="toggleTheme()" class="theme-toggle" title="Ganti Tema">
+        <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646Z"/></svg>
+        <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div id="toast-anchor"></div>
+
+    <section class="card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.14em]">Inspeksi Data</p>
+        <h2 class="text-2xl font-bold text-slate-900 leading-snug">Jejak Data Cluster Asli</h2>
+        <p class="text-sm text-slate-600">Tinjau hasil pemetaan algoritma K-Means langsung pada dataset pendaftar.</p>
+      </div>
+      <form action="{{ url_for('dashboard.data_cluster') }}" method="GET"
+        class="flex flex-wrap items-end gap-3 w-full lg:w-auto mt-4 lg:mt-0">
+        <div class="flex-grow max-w-[250px]">
+          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CARI SEKOLAH</label>
+          <div class="relative">
+            <input type="text" name="search" value="{{ search_sekolah }}" list="sekolahList"
+              placeholder="Ketik atau pilih sekolah..." onchange="this.form.submit()"
+              class="w-full text-sm border border-slate-300 rounded-xl pl-9 pr-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium transition-shadow">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <datalist id="sekolahList">
+              {% for sek in sekolah_list %}
+              <option value="{{ sek }}"></option>
+              {% endfor %}
+            </datalist>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">PROGRAM STUDI</label>
+          <select name="prodi" onchange="this.form.submit()"
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium max-w-[200px]">
+            <option value="all" {% if selected_prodi=='all' %}selected{% endif %}>Semua Prodi</option>
+            {% for prodi in prodi_list %}
+            <option value="{{ prodi }}" {% if selected_prodi==prodi %}selected{% endif %}>{{ prodi }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CLUSTER ID</label>
+          <select name="cluster" onchange="this.form.submit()"
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium pill">
+            <option value="all" {% if selected_cluster=='all' %}selected{% endif %}>Semua Cluster</option>
+            {% for cid in cluster_options %}
+            <option value="{{ cid }}" {% if selected_cluster != 'all' and (selected_cluster|int) == cid %}selected{% endif %}>Cluster {{ cid }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">LIMIT BARIS</label>
+          <select name="limit" onchange="this.form.submit()"
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 font-medium pill">
+            <option value="100" {% if limit_rows=="100" %}selected{% endif %}>100 Baris</option>
+            <option value="500" {% if limit_rows=="500" %}selected{% endif %}>500 Baris</option>
+            <option value="1000" {% if limit_rows=="1000" %}selected{% endif %}>1000 Baris</option>
+            <option value="all" {% if limit_rows=="all" %}selected{% endif %}>Semua (Bisa Lag)</option>
+          </select>
+        </div>
+        <div class="flex items-end pl-2">
+          <a href="{{ url_for('dashboard.download_cluster', search=search_sekolah, prodi=selected_prodi, cluster=selected_cluster) }}" target="_blank"
+            class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Unduh Excel
+          </a>
+        </div>
+      </form>
+    </section>
+
+    <!-- Visualisasi Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="card flex flex-col items-center">
+        <h3 class="text-sm font-bold text-slate-800 self-start mb-2">Sebaran Mahasiswa per Cluster</h3>
+        <div class="w-full max-w-[280px]">
+          <canvas id="clusterPieChart"></canvas>
+        </div>
+      </div>
+      <div class="card flex flex-col">
+        <h3 class="text-sm font-bold text-slate-800 mb-2">Rata-rata IPK per Cluster</h3>
+        <div class="w-full flex-grow relative min-h-[200px]">
+          <canvas id="ipkBarChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table Section -->
+    <section class="card p-0 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3 bg-slate-50/50">
+        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16">
+          </path>
+        </svg>
+        <div class="flex-grow">
+          <h3 class="text-base font-bold text-slate-800">Dataset K-Means</h3>
+        </div>
+        <p
+          class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
+          Menampilkan {{ records|length }} Baris
+        </p>
+      </div>
+
+      <div class="scroll-shadow max-h-[600px]">
+        <table class="min-w-full text-left text-sm table-sticky">
+          <thead>
+            <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
+              <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">Program Studi</th>
+              <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">NPSN / Asal Sekolah</th>
+              <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">Wilayah</th>
+              <th class="py-3 px-6 font-bold text-right whitespace-nowrap bg-white">Nilai Keseluruhan</th>
+              <th class="py-3 px-6 font-bold text-center whitespace-nowrap bg-emerald-50/60 text-emerald-800">Cluster ID
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for row in records %}
+            <tr class="hover:bg-slate-50/70 transition-colors odd:bg-slate-50/30">
+              <td class="py-3 px-6 text-slate-700 font-medium whitespace-nowrap">
+                <span
+                  class="bg-slate-100 px-2 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-semibold">{{
+                  row.get('PROGRAM STUDI', '-') }}</span>
+              </td>
+              <td class="py-3 px-6 whitespace-nowrap">
+                <div class="font-bold text-slate-800">{{ row.get('ASAL SEKOLAH', '-') }}</div>
+                <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ row.get('NPSN SEKOLAH', '-') }}</div>
+              </td>
+              <td class="py-3 px-6 whitespace-nowrap">
+                <div class="text-slate-700 text-xs">{{ row.get('KOTA SEKOLAH', '-') }}</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{{ row.get('PROVINSI
+                  SEKOLAH', '-') }}</div>
+              </td>
+              <td class="py-3 px-6 text-right font-mono font-medium text-slate-800">{{ "%.2f"|format(row.get('NILAI KESELURUHAN', 0)) }}</td>
+              <td class="py-3 px-6 text-center bg-emerald-50/20">
+                {% set cid = row.get('Cluster', '-') %}
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm shadow-sm
+                  {% if cid == 0 %}bg-emerald-100 text-emerald-800 border-2 border-emerald-200
+                  {% elif cid == 1 %}bg-blue-100 text-blue-800 border-2 border-blue-200
+                  {% elif cid == 2 %}bg-amber-100 text-amber-800 border-2 border-amber-200
+                  {% else %}bg-slate-100 text-slate-700 border-2 border-slate-200{% endif %}">
+                  {{ cid }}
+                </span>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="py-16 text-center">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-2">
+                  <svg class="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-500">Tidak ada data untuk filter terkait.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full bg-white border-t border-gray-200 shadow-sm mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-4 text-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-xl brand-mark flex items-center justify-center font-bold text-white text-sm">SR
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">SIREKPRODI</p>
+          <p class="text-xs text-slate-600">Sistem rekomendasi promosi prodi berbasis data sekolah &amp; prodi.
+            Mempercepat analisis cluster, rekomendasi target sekolah, dan pilihan prodi unggulan.</p>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 md:items-end">
+        <div class="flex flex-wrap gap-3 text-xs text-slate-600">
+          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-700">Dashboard</a>
+          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-700">Upload</a>
+          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-700">Pelatihan Model</a>
+        </div>
+        <div class="text-xs text-slate-500">© 2025 SIREKPRODI. All rights reserved.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal konfirmasi -->
+  <div id="confirm-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <div id="confirm-icon"
+          class="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">!</div>
+        <div class="space-y-1">
+          <h3 id="confirm-title" class="text-lg font-bold text-slate-900">Konfirmasi</h3>
+          <p id="confirm-message" class="text-sm text-slate-600">Apakah Anda yakin?</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel" type="button"
+          class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
+        <a id="confirm-action" href="#"
+          class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow">Lanjutkan</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const rawRecords = {{ records| tojson | safe }};
+
+    // Aggregasi Data
+    const clusterStats = { '0': { count: 0, ipk: 0 }, '1': { count: 0, ipk: 0 }, '2': { count: 0, ipk: 0 } };
+    rawRecords.forEach(r => {
+      let c = String(r['Cluster'] || '0');
+      if (clusterStats[c]) {
+        clusterStats[c].count++;
+        clusterStats[c].ipk += (r['NILAI KESELURUHAN'] || 0);
+      }
+    });
+
+    const labelsData = ['Cluster 0', 'Cluster 1', 'Cluster 2'];
+    const countsData = [clusterStats['0'].count, clusterStats['1'].count, clusterStats['2'].count];
+    const avgIpkData = [
+      clusterStats['0'].count > 0 ? (clusterStats['0'].ipk / clusterStats['0'].count).toFixed(2) : 0,
+      clusterStats['1'].count > 0 ? (clusterStats['1'].ipk / clusterStats['1'].count).toFixed(2) : 0,
+      clusterStats['2'].count > 0 ? (clusterStats['2'].ipk / clusterStats['2'].count).toFixed(2) : 0
+    ];
+
+    const bgColors = ['rgba(16, 185, 129, 0.8)', 'rgba(59, 130, 246, 0.8)', 'rgba(245, 158, 11, 0.8)'];
+    const borderColors = ['#059669', '#2563eb', '#d97706'];
+
+    // Pie Chart
+    if (countsData.some(v => v > 0)) {
+      new Chart(document.getElementById('clusterPieChart'), {
+        type: 'doughnut',
+        data: {
+          labels: labelsData,
+          datasets: [{
+            data: countsData,
+            backgroundColor: bgColors,
+            borderColor: borderColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } } },
+            datalabels: {
+              color: '#fff',
+              font: { weight: 'bold', size: 14 },
+              formatter: (val, ctx) => val > 0 ? val : ''
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+
+      // Bar Chart
+      new Chart(document.getElementById('ipkBarChart'), {
+        type: 'bar',
+        data: {
+          labels: labelsData,
+          datasets: [{
+            label: 'Rata-rata IPK',
+            data: avgIpkData,
+            backgroundColor: bgColors,
+            borderColor: borderColors,
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end', align: 'bottom', color: '#fff',
+              font: { weight: 'bold', size: 12 },
+              formatter: val => val > 0 ? val : ''
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 4.0, title: { display: true, text: 'Rata-rata IPK' } },
+            x: { grid: { display: false } }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    } else {
+      document.getElementById('clusterPieChart').parentElement.innerHTML = '<p class="text-xs text-slate-400 text-center py-10">Data tidak cukup untuk grafik</p>';
+      document.getElementById('ipkBarChart').parentElement.innerHTML = '<p class="text-xs text-slate-400 text-center py-10">Data tidak cukup untuk grafik</p>';
+    }
+
+    // Modal konfirmasi generik (logout, dll.)
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmMessage = document.getElementById('confirm-message');
+    const confirmAction = document.getElementById('confirm-action');
+    const confirmCancel = document.getElementById('confirm-cancel');
+    const confirmIcon = document.getElementById('confirm-icon');
+
+    const accentMap = {
+      red: { bg: 'bg-red-100', text: 'text-red-600', btn: 'bg-red-600 hover:bg-red-700' },
+      amber: { bg: 'bg-amber-100', text: 'text-amber-600', btn: 'bg-amber-600 hover:bg-amber-700' },
+      green: { bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'bg-emerald-600 hover:bg-emerald-700' }
+    };
+
+    function showConfirm(url, title, message, accent = 'red') {
+      const tone = accentMap[accent] || accentMap.red;
+      confirmTitle.textContent = title;
+      confirmMessage.textContent = message;
+      confirmAction.href = url;
+
+      // reset & apply accent
+      confirmIcon.className = `h-10 w-10 rounded-xl flex items-center justify-center text-xl ${tone.bg} ${tone.text}`;
+      confirmAction.className = `px-4 py-2 rounded-lg text-white shadow ${tone.btn}`;
+
+      confirmModal.classList.remove('hidden');
+    }
+
+    function hideConfirm() {
+      confirmModal.classList.add('hidden');
+    }
+
+    confirmCancel?.addEventListener('click', hideConfirm);
+    confirmModal?.addEventListener('click', (e) => {
+      if (e.target === confirmModal) hideConfirm();
+    });
+
+    document.querySelectorAll('[data-confirm]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        showConfirm(
+          link.href,
+          link.dataset.confirmTitle || 'Konfirmasi',
+          link.dataset.confirmMessage || 'Lanjutkan aksi ini?',
+          link.dataset.confirmAccent || 'red'
+        );
+      });
+    });
+
+    // Sliding navbar indicator
+    const navShell = document.querySelector('.nav-shell');
+    const navLinksWrap = navShell?.querySelector('.nav-links');
+    const navLinks = navShell?.querySelectorAll('[data-nav-link]') || [];
+    const navIndicator = navShell?.querySelector('#nav-indicator');
+    let navActive = navShell?.querySelector('.nav-link.is-active') || navLinks[0];
+
+    function moveIndicator(link) {
+      if (!navLinksWrap || !navIndicator || !link) return;
+      const wrapRect = navLinksWrap.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      navIndicator.style.width = `${linkRect.width}px`;
+      navIndicator.style.transform = `translateX(${linkRect.left - wrapRect.left}px)`;
+    }
+
+    function setActive(link) {
+      navActive = link;
+      navLinks.forEach(l => l.classList.toggle('is-active', l === link));
+      moveIndicator(link);
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('mouseenter', () => moveIndicator(link));
+      link.addEventListener('mouseleave', () => moveIndicator(navActive));
+      link.addEventListener('click', () => setActive(link));
+    });
+
+    window.addEventListener('resize', () => moveIndicator(navActive));
+    moveIndicator(navActive);
+
+    // Toast flash messages
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+    const flashMessages = {{ get_flashed_messages(with_categories = true) | tojson }};
+    const typeClass = (t) => t === 'error' ? 'toast-error' : t === 'warning' ? 'toast-warning' : t === 'info' ? 'toast-info' : 'toast-success';
+    function showToast(type, message) {
+      const el = document.createElement('div');
+      el.className = `toast ${typeClass(type)}`;
+      el.textContent = message;
+      toastContainer.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    flashMessages.forEach(([cat, msg]) => showToast(cat, msg));
+  </script>
+</body>
+
+</html>

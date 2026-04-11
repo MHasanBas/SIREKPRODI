@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <title>Upload Data</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       background: #f5f6fa;
       font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
     }
+
     .brand-mark {
       background: linear-gradient(135deg, #0f766e, #14b8a6);
       color: #fff;
       box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
     }
+
     .nav-shell {
       position: relative;
       display: inline-flex;
@@ -29,11 +33,13 @@
       border: 1px solid #e2e8f0;
       box-shadow: 0 6px 20px rgba(15, 118, 110, 0.07);
     }
+
     .nav-links {
       display: flex;
       gap: 6px;
       position: relative;
     }
+
     .nav-link {
       position: relative;
       padding: 10px 14px;
@@ -43,10 +49,23 @@
       transition: color 0.15s ease;
       z-index: 10;
     }
-    .nav-link:hover { color: #0f766e; }
-    .nav-link.is-active { color: #0f766e; }
-    .nav-link.nav-danger { color: #dc2626; }
-    .nav-link.nav-danger:hover { color: #b91c1c; }
+
+    .nav-link:hover {
+      color: #0f766e;
+    }
+
+    .nav-link.is-active {
+      color: #0f766e;
+    }
+
+    .nav-link.nav-danger {
+      color: #dc2626;
+    }
+
+    .nav-link.nav-danger:hover {
+      color: #b91c1c;
+    }
+
     .nav-indicator {
       position: absolute;
       height: 36px;
@@ -59,14 +78,31 @@
       pointer-events: none;
       z-index: 5;
     }
-    .footer-bar { background: #0f766e; color: #fff; }
-    .footer-badge { background: rgba(255,255,255,0.16); }
-    .toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+
+    .footer-bar {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .footer-badge {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     .toast {
       min-width: 220px;
       padding: 10px 14px;
       border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -77,17 +113,40 @@
       background: #fff;
       opacity: 0.95;
     }
-    .toast.toast-success { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
-    .toast.toast-error { background: #fef2f2; color: #b91c1c; border-color: #fecdd3; }
-    .toast.toast-warning { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-    .toast.toast-info { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+    .toast.toast-success {
+      background: #ecfdf3;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .toast.toast-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecdd3;
+    }
+
+    .toast.toast-warning {
+      background: #fff7ed;
+      color: #c2410c;
+      border-color: #fed7aa;
+    }
+
+    .toast.toast-info {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
   </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
-<body class="min-h-screen flex flex-col px-4 py-8">
+
+<body class="min-h-screen flex flex-col">
 
   <div id="toast-anchor"></div>
   <!-- Navbar konsisten -->
-  <header class="bg-white shadow-sm border-b border-gray-100 mb-6">
+  <header class="bg-white/90 backdrop-blur shadow-sm border-b border-gray-100 sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="h-10 w-10 rounded-2xl brand-mark flex items-center justify-center font-extrabold text-lg">SR</div>
@@ -100,18 +159,24 @@
       <nav class="nav-shell">
         <div class="nav-links">
           <div class="nav-indicator" id="nav-indicator"></div>
-          <a href="{{ url_for('dashboard') }}" class="nav-link {% if current == 'dashboard' %}is-active{% endif %}" data-nav-link>Dashboard</a>
-          <a href="{{ url_for('upload') }}" class="nav-link {% if current == 'upload' %}is-active{% endif %}" data-nav-link>Upload</a>
-          <a href="{{ url_for('pelatihan_model') }}" class="nav-link {% if current == 'pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
-          <a href="{{ url_for('logout') }}"
-             class="nav-link nav-danger"
-             data-nav-link
-             data-confirm
-             data-confirm-title="Konfirmasi Logout"
-             data-confirm-message="Anda akan keluar dari aplikasi. Simpan pekerjaan Anda terlebih dahulu."
-             data-confirm-accent="red">Logout</a>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}"
+            data-nav-link>Dashboard</a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}" data-nav-link>Data Cluster</a>
+          <a href="{{ url_for('upload.upload') }}" class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}"
+            data-nav-link>Upload</a>
+          <a href="{{ url_for('model.pelatihan_model') }}"
+            class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
+          <a href="{{ url_for('auth.logout') }}" class="nav-link nav-danger" data-nav-link data-confirm
+            data-confirm-title="Konfirmasi Logout"
+            data-confirm-message="Anda akan keluar dari aplikasi. Simpan pekerjaan Anda terlebih dahulu."
+            data-confirm-accent="red">Logout</a>
         </div>
       </nav>
+      <button onclick="toggleTheme()" class="theme-toggle" title="Ganti Tema">
+        <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646Z"/></svg>
+        <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -127,83 +192,106 @@
   </div>
 
   <!-- Modal konfirmasi -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center px-4">
+  <div id="confirm-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center px-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
       <div class="flex items-start gap-3">
-        <div id="confirm-icon" class="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">!</div>
+        <div id="confirm-icon"
+          class="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">!</div>
         <div class="space-y-1">
           <h3 id="confirm-title" class="text-lg font-bold text-slate-900">Konfirmasi</h3>
           <p id="confirm-message" class="text-sm text-slate-600">Apakah Anda yakin?</p>
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button id="confirm-cancel" type="button" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
-        <a id="confirm-action" href="#" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow">Lanjutkan</a>
+        <button id="confirm-cancel" type="button"
+          class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
+        <a id="confirm-action" href="#"
+          class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow">Lanjutkan</a>
       </div>
     </div>
   </div>
 
-  <main class="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <main class="w-full max-w-4xl mx-auto flex-1 px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white rounded-2xl shadow-xl border border-emerald-50 p-8 space-y-4">
       <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold">UP</div>
+        <div class="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold">UP
+        </div>
         <div>
           <p class="text-xs font-semibold text-emerald-600 uppercase tracking-[0.14em]">Upload Dataset</p>
           <h2 class="text-2xl font-extrabold text-slate-900 leading-tight">Unggah data terbaru</h2>
         </div>
       </div>
-      <p class="text-sm text-slate-600">Dukungan format lama (data_xxx + nilai_xxx) atau format baru (satu file dengan Program Studi & IPK).</p>
+      <p class="text-sm text-slate-600">Dukungan format lama (data_xxx + nilai_xxx) atau format baru (satu file dengan
+        Program Studi & IPK).</p>
 
       <form method="POST" enctype="multipart/form-data" class="space-y-4">
-      <!-- Input Nama Data -->
-      <div>
-        <label for="nama_data" class="block text-slate-800 font-semibold mb-2 text-sm">Nama Data:</label>
-        <input type="text" name="nama_data" id="nama_data" required
-              class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
-              placeholder="Contoh: Data 2023">
-      </div>
+        <!-- Input Nama Data -->
+        <div>
+          <label for="nama_data" class="block text-slate-800 font-semibold mb-2 text-sm">Nama Data:</label>
+          <input type="text" name="nama_data" id="nama_data" required
+            class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+            placeholder="Contoh: Data 2023">
+        </div>
 
-      <!-- Input File -->
-      <div>
-        <label class="block text-slate-800 font-semibold mb-2 text-sm">Pilih file (boleh lebih dari satu):</label>
-        <input type="file" name="files" multiple required
-               class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400" accept=".xlsx">
-      </div>
+        <!-- Input File -->
+        <div>
+          <label class="block text-slate-800 font-semibold mb-2 text-sm">Pilih file (boleh lebih dari satu):</label>
+          <input type="file" name="files" multiple required
+            class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+            accept=".xlsx">
+        </div>
 
-      <div class="text-sm text-emerald-800 bg-emerald-50 p-3 rounded-md border border-emerald-100">
-        ⚠️ Pastikan berkas dalam format .xlsx. <br>
-        Format lama: <span class="font-semibold">data_2021.xlsx</span> + <span class="font-semibold">nilai_2021.xlsx</span>. <br>
-        Format baru (38 prodi): satu file dengan kolom Program Studi & IPK.
-      </div>
+        <!-- Checkbox Timpa Data -->
+        <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="flex items-center h-5">
+            <input id="timpa_data" name="timpa_data" type="checkbox" value="1"
+              class="w-4 h-4 text-emerald-600 bg-white border-slate-300 rounded focus:ring-emerald-500 focus:ring-2"
+              checked>
+          </div>
+          <div class="text-sm">
+            <label for="timpa_data" class="font-bold text-slate-800">Timpa data lama (Jangan digabungkan)</label>
+            <p class="text-slate-500 font-medium text-xs mt-0.5" style="line-height: 1.4;">Centang jika Anda mengunggah
+              <i>dataset</i> baru secara utuh. Jika tidak tercentang, berkas akan <b>dijumlahkan</b> dengan berkas usang
+              Anda bulan lalu.</p>
+          </div>
+        </div>
 
-      <!-- Tombol Submit -->
-      <button type="submit"
-              class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-lg font-semibold shadow-lg shadow-emerald-200">
-        Upload & Proses
-      </button>
-    </form>
+        <div class="text-sm text-emerald-800 bg-emerald-50 p-3 rounded-md border border-emerald-100">
+          ⚠️ Pastikan berkas dalam format .xlsx. <br>
+          Format lama: <span class="font-semibold">data_2021.xlsx</span> + <span
+            class="font-semibold">nilai_2021.xlsx</span>. <br>
+          Format baru (38 prodi): satu file dengan kolom Program Studi & IPK.
+        </div>
 
-    <!-- Flash Message -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
+        <!-- Tombol Submit -->
+        <button type="submit"
+          class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-lg font-semibold shadow-lg shadow-emerald-200">
+          Upload & Proses
+        </button>
+      </form>
+
+      <!-- Flash Message -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mt-6 space-y-3">
-          {% for category, message in messages %}
-            <div class="px-4 py-3 rounded-md text-sm font-medium
+      <div class="mt-6 space-y-3">
+        {% for category, message in messages %}
+        <div class="px-4 py-3 rounded-md text-sm font-medium
                         {% if category == 'error' %}
                           bg-red-100 text-red-800 border border-red-200
                         {% else %}
                           bg-green-100 text-green-800 border border-green-200
                         {% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
+          {{ message }}
         </div>
+        {% endfor %}
+      </div>
       {% endif %}
-    {% endwith %}
+      {% endwith %}
 
       <div class="text-center">
-        <a href="{{ url_for('dashboard') }}"
-           class="text-emerald-700 hover:text-emerald-900 text-sm font-semibold transition">← Kembali ke Dashboard</a>
+        <a href="{{ url_for('dashboard.dashboard') }}"
+          class="text-emerald-700 hover:text-emerald-900 text-sm font-semibold transition">← Kembali ke Dashboard</a>
       </div>
     </div>
 
@@ -219,23 +307,25 @@
         Tips: Pastikan kolom Program Studi dan IPK ada agar fitur rekomendasi prodi/sekolah berfungsi optimal.
       </div>
     </div>
-  </div>
+    </div>
   </main>
 
   <footer class="w-full bg-white border-t border-gray-200 shadow-sm mt-10">
     <div class="max-w-6xl mx-auto px-6 py-4 text-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-xl brand-mark flex items-center justify-center font-bold text-white text-sm">SR</div>
+        <div class="h-8 w-8 rounded-xl brand-mark flex items-center justify-center font-bold text-white text-sm">SR
+        </div>
         <div>
           <p class="font-semibold text-slate-900">SIREKPRODI</p>
-          <p class="text-xs text-slate-600">Sistem rekomendasi promosi prodi berbasis data sekolah &amp; prodi. Mengelola unggahan data, retrain model, dan menyajikan insight siap pakai untuk tim pemasaran.</p>
+          <p class="text-xs text-slate-600">Sistem rekomendasi promosi prodi berbasis data sekolah &amp; prodi.
+            Mengelola unggahan data, retrain model, dan menyajikan insight siap pakai untuk tim pemasaran.</p>
         </div>
       </div>
       <div class="flex flex-col gap-1 md:items-end">
         <div class="flex flex-wrap gap-3 text-xs text-slate-600">
-          <a href="{{ url_for('dashboard') }}" class="hover:text-emerald-700">Dashboard</a>
-          <a href="{{ url_for('upload') }}" class="hover:text-emerald-700">Upload</a>
-          <a href="{{ url_for('pelatihan_model') }}" class="hover:text-emerald-700">Pelatihan Model</a>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-700">Dashboard</a>
+          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-700">Upload</a>
+          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-700">Pelatihan Model</a>
         </div>
         <div class="text-xs text-slate-500">© 2025 SIREKPRODI. All rights reserved.</div>
       </div>
@@ -334,7 +424,7 @@
     const toastContainer = document.createElement('div');
     toastContainer.className = 'toast-container';
     document.body.appendChild(toastContainer);
-    const flashMessages = {{ get_flashed_messages(with_categories=true) | tojson }};
+    const flashMessages = {{ get_flashed_messages(with_categories = true) | tojson }};
     const typeClass = (t) => t === 'error' ? 'toast-error' : t === 'warning' ? 'toast-warning' : t === 'info' ? 'toast-info' : 'toast-success';
     function showToast(type, message) {
       const el = document.createElement('div');
@@ -347,4 +437,5 @@
   </script>
 
 </body>
+
 </html>
