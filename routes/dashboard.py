@@ -15,6 +15,48 @@ from services.dashboard_service import process_dashboard_data
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
+
+def _get_prodi_column(df: pd.DataFrame):
+    for kandidat in ['PROGRAM STUDI', 'PROGRAM_STUDI', 'PRODI']:
+        if kandidat in df.columns:
+            return kandidat
+    return None
+
+
+def _compute_label_to_cluster_map(df: pd.DataFrame):
+    """Map label A/B/C -> numeric cluster id based on ranking used in dashboard_service."""
+    if 'Cluster' not in df.columns:
+        return {}
+
+    cluster_summary = df.groupby('Cluster').agg(
+        total_mahasiswa=('NILAI KESELURUHAN', 'count'),
+        ipk_rata2=('NILAI KESELURUHAN', 'mean'),
+        deviasi=('NILAI KESELURUHAN', 'std')
+    ).reset_index()
+
+    # Normalisasi aman (hindari pembagian nol kalau nilai sama semua)
+    def _safe_norm(s: pd.Series):
+        denom = (s.max() - s.min())
+        if denom == 0:
+            return s * 0
+        return (s - s.min()) / denom
+
+    cluster_summary['mahasiswa_norm'] = _safe_norm(cluster_summary['total_mahasiswa'])
+    cluster_summary['ipk_norm'] = _safe_norm(cluster_summary['ipk_rata2'])
+    cluster_summary['deviasi_norm'] = _safe_norm(cluster_summary['deviasi'])
+    cluster_summary['ranking'] = (
+        0.4 * cluster_summary['mahasiswa_norm'] +
+        0.3 * cluster_summary['ipk_norm'] +
+        0.3 * (1 - cluster_summary['deviasi_norm'])
+    )
+
+    ordered_clusters = cluster_summary.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+    labels = ['A', 'B', 'C']
+    if ordered_clusters:
+        ordered_clusters = ordered_clusters + [ordered_clusters[-1]] * (len(labels) - len(ordered_clusters))
+
+    return {label: int(ordered_clusters[i]) for i, label in enumerate(labels) if i < len(ordered_clusters)}
+
 @dashboard_bp.route('/dashboard')
 def dashboard():
     if 'user' not in session:
@@ -38,11 +80,7 @@ def dashboard():
 
     _ensure_prestasi_cached(active_model, model_mtime)
 
-    prodi_column = None
-    for kandidat in ['PROGRAM STUDI', 'PROGRAM_STUDI', 'PRODI']:
-        if kandidat in df_kmeans_full.columns:
-            prodi_column = kandidat
-            break
+    prodi_column = _get_prodi_column(df_kmeans_full)
 
     prodi_list = sorted(df_kmeans_full[prodi_column].dropna().unique().tolist()) if prodi_column else []
 
@@ -72,6 +110,67 @@ def dashboard():
     }
     _dash_cache_set(cache_key, ctx)
     return render_template("dashboard.html", **ctx)
+
+
+@dashboard_bp.route('/api/mahasiswa_detail')
+def api_mahasiswa_detail():
+    if 'user' not in session:
+        return {"ok": False, "error": "unauthorized"}, 401
+
+    active_model = load_active_model_name()
+    try:
+        df = _load_df_kmeans_cached(active_model).copy()
+    except Exception as e:
+        return {"ok": False, "error": f"Gagal memuat data: {e}"}, 500
+
+    prodi_column = _get_prodi_column(df)
+    sekolah = (request.args.get('sekolah') or '').strip()
+    prodi = (request.args.get('prodi') or '').strip()
+    cluster_label = (request.args.get('cluster') or 'all').strip().upper()
+
+    if not sekolah:
+        return {"ok": False, "error": "Parameter sekolah wajib diisi."}, 400
+    if not prodi_column:
+        return {"ok": False, "error": "Kolom prodi tidak ditemukan di dataset."}, 400
+
+    if prodi.lower() == 'all' or not prodi:
+        df = df[(df['ASAL SEKOLAH'] == sekolah)]
+    else:
+        df = df[(df['ASAL SEKOLAH'] == sekolah) & (df[prodi_column].astype(str) == prodi)]
+
+    label_to_cluster = _compute_label_to_cluster_map(df) if not df.empty else {}
+    if cluster_label in ('A', 'B', 'C') and 'Cluster' in df.columns:
+        cluster_id = label_to_cluster.get(cluster_label)
+        if cluster_id is not None:
+            df = df[df['Cluster'] == cluster_id]
+
+    # Batasi payload
+    try:
+        limit = int(request.args.get('limit', '200'))
+    except ValueError:
+        limit = 200
+    limit = max(1, min(limit, 1000))
+    df = df.head(limit)
+
+    preferred_cols = [
+        'NIM', 'NAMA', 'JENIS KELAMIN', 'TAHUN MASUK',
+        prodi_column, 'ASAL SEKOLAH',
+        'NILAI KESELURUHAN', 'POIN_AKADEMIK', 'POIN_NON_AKADEMIK',
+        'TEKS_AKADEMIK', 'TEKS_NON_AKADEMIK',
+        'Cluster'
+    ]
+    cols = [c for c in preferred_cols if c in df.columns]
+    if not cols:
+        cols = df.columns.tolist()
+
+    data = df[cols].to_dict(orient='records')
+    return {
+        "ok": True,
+        "count": int(len(data)),
+        "columns": cols,
+        "rows": data,
+        "label_to_cluster": label_to_cluster,
+    }
 
 @dashboard_bp.route('/data_cluster')
 def data_cluster():

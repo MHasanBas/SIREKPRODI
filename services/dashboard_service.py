@@ -16,6 +16,31 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
     rekom_prodi_per_sekolah = []
     rekom_sekolah_per_prodi = []
 
+    # ---------------------------------------------------------
+    # HITUNG STATUS UNGGULAN (CLUSTER A & B) UNTUK THRESHOLD 50%
+    # ---------------------------------------------------------
+    if 'Cluster' in df_kmeans.columns:
+        c_sum = df_kmeans.groupby('Cluster').agg(
+            total_mhs=('NILAI KESELURUHAN', 'count'),
+            ipk_mean=('NILAI KESELURUHAN', 'mean'),
+            dev=('NILAI KESELURUHAN', 'std')
+        ).fillna(0).reset_index()
+
+        def _safe_norm(s):
+            denom = s.max() - s.min()
+            return s * 0 if denom == 0 else (s - s.min()) / denom
+
+        c_sum['ranking'] = (
+            0.4 * _safe_norm(c_sum['total_mhs']) +
+            0.3 * _safe_norm(c_sum['ipk_mean']) +
+            0.3 * (1 - _safe_norm(c_sum['dev']))
+        )
+        ordered_clusters = c_sum.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+        superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
+        df_kmeans['is_superior'] = df_kmeans['Cluster'].isin(superior_clusters)
+    else:
+        df_kmeans['is_superior'] = True
+
     if prodi_column:
         # Sekolah unggulan berdasarkan ipk/mahasiswa/deviasi
         sekolah_stats = df_kmeans.groupby('ASAL SEKOLAH', as_index=False).agg(
@@ -39,6 +64,14 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
         )
 
         sekolah_unggulan = sekolah_stats.sort_values('skor', ascending=False)
+        
+        # Terapkan Threshold 50% Cluster A/B secara global per sekolah
+        school_superior_ratio = df_kmeans.groupby('ASAL SEKOLAH')['is_superior'].mean()
+        valid_schools = school_superior_ratio[school_superior_ratio >= 0.50].index
+        sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['ASAL SEKOLAH'].isin(valid_schools)]
+        
+        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs)
+        sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['mahasiswa'] >= 3]
 
         # Top prodi per sekolah (tanpa filter berulang per sekolah)
         prodi_agg = df_kmeans.groupby(['ASAL SEKOLAH', prodi_column], as_index=False).agg(
@@ -48,6 +81,9 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             poin_akademik=('POIN_AKADEMIK', 'sum'),
             poin_non_akademik=('POIN_NON_AKADEMIK', 'sum')
         ).fillna(0).rename(columns={prodi_column: 'prodi'})
+        
+        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs) untuk detail masing-masing prodi
+        prodi_agg = prodi_agg[prodi_agg['mahasiswa'] >= 3]
 
         prodi_agg['mhs_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'mahasiswa')
         prodi_agg['ipk_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'ipk')
@@ -63,29 +99,36 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             0.05 * prodi_agg['p_non_norm']
         ).round(3)
 
-        top3_prodi = (
-            prodi_agg.sort_values(['ASAL SEKOLAH', 'skor'], ascending=[True, False])
-            .groupby('ASAL SEKOLAH', as_index=False)
-            .head(3)
+        # Prodi per sekolah terurut skor (dibatasi per kartu agar payload tetap wajar)
+        max_prodi_per_kartu = 50
+        prodi_per_sekolah_sorted = prodi_agg.sort_values(
+            ['ASAL SEKOLAH', 'skor'], ascending=[True, False]
         )
-        top3_map = {
-            sekolah: grp[['prodi', 'ipk', 'mahasiswa', 'skor']].to_dict(orient='records')
-            for sekolah, grp in top3_prodi.groupby('ASAL SEKOLAH')
-        }
+        all_prodi_map = {}
+        for sekolah, grp in prodi_per_sekolah_sorted.groupby('ASAL SEKOLAH'):
+            slice_df = grp.head(max_prodi_per_kartu)
+            all_prodi_map[sekolah] = slice_df[
+                ['prodi', 'ipk', 'mahasiswa', 'skor', 'poin_akademik', 'poin_non_akademik']
+            ].to_dict(orient='records')
+
+        jumlah_prodi_per_sekolah = prodi_per_sekolah_sorted.groupby('ASAL SEKOLAH').size().to_dict()
 
         for _, row in sekolah_unggulan.iterrows():
             nama_sekolah = row['ASAL SEKOLAH']
             info = info_sekolah.loc[nama_sekolah]
+            tp = all_prodi_map.get(nama_sekolah, [])
             rekom_prodi_per_sekolah.append({
                 "sekolah": nama_sekolah,
                 "kota": info['kota'],
                 "provinsi": info['provinsi'],
                 "ipk_mean": round(row['ipk'], 2),
                 "mahasiswa": int(row['mahasiswa']),
-                "top_prodi": top3_map.get(nama_sekolah, [])
+                "poin_akademik": int(row['poin_akademik']),
+                "poin_non_akademik": int(row['poin_non_akademik']),
+                "top_prodi": tp,
+                "prodi_total_asal": int(jumlah_prodi_per_sekolah.get(nama_sekolah, 0)),
             })
 
-        # Sekolah sasaran per prodi
         sekolah_prodi_agg = df_kmeans.groupby([prodi_column, 'ASAL SEKOLAH'], as_index=False).agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
             ipk=('NILAI KESELURUHAN', 'mean'),
@@ -95,6 +138,15 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             kota=('KOTA SEKOLAH', lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0]),
             provinsi=('PROVINSI SEKOLAH', lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
         ).fillna(0).rename(columns={prodi_column: 'prodi', 'ASAL SEKOLAH': 'sekolah'})
+
+        # Terapkan Threshold 50% Cluster A/B secara spesifik per sekolah-prodi
+        prodi_school_sup_ratio = df_kmeans.groupby([prodi_column, 'ASAL SEKOLAH'])['is_superior'].mean().reset_index(name='sup_ratio')
+        valid_prodi_school = prodi_school_sup_ratio[prodi_school_sup_ratio['sup_ratio'] >= 0.50]
+        sekolah_prodi_agg = pd.merge(sekolah_prodi_agg, valid_prodi_school[[prodi_column, 'ASAL SEKOLAH']], 
+                                     left_on=['prodi', 'sekolah'], right_on=[prodi_column, 'ASAL SEKOLAH'], how='inner')
+
+        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs) per sekolah-prodi
+        sekolah_prodi_agg = sekolah_prodi_agg[sekolah_prodi_agg['mahasiswa'] >= 3]
 
         sekolah_prodi_agg['mhs_norm'] = _norm_in_group(sekolah_prodi_agg, 'prodi', 'mahasiswa')
         sekolah_prodi_agg['ipk_norm'] = _norm_in_group(sekolah_prodi_agg, 'prodi', 'ipk')
@@ -109,15 +161,27 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             0.05 * sekolah_prodi_agg['p_non_norm']
         ).round(3)
 
-        top5 = (
+        # Sekolah sasaran per prodi:
+        # - default: kirim lebih dari 5 supaya user bisa "Tampilkan lebih banyak"
+        # - tetap simpan agregat top-5 untuk metrik ringkasan
+        sekolah_per_prodi_default = 20
+        sekolah_per_prodi_df = (
             sekolah_prodi_agg.sort_values(['prodi', 'skor'], ascending=[True, False])
-            .groupby('prodi', as_index=False)
-            .head(5)
         )
+
+        top5 = sekolah_per_prodi_df.groupby('prodi', as_index=False).head(5)
+        topN = sekolah_per_prodi_df.groupby('prodi', as_index=False).head(sekolah_per_prodi_default)
+
         top5_map = {
-            prodi: grp[['sekolah', 'kota', 'provinsi', 'mahasiswa', 'ipk', 'skor']].to_dict(orient='records')
+            prodi: grp[['sekolah', 'kota', 'provinsi', 'mahasiswa', 'ipk', 'skor', 'poin_akademik', 'poin_non_akademik']].to_dict(orient='records')
             for prodi, grp in top5.groupby('prodi')
         }
+        topN_map = {
+            prodi: grp[['sekolah', 'kota', 'provinsi', 'mahasiswa', 'ipk', 'skor', 'poin_akademik', 'poin_non_akademik']].to_dict(orient='records')
+            for prodi, grp in topN.groupby('prodi')
+        }
+
+        jumlah_sekolah_per_prodi = sekolah_per_prodi_df.groupby('prodi').size().to_dict()
 
         prodi_overall = df_kmeans.groupby(prodi_column, as_index=False).agg(
             total_mahasiswa=('NILAI KESELURUHAN', 'count'),
@@ -130,11 +194,24 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
 
         for prodi in sorted(df_kmeans[prodi_column].dropna().unique()):
             total_mhs, ipk_mean = overall_map.get(prodi, (0, 0))
+            df_p = df_kmeans[df_kmeans[prodi_column] == prodi]
+            p_ak = int(df_p["POIN_AKADEMIK"].sum()) if "POIN_AKADEMIK" in df_p.columns else 0
+            p_na = int(df_p["POIN_NON_AKADEMIK"].sum()) if "POIN_NON_AKADEMIK" in df_p.columns else 0
+            ts5 = top5_map.get(prodi, [])
+            tsN = topN_map.get(prodi, [])
+            poin_ak_top5 = int(sum(int(float(s.get("poin_akademik", 0) or 0)) for s in ts5))
+            poin_na_top5 = int(sum(int(float(s.get("poin_non_akademik", 0) or 0)) for s in ts5))
             rekom_sekolah_per_prodi.append({
                 "prodi": prodi,
-                "top_sekolah": top5_map.get(prodi, []),
+                "top_sekolah": tsN,
                 "total_mahasiswa": total_mhs,
-                "ipk_mean": ipk_mean
+                "ipk_mean": ipk_mean,
+                "poin_akademik": p_ak,
+                "poin_non_akademik": p_na,
+                "poin_akademik_top5": poin_ak_top5,
+                "poin_non_akademik_top5": poin_na_top5,
+                "sekolah_total_asal": int(jumlah_sekolah_per_prodi.get(prodi, 0)),
+                "sekolah_default_limit": int(sekolah_per_prodi_default),
             })
 
     def siapkan_data(df, nama_algo, tampilkan='top10'):
