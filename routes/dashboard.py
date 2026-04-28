@@ -3,6 +3,7 @@ import tempfile
 import pickle
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file
 import pandas as pd
+import re
 
 from services.model_service import load_active_model_name
 from utils.cache import (
@@ -34,7 +35,6 @@ def _compute_label_to_cluster_map(df: pd.DataFrame):
         deviasi=('NILAI KESELURUHAN', 'std')
     ).reset_index()
 
-    # Normalisasi aman (hindari pembagian nol kalau nilai sama semua)
     def _safe_norm(s: pd.Series):
         denom = (s.max() - s.min())
         if denom == 0:
@@ -62,20 +62,20 @@ def dashboard():
     if 'user' not in session:
         return redirect(url_for('auth.login'))
     
-    tampilkan = request.args.get('tampilkan', 'top10')  # default: top10
+    tampilkan = request.args.get('tampilkan', 'top10')
     selected_prodi = request.args.get('prodi', 'all')
 
     active_model = load_active_model_name()
     model_path = f"models/{active_model}/hasil_kmeans_3cluster.pkl"
     if not os.path.exists(model_path):
-        flash("❌ File hasil clustering tidak ditemukan. Silakan upload ulang data.")
+        flash(" File hasil clustering tidak ditemukan. Silakan upload ulang data.")
         return redirect(url_for('upload.upload'))
 
     try:
         df_kmeans_full = _load_df_kmeans_cached(active_model)
         model_mtime = os.path.getmtime(model_path)
     except Exception:
-        flash("❌ Gagal memuat file hasil clustering. Silakan upload ulang data.")
+        flash(" Gagal memuat file hasil clustering. Silakan upload ulang data.")
         return redirect(url_for('upload.upload'))
 
     _ensure_prestasi_cached(active_model, model_mtime)
@@ -144,7 +144,6 @@ def api_mahasiswa_detail():
         if cluster_id is not None:
             df = df[df['Cluster'] == cluster_id]
 
-    # Batasi payload
     try:
         limit = int(request.args.get('limit', '200'))
     except ValueError:
@@ -200,12 +199,26 @@ def data_cluster():
     if prodi_column and selected_prodi != 'all':
         df_kmeans = df_kmeans[df_kmeans[prodi_column] == selected_prodi]
 
+    df_kmeans_for_stats = df_kmeans.copy()
+
     sekolah_list = []
     if 'ASAL SEKOLAH' in df_kmeans.columns:
         sekolah_list = sorted(df_kmeans['ASAL SEKOLAH'].dropna().unique().astype(str))
 
     if search_sekolah and 'ASAL SEKOLAH' in df_kmeans.columns:
-        df_kmeans = df_kmeans[df_kmeans['ASAL SEKOLAH'].str.contains(search_sekolah, case=False, na=False)]
+        escaped_search = re.escape(search_sekolah)
+        pattern = r'\b' + escaped_search + r'\b'
+        df_kmeans = df_kmeans[df_kmeans['ASAL SEKOLAH'].str.contains(pattern, case=False, na=False, regex=True)]
+
+    from services.dashboard_service import get_crosscheck_data
+    crosscheck_records = get_crosscheck_data(df_kmeans_for_stats)
+    if prodi_column:
+        crosscheck_map = {str(r.get('ASAL SEKOLAH', '')) + '_' + str(r.get(prodi_column, '')): r for r in crosscheck_records}
+    else:
+        crosscheck_map = {str(r.get('ASAL SEKOLAH', '')): r for r in crosscheck_records}
+
+    label_to_cluster = _compute_label_to_cluster_map(df_kmeans_for_stats)
+    cluster_to_label = {v: k for k, v in label_to_cluster.items()}
 
     cluster_options = []
     if 'Cluster' in df_kmeans.columns:
@@ -233,6 +246,8 @@ def data_cluster():
     return render_template(
         "data_cluster.html",
         records=records,
+        crosscheck_map=crosscheck_map,
+        cluster_to_label=cluster_to_label,
         prodi_list=prodi_list,
         selected_prodi=selected_prodi,
         cluster_options=cluster_options,
@@ -270,7 +285,9 @@ def download_cluster():
         df = df[df['PROGRAM STUDI'] == selected_prodi]
 
     if search_sekolah and 'ASAL SEKOLAH' in df.columns:
-        df = df[df['ASAL SEKOLAH'].str.contains(search_sekolah, case=False, na=False)]
+        escaped_search = re.escape(search_sekolah)
+        pattern = r'\b' + escaped_search + r'\b'
+        df = df[df['ASAL SEKOLAH'].str.contains(pattern, case=False, na=False, regex=True)]
 
     if selected_cluster != 'all' and 'Cluster' in df.columns:
         try:

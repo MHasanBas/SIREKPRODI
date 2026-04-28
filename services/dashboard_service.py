@@ -16,9 +16,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
     rekom_prodi_per_sekolah = []
     rekom_sekolah_per_prodi = []
 
-    # ---------------------------------------------------------
-    # HITUNG STATUS UNGGULAN (CLUSTER A & B) UNTUK THRESHOLD 50%
-    # ---------------------------------------------------------
     if 'Cluster' in df_kmeans.columns:
         c_sum = df_kmeans.groupby('Cluster').agg(
             total_mhs=('NILAI KESELURUHAN', 'count'),
@@ -42,7 +39,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
         df_kmeans['is_superior'] = True
 
     if prodi_column:
-        # Sekolah unggulan berdasarkan ipk/mahasiswa/deviasi
         sekolah_stats = df_kmeans.groupby('ASAL SEKOLAH', as_index=False).agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
             ipk=('NILAI KESELURUHAN', 'mean'),
@@ -65,15 +61,12 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
 
         sekolah_unggulan = sekolah_stats.sort_values('skor', ascending=False)
         
-        # Terapkan Threshold 50% Cluster A/B secara global per sekolah
         school_superior_ratio = df_kmeans.groupby('ASAL SEKOLAH')['is_superior'].mean()
         valid_schools = school_superior_ratio[school_superior_ratio >= 0.50].index
         sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['ASAL SEKOLAH'].isin(valid_schools)]
         
-        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs)
         sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['mahasiswa'] >= 3]
 
-        # Top prodi per sekolah (tanpa filter berulang per sekolah)
         prodi_agg = df_kmeans.groupby(['ASAL SEKOLAH', prodi_column], as_index=False).agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
             ipk=('NILAI KESELURUHAN', 'mean'),
@@ -82,7 +75,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             poin_non_akademik=('POIN_NON_AKADEMIK', 'sum')
         ).fillna(0).rename(columns={prodi_column: 'prodi'})
         
-        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs) untuk detail masing-masing prodi
         prodi_agg = prodi_agg[prodi_agg['mahasiswa'] >= 3]
 
         prodi_agg['mhs_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'mahasiswa')
@@ -99,7 +91,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             0.05 * prodi_agg['p_non_norm']
         ).round(3)
 
-        # Prodi per sekolah terurut skor (dibatasi per kartu agar payload tetap wajar)
         max_prodi_per_kartu = 50
         prodi_per_sekolah_sorted = prodi_agg.sort_values(
             ['ASAL SEKOLAH', 'skor'], ascending=[True, False]
@@ -139,13 +130,11 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             provinsi=('PROVINSI SEKOLAH', lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
         ).fillna(0).rename(columns={prodi_column: 'prodi', 'ASAL SEKOLAH': 'sekolah'})
 
-        # Terapkan Threshold 50% Cluster A/B secara spesifik per sekolah-prodi
         prodi_school_sup_ratio = df_kmeans.groupby([prodi_column, 'ASAL SEKOLAH'])['is_superior'].mean().reset_index(name='sup_ratio')
         valid_prodi_school = prodi_school_sup_ratio[prodi_school_sup_ratio['sup_ratio'] >= 0.50]
         sekolah_prodi_agg = pd.merge(sekolah_prodi_agg, valid_prodi_school[[prodi_column, 'ASAL SEKOLAH']], 
                                      left_on=['prodi', 'sekolah'], right_on=[prodi_column, 'ASAL SEKOLAH'], how='inner')
 
-        # Terapkan Opsi 2: Batas Minimum Mahasiswa (>= 3 mhs) per sekolah-prodi
         sekolah_prodi_agg = sekolah_prodi_agg[sekolah_prodi_agg['mahasiswa'] >= 3]
 
         sekolah_prodi_agg['mhs_norm'] = _norm_in_group(sekolah_prodi_agg, 'prodi', 'mahasiswa')
@@ -161,9 +150,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             0.05 * sekolah_prodi_agg['p_non_norm']
         ).round(3)
 
-        # Sekolah sasaran per prodi:
-        # - default: kirim lebih dari 5 supaya user bisa "Tampilkan lebih banyak"
-        # - tetap simpan agregat top-5 untuk metrik ringkasan
         sekolah_per_prodi_default = 20
         sekolah_per_prodi_df = (
             sekolah_prodi_agg.sort_values(['prodi', 'skor'], ascending=[True, False])
@@ -215,7 +201,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             })
 
     def siapkan_data(df, nama_algo, tampilkan='top10'):
-        # Satu baris = satu kombinasi sekolah + lokasi (nama sama di kota beda ≠ satu entitas)
         kunci_sekolah = ['ASAL SEKOLAH', 'KOTA SEKOLAH', 'PROVINSI SEKOLAH']
 
         df_dev = df.groupby(['Cluster'] + kunci_sekolah).agg(
@@ -353,3 +338,68 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
     kmeans_data = siapkan_data(df_kmeans, "K-Means", tampilkan)
 
     return rekom_prodi_per_sekolah, rekom_sekolah_per_prodi, kmeans_data
+
+def get_crosscheck_data(df_kmeans):
+    if df_kmeans.empty or 'ASAL SEKOLAH' not in df_kmeans.columns:
+        return []
+
+    df_cross = df_kmeans.copy()
+
+    if 'Cluster' in df_cross.columns:
+        c_sum = df_cross.groupby('Cluster').agg(
+            total_mhs=('NILAI KESELURUHAN', 'count'),
+            ipk_mean=('NILAI KESELURUHAN', 'mean'),
+            dev=('NILAI KESELURUHAN', 'std')
+        ).fillna(0).reset_index()
+
+        def _safe_norm(s):
+            denom = s.max() - s.min()
+            return s * 0 if denom == 0 else (s - s.min()) / denom
+
+        c_sum['ranking'] = (
+            0.4 * _safe_norm(c_sum['total_mhs']) +
+            0.3 * _safe_norm(c_sum['ipk_mean']) +
+            0.3 * (1 - _safe_norm(c_sum['dev']))
+        )
+        ordered_clusters = c_sum.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+        superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
+        df_cross['is_superior'] = df_cross['Cluster'].isin(superior_clusters)
+    else:
+        df_cross['is_superior'] = True
+
+    prodi_col = None
+    for kandidat in ['PROGRAM STUDI', 'PROGRAM_STUDI', 'PRODI']:
+        if kandidat in df_cross.columns:
+            prodi_col = kandidat
+            break
+
+    if prodi_col:
+        stats = df_cross.groupby(['ASAL SEKOLAH', prodi_col]).agg(
+            mahasiswa=('NILAI KESELURUHAN', 'count'),
+            superior_count=('is_superior', 'sum'),
+            ipk_mean=('NILAI KESELURUHAN', 'mean')
+        ).reset_index()
+    else:
+        stats = df_cross.groupby('ASAL SEKOLAH').agg(
+            mahasiswa=('NILAI KESELURUHAN', 'count'),
+            superior_count=('is_superior', 'sum'),
+            ipk_mean=('NILAI KESELURUHAN', 'mean')
+        ).reset_index()
+
+    stats['rasio'] = (stats['superior_count'] / stats['mahasiswa']) * 100
+
+    def get_status(row):
+        reasons = []
+        if row['mahasiswa'] < 3:
+            reasons.append("Mahasiswa < 3")
+        if row['rasio'] < 50.0:
+            reasons.append("Rasio < 50%")
+            
+        if not reasons:
+            return "Lolos Syarat"
+        return "Gagal: " + ", ".join(reasons)
+
+    stats['status'] = stats.apply(get_status, axis=1)
+    stats = stats.sort_values(['rasio', 'mahasiswa'], ascending=[False, False])
+    
+    return stats.to_dict(orient='records')

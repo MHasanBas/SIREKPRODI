@@ -21,20 +21,20 @@ def upload():
         nama_data = request.form.get('nama_data')
         files = [f for f in request.files.getlist('files') if f.filename]
          
-        # === ✅ VALIDASI: Nama data tidak boleh kosong ===
+       
         if not nama_data or nama_data.strip() == "":
-            flash("❌ Nama data tidak boleh kosong.", "error")
+            flash(" Nama data tidak boleh kosong.", "error")
             return redirect(url_for('upload.upload'))
         
-        # === ✅ VALIDASI: Minimal 1 file ===
+   
         if len(files) < 1:
-            flash("❌ Minimal 1 file .xlsx harus diunggah (format lama butuh pasangan data/nilai, format baru cukup satu file).", "error")
+            flash(" Minimal 1 file .xlsx harus diunggah (format lama butuh pasangan data/nilai, format baru cukup satu file).", "error")
             return redirect(url_for('upload.upload'))
 
-        # === ✅ VALIDASI: Format file harus .xlsx
+
         for f in files:
             if not f.filename.endswith('.xlsx'):
-                flash(f"❌ Format file tidak didukung: {f.filename}. Harus .xlsx", "error")
+                flash(f"Format file tidak didukung: {f.filename}. Harus .xlsx", "error")
                 return redirect(url_for('upload.upload'))
 
         # Bersihkan folder upload
@@ -50,7 +50,7 @@ def upload():
         # Proses dan gabungkan dengan data lama (jika ada)
         df_baru = proses_upload_data(upload_folder)
         if df_baru.empty:
-            flash("❌ Data tidak valid atau kolom wajib tidak ditemukan. Periksa kembali file yang diunggah.", "error")
+            flash("Data tidak valid atau kolom wajib tidak ditemukan. Periksa kembali file yang diunggah.", "error")
             return redirect(url_for('upload.upload'))
 
         active_model = load_active_model_name()
@@ -63,15 +63,15 @@ def upload():
                 try:
                     with open(prev_path, "rb") as f:
                         df_prev = pickle.load(f)
-                    print(f"📂 Data lama ditemukan: {prev_path}, baris: {df_prev.shape[0]}")
+                    print(f"Data lama ditemukan: {prev_path}, baris: {df_prev.shape[0]}")
                 except Exception as e:
-                    print("⚠️ Gagal memuat data lama, lanjut pakai data baru saja:", e)
+                    print("Gagal memuat data lama, lanjut pakai data baru saja:", e)
 
         if df_prev is not None and not df_prev.empty:
             df_baru = pd.concat([df_prev, df_baru], ignore_index=True, sort=False)
-            print(f"🧩 Data gabungan (lama+baru): {df_baru.shape[0]} baris")
+            print(f"Data gabungan (lama+baru): {df_baru.shape[0]} baris")
         else:
-            print(f"🧩 Ter-reset, Data baru saja: {df_baru.shape[0]} baris")
+            print(f"Ter-reset, Data baru saja: {df_baru.shape[0]} baris")
 
         # Proses dan simpan sebagai model baru (tidak menimpa model aktif)
         model_folder = get_next_model_folder()
@@ -80,7 +80,7 @@ def upload():
         with open(os.path.join(model_folder, "data_gabungan_clean.pkl"), "wb") as f:
             pickle.dump(df_baru, f)
         
-        # 🔥 Simpan nama data ke file meta.json (meta model baru)
+
         meta = {
             "nama_data": nama_data,
             # Simpan waktu upload agar bisa ditampilkan di halaman Pelatihan Model.
@@ -93,15 +93,15 @@ def upload():
         try:
             with open(os.path.join(model_folder, 'hasil_kmeans_3cluster.pkl'), 'rb') as f:
                 kmeans_test = pickle.load(f)
-            print("✅ hasil_kmeans_3cluster.pkl berhasil dibaca")
+            print("hasil_kmeans_3cluster.pkl berhasil dibaca")
         except Exception as e:
-            print("❌ ERROR membaca hasil_kmeans_3cluster.pkl:", e)
+            print("ERROR membaca hasil_kmeans_3cluster.pkl:", e)
 
         # Otomatis terapkan model baru
         with open("models/active_model.txt", "w") as f:
             f.write(os.path.basename(model_folder))
     
-        flash(f"✅ Data berhasil diupload. Model baru dibuat dan diaktifkan: {os.path.basename(model_folder)}.")
+        flash(f"Data berhasil diupload. Model baru dibuat dan diaktifkan: {os.path.basename(model_folder)}.")
         return redirect(url_for('dashboard.dashboard'))
 
     return render_template('upload.html')

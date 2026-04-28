@@ -19,7 +19,7 @@ def pelatihan_model():
         if folder.startswith("model_"):
             model_path = os.path.join("models", folder)
 
-            # 🔥 Ambil nama_data dari meta.json (kalau ada)
+
             meta_path = os.path.join(model_path, "meta.json")
             pkl_path = os.path.join(model_path, "hasil_kmeans_3cluster.pkl")
             uploaded_at = "-"
@@ -66,7 +66,7 @@ def terapkan_model(nama_model):
     active_flag_path = "models/active_model.txt"
     with open(active_flag_path, "w") as f:
         f.write(nama_model)
-    flash(f"✅ Model {nama_model} sekarang diterapkan sebagai model aktif.")
+    flash(f" Model {nama_model} sekarang diterapkan sebagai model aktif.")
     return redirect(url_for('model.pelatihan_model'))
 
 @model_bp.route('/hapus_model/<nama_model>')
@@ -78,7 +78,7 @@ def hapus_model(nama_model):
         with open(active_flag_path, "r") as f:
             active_model = f.read().strip()
         if nama_model == active_model:
-            flash("❌ Tidak bisa menghapus model yang sedang aktif.", "error")
+            flash(" Tidak bisa menghapus model yang sedang aktif.", "error")
             return redirect(url_for('model.pelatihan_model'))
 
     # Hapus folder model
@@ -86,9 +86,9 @@ def hapus_model(nama_model):
     if os.path.exists(model_path):
         import shutil
         shutil.rmtree(model_path)
-        flash(f"🗑️ Model {nama_model} berhasil dihapus.", "success")
+        flash(f"Model {nama_model} berhasil dihapus.", "success")
     else:
-        flash("⚠️ Model tidak ditemukan.", "warning")
+        flash(" Model tidak ditemukan.", "warning")
 
     return redirect(url_for('model.pelatihan_model'))
 
