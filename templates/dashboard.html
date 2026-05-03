@@ -3,236 +3,18 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Rekomendasi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="SIREKPRODI — Dashboard analitik cluster K-Means, rekomendasi sekolah unggulan, dan sasaran promosi per program studi." />
+  <title>Dashboard — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <script>Chart.register(ChartDataLabels);</script>
-  <style>
-    :root {
-      --primary: #0f766e;
-      --primary-soft: #e0f2f1;
-      --ink: #0f172a;
-      --muted: #475569;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
-      background: #f5f6fa;
-      color: var(--ink);
-    }
-
-    .btn-main {
-      background: var(--primary);
-      color: #fff;
-      padding: 0.55rem 1rem;
-      border-radius: 12px;
-      font-weight: 700;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
-    }
-
-    .btn-main:hover {
-      transform: translateY(-1px);
-      background: #0d5f58;
-    }
-
-    .btn-ghost {
-      padding: 0.5rem 0.95rem;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      font-weight: 600;
-      color: var(--ink);
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-
-    .btn-ghost:hover {
-      background: #f8fafc;
-      border-color: #d9e2ec;
-    }
-
-    .table-sticky thead th {
-      position: sticky;
-      top: 0;
-      background: #ffffff;
-      z-index: 10;
-    }
-
-    .scroll-shadow {
-      position: relative;
-      overflow: auto;
-    }
-
-    .scroll-shadow::after {
-      content: '';
-      position: sticky;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 8px;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.06));
-      pointer-events: none;
-    }
-
-    .brand-mark {
-      background: linear-gradient(135deg, #0f766e, #14b8a6);
-      color: #fff;
-      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
-    }
-
-    .footer-bar {
-      background: #0f766e;
-      color: #fff;
-    }
-
-    .footer-badge {
-      background: rgba(255, 255, 255, 0.16);
-    }
-
-    .toast-container {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .toast {
-      min-width: 220px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #0f172a;
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      opacity: 0.95;
-    }
-
-    .toast.toast-success {
-      background: #ecfdf3;
-      color: #166534;
-      border-color: #bbf7d0;
-    }
-
-    .toast.toast-error {
-      background: #fef2f2;
-      color: #b91c1c;
-      border-color: #fecdd3;
-    }
-
-    .toast.toast-warning {
-      background: #fff7ed;
-      color: #c2410c;
-      border-color: #fed7aa;
-    }
-
-    .toast.toast-info {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border-color: #bfdbfe;
-    }
-
-    .nav-shell {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px;
-      border-radius: 16px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 6px 20px rgba(15, 118, 110, 0.07);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 6px;
-      position: relative;
-    }
-
-    .nav-link {
-      position: relative;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      color: var(--ink);
-      transition: color 0.15s ease;
-      z-index: 10;
-    }
-
-    .nav-link:hover {
-      color: #0f766e;
-    }
-
-    .nav-link.is-active {
-      color: #0f766e;
-    }
-
-    .nav-link.nav-danger {
-      color: #dc2626;
-    }
-
-    .nav-link.nav-danger:hover {
-      color: #b91c1c;
-    }
-
-    .nav-indicator {
-      position: absolute;
-      height: 36px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #0f766e, #14b8a6);
-      opacity: 0.15;
-      transition: transform 0.25s ease, width 0.25s ease;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    .card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.06);
-      padding: 20px;
-    }
-
-    .pill {
-      border-radius: 9999px;
-      padding: 0.45rem 0.95rem;
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      transition: all 0.15s ease;
-    }
-
-    .pill-active {
-      background: var(--primary-soft);
-      border-color: #99f6e4;
-      color: #0f766e;
-      font-weight: 700;
-    }
-
-    .tab-btn.tab-active {
-      background: #fff;
-      color: #0f766e;
-      border-color: #e2e8f0;
-      border-bottom-color: #fff;
-      font-weight: 700;
-      margin-bottom: -1px;
-    }
-  </style>
   <script>
     function toggleCluster(algoIdx, label) {
       document.querySelectorAll(`[data-cluster-block="${algoIdx}"]`).forEach(el => el.classList.add('hidden'));
@@ -244,81 +26,82 @@
       if (activeBtn) activeBtn.classList.add('pill-active');
     }
   </script>
-
-  <!-- Modal: Detail mahasiswa (Sekolah Unggulan -> klik prodi) -->
-  <div id="modalMahasiswaDetail" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="absolute inset-0 bg-black/40" onclick="closeMahasiswaDetail()"></div>
-    <div class="relative w-[95vw] max-w-6xl bg-white rounded-xl shadow-xl border max-h-[85vh] overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 border-b">
-        <div class="font-semibold text-sm" id="modalMahasiswaTitle">Detail Mahasiswa</div>
-        <button class="text-sm px-3 py-1 rounded-lg border hover:bg-gray-50" onclick="closeMahasiswaDetail()">Tutup</button>
-      </div>
-      <div class="p-4 overflow-auto" id="modalMahasiswaBody"></div>
-    </div>
-  </div>
   <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
 </head>
 
 <body>
-  <header class="bg-white/90 backdrop-blur shadow-sm border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-2xl brand-mark flex items-center justify-center font-extrabold text-lg">SR</div>
-        <div>
-          <p class="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.14em]">SIREKPRODI</p>
-          <h1 class="text-xl font-bold text-slate-900">Dashboard Sekolah &amp; Prodi</h1>
+
+  <!-- Modal: Detail mahasiswa -->
+  <div id="modalMahasiswaDetail" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeMahasiswaDetail()"></div>
+    <div
+      class="relative w-[95vw] max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[88vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
+        <p class="font-semibold text-sm text-slate-900" id="modalMahasiswaTitle">Detail Mahasiswa</p>
+        <button
+          class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+          onclick="closeMahasiswaDetail()">Tutup</button>
+      </div>
+      <div class="p-5 overflow-auto flex-1" id="modalMahasiswaBody"></div>
+    </div>
+  </div>
+
+  <header class="nav-glass">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <div
+          class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center font-extrabold text-sm flex-shrink-0">SR
+        </div>
+        <div class="min-w-0">
+          <p class="section-label">SIREKPRODI</p>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">Dashboard Sekolah &amp; Prodi</h1>
         </div>
       </div>
       {% set current = request.endpoint %}
-      <nav class="nav-shell">
+      <nav class="nav-shell flex-shrink-0">
         <div class="nav-links">
           <div class="nav-indicator" id="nav-indicator"></div>
-          <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}"
-            data-nav-link>Dashboard</a>
-          <a href="{{ url_for('dashboard.data_cluster') }}" class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}"
-            data-nav-link>Data Cluster</a>
-          <a href="{{ url_for('upload.upload') }}" class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}"
-            data-nav-link>Upload</a>
+          <a href="{{ url_for('dashboard.dashboard') }}"
+            class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}" data-nav-link>Dashboard</a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}" data-nav-link>Data
+            Cluster</a>
+          <a href="{{ url_for('upload.upload') }}"
+            class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}" data-nav-link>Upload</a>
           <a href="{{ url_for('model.pelatihan_model') }}"
-            class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
+            class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan
+            Model</a>
           <a href="{{ url_for('auth.logout') }}" class="nav-link nav-danger" data-nav-link data-confirm
             data-confirm-title="Konfirmasi Logout"
             data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
-            data-confirm-accent="red">
-            Logout
-          </a>
+            data-confirm-accent="red">Logout</a>
         </div>
       </nav>
-      <button onclick="toggleTheme()" class="theme-toggle" title="Ganti Tema">
-        <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646Z"/></svg>
-        <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-      </button>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-6 space-y-4">
+  <main class="max-w-6xl mx-auto px-4 py-5 space-y-4">
     <div id="toast-anchor"></div>
 
-    <!-- ── Filter Bar Terpadu (sticky) ────────────────────────────── -->
-    <div id="filter-bar" class="card sticky top-[68px] z-30 flex flex-wrap items-center gap-3 py-3 px-4 shadow-md">
-      <div class="flex items-center gap-1.5">
-        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cluster</span>
+    <!-- ── Filter Bar (sticky) ──────────────────────────────────── -->
+    <div id="filter-bar" class="card sticky top-[60px] z-30 flex flex-wrap items-center gap-3 py-2.5 px-4">
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Cluster</span>
         <div class="flex gap-1">
           {% for lbl in ['A','B','C'] %}
-          <button type="button" id="globalBtn{{ lbl }}"
-            onclick="setGlobalCluster('{{ lbl }}')"
-            class="pill text-sm font-bold {% if lbl == 'A' %}pill-active{% endif %}">
+          <button type="button" id="globalBtn{{ lbl }}" onclick="setGlobalCluster('{{ lbl }}')"
+            class="pill text-xs font-bold {% if lbl == 'A' %}pill-active{% endif %}">
             {{ lbl }}
           </button>
           {% endfor %}
         </div>
       </div>
-      <div class="h-5 w-px bg-slate-200"></div>
+      <div class="h-4 w-px bg-slate-200"></div>
       {% if prodi_list %}
       <form method="get" class="flex items-center gap-2">
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prodi</label>
-        <select name="prodi" onchange="this.form.submit()" class="pill text-sm pr-8 max-w-[220px] truncate">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prodi</label>
+        <select name="prodi" onchange="this.form.submit()" class="pill text-xs pr-8 max-w-[200px] truncate">
           <option value="all" {% if selected_prodi=='all' %}selected{% endif %}>Semua Prodi</option>
           {% for prodi in prodi_list %}
           <option value="{{ prodi }}" {% if selected_prodi==prodi %}selected{% endif %}>{{ prodi }}</option>
@@ -328,32 +111,30 @@
       </form>
       {% endif %}
       <form method="get" class="flex items-center gap-2">
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Baris</label>
-        <select name="tampilkan" onchange="this.form.submit()" class="pill text-sm pr-8">
-          <option value="top10" {% if request.args.get('tampilkan','top10')=='top10' %}selected{% endif %}>10 Teratas</option>
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Baris</label>
+        <select name="tampilkan" onchange="this.form.submit()" class="pill text-xs pr-8">
+          <option value="top10" {% if request.args.get('tampilkan','top10')=='top10' %}selected{% endif %}>10 Teratas
+          </option>
           <option value="semua" {% if request.args.get('tampilkan')=='semua' %}selected{% endif %}>Semua</option>
         </select>
         <input type="hidden" name="prodi" value="{{ selected_prodi }}">
       </form>
-      <div class="ml-auto hidden md:block">
-        {% if selected_prodi != 'all' %}
-        <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs px-2 py-1 rounded-full font-semibold">📌 {{ selected_prodi }}</span>
-        {% endif %}
+      {% if selected_prodi != 'all' %}
+      <div class="ml-auto hidden md:flex">
+        <span class="badge badge-blue">{{ selected_prodi }}</span>
       </div>
+      {% endif %}
     </div>
 
-    <!-- ── Tab Switcher ─────────────────────────────────────────────── -->
-    <div class="flex gap-1 border-b border-slate-200">
-      <button type="button" id="btn-tab-analitik" onclick="switchTab('tab-analitik')"
-        class="tab-btn tab-active px-5 py-2.5 text-sm rounded-t-xl border border-b-0 border-transparent hover:text-slate-800 transition-colors">
+    <!-- ── Tab Switcher (pill style) ────────────────────────────── -->
+    <div class="tab-bar">
+      <button type="button" id="btn-tab-analitik" onclick="switchTab('tab-analitik')" class="tab-btn tab-active">
         Analitik Cluster
       </button>
-      <button type="button" id="btn-tab-unggulan" onclick="switchTab('tab-unggulan')"
-        class="tab-btn px-5 py-2.5 text-sm font-semibold rounded-t-xl border border-b-0 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+      <button type="button" id="btn-tab-unggulan" onclick="switchTab('tab-unggulan')" class="tab-btn">
         Sekolah Unggulan
       </button>
-      <button type="button" id="btn-tab-sasaran" onclick="switchTab('tab-sasaran')"
-        class="tab-btn px-5 py-2.5 text-sm font-semibold rounded-t-xl border border-b-0 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+      <button type="button" id="btn-tab-sasaran" onclick="switchTab('tab-sasaran')" class="tab-btn">
         Sasaran per Prodi
       </button>
     </div>
@@ -378,8 +159,10 @@
           </div>
         </div>
         {% for label in ['A', 'B', 'C'] %}
-        <div data-cluster-block="{{ algo_index }}" data-label="{{ label }}" class="{% if label != 'A' %}hidden{% endif %} space-y-4">
-          <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{ algo.deskripsi_cluster[label] }}</p>
+        <div data-cluster-block="{{ algo_index }}" data-label="{{ label }}"
+          class="{% if label != 'A' %}hidden{% endif %} space-y-4">
+          <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{
+            algo.deskripsi_cluster[label] }}</p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="card shadow-none border border-slate-100">
               <p class="text-xs text-slate-500 font-semibold uppercase">Total Mahasiswa</p>
@@ -413,7 +196,11 @@
               <h4 class="text-base font-semibold text-slate-900">Sekolah Rekomendasi — Cluster {{ label }}</h4>
               <details class="text-[11px] cursor-pointer">
                 <summary class="font-bold text-sky-700 list-none flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clip-rule="evenodd" />
+                  </svg>
                   Cara Membaca Skor
                 </summary>
                 <div class="mt-1 bg-sky-50 border border-sky-100 rounded-lg p-2 text-sky-700/90">
@@ -426,14 +213,17 @@
               </details>
             </div>
             <div class="mb-3 relative">
-              <input type="text"
-                id="searchSekolah_{{ algo_index }}_{{ label }}"
-                data-search-target="table_{{ algo_index }}_{{ label }}"
-                placeholder="Cari nama sekolah..."
+              <input type="text" id="searchSekolah_{{ algo_index }}_{{ label }}"
+                data-search-target="table_{{ algo_index }}_{{ label }}" placeholder="Cari nama sekolah..."
                 class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
                 oninput="filterSekolahTable(this)">
-              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <span id="searchCount_{{ algo_index }}_{{ label }}" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"></span>
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <span id="searchCount_{{ algo_index }}_{{ label }}"
+                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"></span>
             </div>
             <div class="scroll-shadow rounded-xl max-h-80 overflow-y-auto">
               <table class="min-w-full text-sm table-sticky">
@@ -453,17 +243,19 @@
                   {% for row in algo[label].tabel_rekomendasi %}
                   <tr class="hover:bg-slate-50 odd:bg-slate-50/60 cursor-pointer transition-colors"
                     data-table-id="table_{{ algo_index }}_{{ label }}"
-                    data-sekolah-name="{{ row['ASAL SEKOLAH']|lower }}"
-                    data-sekolah="{{ row['ASAL SEKOLAH'] }}"
-                    data-prodi="{{ selected_prodi }}"
-                    onclick="openMahasiswaDetail(this)"
+                    data-sekolah-name="{{ row['ASAL SEKOLAH']|lower }}" data-sekolah="{{ row['ASAL SEKOLAH'] }}"
+                    data-prodi="{{ selected_prodi }}" onclick="openMahasiswaDetail(this)"
                     title="Klik untuk melihat detail mahasiswa & prestasi">
                     <td class="py-2 pr-3 font-semibold text-slate-900">{{ row['ASAL SEKOLAH'] }}</td>
                     <td class="py-2 pr-3 text-right font-semibold">{{ row['mahasiswa'] }}</td>
                     <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['ipk']) }}</td>
                     <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['deviasi']) }}</td>
-                    <td class="py-2 pr-3 text-right text-emerald-600 font-semibold" title="{{ row['teks_akademik'] }} ({{ row['poin_akademik'] }} Poin)">{{ row['poin_akademik'] }}</td>
-                    <td class="py-2 pr-3 text-right text-blue-600 font-semibold" title="{{ row['teks_non_akademik'] }} ({{ row['poin_non_akademik'] }} Poin)">{{ row['poin_non_akademik'] }}</td>
+                    <td class="py-2 pr-3 text-right text-emerald-600 font-semibold"
+                      title="{{ row['teks_akademik'] }} ({{ row['poin_akademik'] }} Poin)">{{ row['poin_akademik'] }}
+                    </td>
+                    <td class="py-2 pr-3 text-right text-blue-600 font-semibold"
+                      title="{{ row['teks_non_akademik'] }} ({{ row['poin_non_akademik'] }} Poin)">{{
+                      row['poin_non_akademik'] }}</td>
                     <td class="py-2 pr-3">{{ row['KOTA SEKOLAH'] }}</td>
                     <td class="py-2 pr-3">{{ row['PROVINSI SEKOLAH'] }}</td>
                   </tr>
@@ -489,23 +281,29 @@
             <p class="text-sm text-slate-500">3 prodi terbaik per sekolah unggulan untuk prioritas promosi.</p>
             <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
               <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK.
-              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi (akademik &amp; non-akademik), jumlah mahasiswa, dan stabilitas nilai (deviasi) — dipakai untuk urutan prioritas, bukan menggantikan IPK.
+              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi (akademik &amp; non-akademik),
+              jumlah mahasiswa, dan stabilitas nilai (deviasi) — dipakai untuk urutan prioritas, bukan menggantikan IPK.
             </p>
           </div>
-          <span id="sekolahUnggulanCount" class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">{{ rekom_prodi_per_sekolah|length }} sekolah</span>
+          <span id="sekolahUnggulanCount"
+            class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">{{
+            rekom_prodi_per_sekolah|length }} sekolah</span>
         </div>
         <div class="relative">
           <input type="text" id="searchSekolahUnggulan" placeholder="Cari nama sekolah..."
             class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
             oninput="filterSekolahUnggulan(this)">
-          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="sekolahUnggulanList">
           {% if rekom_prodi_per_sekolah %}
           {% for item in rekom_prodi_per_sekolah %}
           <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
-            data-school-card data-school-name="{{ item.sekolah|lower }}"
-            data-prodi-rows="{{ item.top_prodi|length }}">
+            data-school-card data-school-name="{{ item.sekolah|lower }}" data-prodi-rows="{{ item.top_prodi|length }}">
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
                 <h4 class="font-bold text-slate-900 leading-snug truncate">{{ item.sekolah }}</h4>
@@ -515,8 +313,10 @@
                 <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</p>
                 <p class="text-xl font-bold text-emerald-700">{{ '%.2f'|format(item.ipk_mean) }}</p>
                 <p class="text-xs text-slate-400">{{ item.mahasiswa }} mhs</p>
-                <p class="text-[11px] text-amber-800/90 mt-1.5 font-medium leading-snug text-right" title="Semua mahasiswa sekolah ini, semua program studi">
-                  Total sekolah (semua prodi): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{ item.poin_non_akademik|default(0) }}
+                <p class="text-[11px] text-amber-800/90 mt-1.5 font-medium leading-snug text-right"
+                  title="Semua mahasiswa sekolah ini, semua program studi">
+                  Total sekolah (semua prodi): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
+                  item.poin_non_akademik|default(0) }}
                 </p>
               </div>
             </div>
@@ -536,18 +336,16 @@
               {% for prodi in item.top_prodi %}
               <div
                 class="flex items-center justify-between text-xs bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-1.5 gap-2 school-prodi-row cursor-pointer hover:bg-emerald-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
-                role="button"
-                tabindex="0"
-                data-sekolah="{{ item.sekolah }}"
-                data-prodi="{{ prodi.prodi }}"
+                role="button" tabindex="0" data-sekolah="{{ item.sekolah }}" data-prodi="{{ prodi.prodi }}"
                 onclick="openMahasiswaDetail(this)"
                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetail(this)}"
-                title="Klik untuk lihat detail mahasiswa"
-              >
+                title="Klik untuk lihat detail mahasiswa">
                 <span class="font-semibold text-slate-800 truncate min-w-0">{{ prodi.prodi }}</span>
                 <span class="text-slate-500 shrink-0 text-right leading-tight">
                   <span class="block font-semibold text-slate-700">{{ '%.2f'|format(prodi.ipk) }} IPK</span>
-                  <span class="block text-[10px] text-slate-400 leading-snug">{{ prodi.mahasiswa }} mhs · poin prestasi: akademik {{ (prodi.poin_akademik|default(0))|int }}, non-akademik {{ (prodi.poin_non_akademik|default(0))|int }}</span>
+                  <span class="block text-[10px] text-slate-400 leading-snug">{{ prodi.mahasiswa }} mhs · poin prestasi:
+                    akademik {{ (prodi.poin_akademik|default(0))|int }}, non-akademik {{
+                    (prodi.poin_non_akademik|default(0))|int }}</span>
                 </span>
               </div>
               {% endfor %}
@@ -558,7 +356,14 @@
           <div class="col-span-2 text-sm text-slate-500">Belum ada data.</div>
           {% endif %}
         </div>
-        <p id="sekolahUnggulanEmpty" class="hidden text-sm text-center text-slate-400 py-4">Tidak ada sekolah yang cocok.</p>
+        <div id="sekolahUnggulanEmpty" class="hidden empty-state mt-4">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="empty-title">Tidak ada sekolah ditemukan</div>
+          <div class="empty-desc">Coba ubah kata kunci pencarian Anda.</div>
+        </div>
       </div>
       {% else %}
       <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
@@ -575,11 +380,15 @@
             <h2 class="text-xl font-bold text-slate-900">Sekolah Sasaran per Prodi</h2>
             <p class="text-sm text-slate-500">Sekolah prioritas untuk tiap prodi berdasarkan performa alumni.</p>
             <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
-              <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK (per prodi dan per sekolah dalam daftar).
-              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi akademik &amp; non-akademik, jumlah mahasiswa, dan stabilitas nilai — dipakai untuk urutan prioritas, bukan menggantikan IPK.
+              <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK (per prodi dan per
+              sekolah dalam daftar).
+              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi akademik &amp; non-akademik,
+              jumlah mahasiswa, dan stabilitas nilai — dipakai untuk urutan prioritas, bukan menggantikan IPK.
             </p>
           </div>
-          <span id="prodiSasaranCount" class="text-blue-700 bg-blue-50 border border-blue-200 text-sm font-semibold px-3 py-1 rounded-full">{{ rekom_sekolah_per_prodi|length }} prodi</span>
+          <span id="prodiSasaranCount"
+            class="text-blue-700 bg-blue-50 border border-blue-200 text-sm font-semibold px-3 py-1 rounded-full">{{
+            rekom_sekolah_per_prodi|length }} prodi</span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prodi</label>
@@ -595,14 +404,17 @@
           <input type="text" id="searchSekolahSasaran" placeholder="Cari nama sekolah..."
             class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
             oninput="filterSekolahInProdiSasaran(this)">
-          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="prodiSasaranList">
           {% if rekom_sekolah_per_prodi %}
           {% for item in rekom_sekolah_per_prodi %}
           <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
-            data-prodi-card data-prodi-name="{{ item.prodi|lower }}"
-            data-sekolah-rows="{{ item.top_sekolah|length }}"
+            data-prodi-card data-prodi-name="{{ item.prodi|lower }}" data-sekolah-rows="{{ item.top_sekolah|length }}"
             data-prodi="{{ item.prodi }}">
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
@@ -615,7 +427,8 @@
                 <p class="text-xs text-slate-400">{{ item.total_mahasiswa }} mhs</p>
                 <div class="text-[11px] text-amber-800/90 mt-1.5 space-y-0.5 font-medium leading-snug">
                   <p title="Semua sekolah asal pada prodi ini">
-                    Total prodi (semua sekolah): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{ item.poin_non_akademik|default(0) }}
+                    Total prodi (semua sekolah): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
+                    item.poin_non_akademik|default(0) }}
                   </p>
                 </div>
               </div>
@@ -637,17 +450,15 @@
               {% for sekolah in item.top_sekolah %}
               <div
                 class="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs prodi-sekolah-row cursor-pointer hover:bg-blue-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
-                role="button"
-                tabindex="0"
-                data-school-name="{{ sekolah.sekolah|lower }}"
-                data-sekolah="{{ sekolah.sekolah }}"
-                onclick="openMahasiswaDetailFromSasaran(this)"
+                role="button" tabindex="0" data-school-name="{{ sekolah.sekolah|lower }}"
+                data-sekolah="{{ sekolah.sekolah }}" onclick="openMahasiswaDetailFromSasaran(this)"
                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetailFromSasaran(this)}"
                 title="Klik untuk lihat detail mahasiswa">
                 <div class="flex items-start justify-between gap-2">
                   <div class="min-w-0">
                     <span class="font-semibold text-slate-900 block truncate">{{ sekolah.sekolah }}</span>
-                    <span class="text-slate-500 text-[11px] block mt-0.5">{{ sekolah.kota }}{% if sekolah.provinsi %}, {{ sekolah.provinsi }}{% endif %}</span>
+                    <span class="text-slate-500 text-[11px] block mt-0.5">{{ sekolah.kota }}{% if sekolah.provinsi %},
+                      {{ sekolah.provinsi }}{% endif %}</span>
                   </div>
                   <div class="text-right shrink-0">
                     <span class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</span>
@@ -657,7 +468,8 @@
                 <div class="mt-1.5 pt-1.5 border-t border-blue-100/80 space-y-0.5 text-[11px] text-slate-600">
                   <p>{{ sekolah.mahasiswa }} mahasiswa pada prodi ini</p>
                   <p title="Poin agregat dari prestasi di sekolah ini (khusus jalur prodi yang dipilih)">
-                    Poin prestasi (penunjang): akademik {{ (sekolah.poin_akademik|default(0))|int }}, non-akademik {{ (sekolah.poin_non_akademik|default(0))|int }}
+                    Poin prestasi (penunjang): akademik {{ (sekolah.poin_akademik|default(0))|int }}, non-akademik {{
+                    (sekolah.poin_non_akademik|default(0))|int }}
                   </p>
                 </div>
               </div>
@@ -669,7 +481,14 @@
           <div class="col-span-2 text-sm text-slate-500">Belum ada data sekolah sasaran.</div>
           {% endif %}
         </div>
-        <p id="prodiSasaranEmpty" class="hidden text-sm text-center text-slate-400 py-4">Tidak ada prodi yang cocok.</p>
+        <div id="prodiSasaranEmpty" class="hidden empty-state mt-4">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="empty-title">Tidak ada program studi ditemukan</div>
+          <div class="empty-desc">Coba sesuaikan kata kunci pencarian atau filter.</div>
+        </div>
       </div>
       {% else %}
       <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
@@ -678,45 +497,49 @@
 
   </main>
 
-  <footer class="w-full bg-white border-t border-gray-200 shadow-sm mt-10">
-    <div class="max-w-6xl mx-auto px-6 py-4 text-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-xl brand-mark flex items-center justify-center font-bold text-white text-sm">SR
-        </div>
+  <footer class="w-full bg-white border-t border-slate-100 mt-12">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-2.5">
+        <div
+          class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
+          SR</div>
         <div>
-          <p class="font-semibold text-slate-900">SIREKPRODI</p>
-          <p class="text-xs text-slate-600">Sistem rekomendasi promosi prodi berbasis data sekolah &amp; prodi.
-            Mempercepat analisis cluster, rekomendasi target sekolah, dan pilihan prodi unggulan.</p>
+          <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
+          <p class="text-xs text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
         </div>
       </div>
       <div class="flex flex-col gap-1 md:items-end">
-        <div class="flex flex-wrap gap-3 text-xs text-slate-600">
-          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-700">Dashboard</a>
-          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-700">Upload</a>
-          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-700">Pelatihan Model</a>
+        <div class="flex gap-4 text-xs text-slate-400">
+          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-600 transition-colors">Dashboard</a>
+          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-600 transition-colors">Upload</a>
+          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-600 transition-colors">Pelatihan
+            Model</a>
         </div>
-        <div class="text-xs text-slate-500">© 2025 SIREKPRODI. All rights reserved.</div>
+        <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
       </div>
     </div>
   </footer>
 
   <!-- Modal konfirmasi -->
   <div id="confirm-modal"
-    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center px-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
+    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4">
       <div class="flex items-start gap-3">
         <div id="confirm-icon"
-          class="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">!</div>
-        <div class="space-y-1">
-          <h3 id="confirm-title" class="text-lg font-bold text-slate-900">Konfirmasi</h3>
-          <p id="confirm-message" class="text-sm text-slate-600">Apakah Anda yakin?</p>
+          class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <div class="space-y-0.5">
+          <h3 id="confirm-title" class="text-base font-bold text-slate-900">Konfirmasi</h3>
+          <p id="confirm-message" class="text-sm text-slate-500">Apakah Anda yakin?</p>
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button id="confirm-cancel" type="button"
-          class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
-        <a id="confirm-action" href="#"
-          class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow">Lanjutkan</a>
+        <button id="confirm-cancel" type="button" class="btn-ghost text-sm">Batal</button>
+        <a id="confirm-action" href="#" class="btn-danger text-sm">Lanjutkan</a>
       </div>
     </div>
   </div>
@@ -755,7 +578,14 @@
       if (!modal || !title || !body) return;
 
       title.textContent = `Detail Mahasiswa — ${sekolah} — ${prodi} (Cluster ${cluster})`;
-      body.innerHTML = '<div class="text-sm text-gray-600">Memuat data...</div>';
+      body.innerHTML = `
+        <div class="space-y-3 p-2">
+          <div class="skeleton h-4 w-1/3"></div>
+          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton h-10 w-full"></div>
+        </div>
+      `;
       modal.classList.remove('hidden');
 
       try {
@@ -879,7 +709,7 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
       document.getElementById(tabId).classList.remove('hidden');
       document.getElementById('btn-' + tabId).classList.add('tab-active');
-      
+
       const filterBar = document.getElementById('filter-bar');
       if (filterBar) {
         if (tabId === 'tab-analitik') {
@@ -892,8 +722,8 @@
 
     // Global cluster toggle
     function setGlobalCluster(label) {
-  window.__activeDashboardCluster = label;
-      ['A','B','C'].forEach(l => {
+      window.__activeDashboardCluster = label;
+      ['A', 'B', 'C'].forEach(l => {
         const btn = document.getElementById('globalBtn' + l);
         if (btn) btn.classList.toggle('pill-active', l === label);
       });
@@ -991,8 +821,8 @@
       const emptyEl = document.getElementById('prodiSasaranEmpty');
       let visibleCards = 0;
       cards.forEach(card => {
-  // Skip kartu yang sedang di-hide oleh dropdown prodi
-  if (card.style.display === 'none') return;
+        // Skip kartu yang sedang di-hide oleh dropdown prodi
+        if (card.style.display === 'none') return;
 
         const schoolEls = card.querySelectorAll('.prodi-sekolah-row');
         const limit = parseInt(card.dataset.sekolahLimit || '3', 10);
@@ -1070,98 +900,8 @@
       }
     }
 
-    // Modal konfirmasi generik (logout, dll.)
-    const confirmModal = document.getElementById('confirm-modal');
-    const confirmTitle = document.getElementById('confirm-title');
-    const confirmMessage = document.getElementById('confirm-message');
-    const confirmAction = document.getElementById('confirm-action');
-    const confirmCancel = document.getElementById('confirm-cancel');
-    const confirmIcon = document.getElementById('confirm-icon');
-
-    const accentMap = {
-      red: { bg: 'bg-red-100', text: 'text-red-600', btn: 'bg-red-600 hover:bg-red-700' },
-      amber: { bg: 'bg-amber-100', text: 'text-amber-600', btn: 'bg-amber-600 hover:bg-amber-700' },
-      green: { bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'bg-emerald-600 hover:bg-emerald-700' }
-    };
-
-    function showConfirm(url, title, message, accent = 'red') {
-      const tone = accentMap[accent] || accentMap.red;
-      confirmTitle.textContent = title;
-      confirmMessage.textContent = message;
-      confirmAction.href = url;
-
-      // reset & apply accent
-      confirmIcon.className = `h-10 w-10 rounded-xl flex items-center justify-center text-xl ${tone.bg} ${tone.text}`;
-      confirmAction.className = `px-4 py-2 rounded-lg text-white shadow ${tone.btn}`;
-
-      confirmModal.classList.remove('hidden');
-    }
-
-    function hideConfirm() {
-      confirmModal.classList.add('hidden');
-    }
-
-    confirmCancel?.addEventListener('click', hideConfirm);
-    confirmModal?.addEventListener('click', (e) => {
-      if (e.target === confirmModal) hideConfirm();
-    });
-
-    document.querySelectorAll('[data-confirm]').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        showConfirm(
-          link.href,
-          link.dataset.confirmTitle || 'Konfirmasi',
-          link.dataset.confirmMessage || 'Lanjutkan aksi ini?',
-          link.dataset.confirmAccent || 'red'
-        );
-      });
-    });
-
-    // Sliding navbar indicator
-    const navShell = document.querySelector('.nav-shell');
-    const navLinksWrap = navShell?.querySelector('.nav-links');
-    const navLinks = navShell?.querySelectorAll('[data-nav-link]') || [];
-    const navIndicator = navShell?.querySelector('#nav-indicator');
-    let navActive = navShell?.querySelector('.nav-link.is-active') || navLinks[0];
-
-    function moveIndicator(link) {
-      if (!navLinksWrap || !navIndicator || !link) return;
-      const wrapRect = navLinksWrap.getBoundingClientRect();
-      const linkRect = link.getBoundingClientRect();
-      navIndicator.style.width = `${linkRect.width}px`;
-      navIndicator.style.transform = `translateX(${linkRect.left - wrapRect.left}px)`;
-    }
-
-    function setActive(link) {
-      navActive = link;
-      navLinks.forEach(l => l.classList.toggle('is-active', l === link));
-      moveIndicator(link);
-    }
-
-    navLinks.forEach(link => {
-      link.addEventListener('mouseenter', () => moveIndicator(link));
-      link.addEventListener('mouseleave', () => moveIndicator(navActive));
-      link.addEventListener('click', () => setActive(link));
-    });
-
-    window.addEventListener('resize', () => moveIndicator(navActive));
-    moveIndicator(navActive);
-
-    // Toast flash messages
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'toast-container';
-    document.body.appendChild(toastContainer);
-    const flashMessages = {{ get_flashed_messages(with_categories = true) | tojson }};
-    const typeClass = (t) => t === 'error' ? 'toast-error' : t === 'warning' ? 'toast-warning' : t === 'info' ? 'toast-info' : 'toast-success';
-    function showToast(type, message) {
-      const el = document.createElement('div');
-      el.className = `toast ${typeClass(type)}`;
-      el.textContent = message;
-      toastContainer.appendChild(el);
-      setTimeout(() => el.remove(), 2000);
-    }
-    flashMessages.forEach(([cat, msg]) => showToast(cat, msg));
+    // Load global flash messages for theme.js
+    window.__FLASH_MESSAGES__ = {{ get_flashed_messages(with_categories = true) | tojson }};
   </script>
 </body>
 
