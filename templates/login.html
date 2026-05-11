@@ -8,99 +8,122 @@
   <title>Login — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
   <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
   <style>
-    /* Prevent page-fade on login — it's a standalone page */
-    body { animation: none; }
-
-    .login-bg {
-      background-color: #0a0f1e;
-      background-image:
-        radial-gradient(ellipse 70% 55% at 15% 25%, rgba(4, 120, 87, 0.28) 0%, transparent 65%),
-        radial-gradient(ellipse 55% 60% at 85% 75%, rgba(16, 185, 129, 0.14) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 55% 5%,  rgba(99, 102, 241, 0.10) 0%, transparent 65%);
+    :root {
+      --primary: #10b981;
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
     }
 
-    /* Subtle grid texture */
-    .login-bg::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
     }
 
-    /* Glass card */
+    .login-wrapper {
+      min-height: 100vh;
+      width: 100%;
+      background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), 
+                  url('{{ url_for("static", filename="bg_premium.png") }}');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .glass-card {
-      background: rgba(255,255,255,0.035);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 400px;
+      padding: 2.5rem;
     }
 
-    /* Input field on dark background */
     .dark-input {
       width: 100%;
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      font-size: 0.875rem;
-      font-family: inherit;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
       color: #fff;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      transition: border-color 0.15s, box-shadow 0.15s;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s;
       outline: none;
+      box-sizing: border-box;
     }
-    .dark-input::placeholder { color: rgba(255,255,255,0.28); }
+
     .dark-input:focus {
-      border-color: rgba(52,211,153,0.5);
-      box-shadow: 0 0 0 3px rgba(52,211,153,0.12);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #047857, #10b981);
+      color: white;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+      box-shadow: 0 10px 20px -5px rgba(4, 120, 87, 0.4);
+    }
+
+    .btn-submit:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
     }
   </style>
 </head>
 
-<body class="login-bg min-h-screen w-full relative overflow-hidden">
-
-  <!-- Ambient glow -->
-  <div class="pointer-events-none fixed inset-0 z-0">
-    <div class="absolute w-80 h-80 rounded-full opacity-30 blur-3xl bg-teal-500 -top-20 -left-20"></div>
-    <div class="absolute w-96 h-96 rounded-full opacity-20 blur-3xl bg-emerald-400 -bottom-20 -right-20"></div>
-  </div>
+<body class="login-wrapper relative overflow-hidden">
 
   <!-- Layout -->
-  <div class="relative z-10 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 px-6 lg:px-16 py-12">
+  <div class="relative z-10 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 px-6 lg:px-16 py-12 animate-page-in">
 
     <!-- Left: Branding -->
     <div class="w-full lg:w-1/2 text-white space-y-7 lg:pr-8 flex-shrink-0 max-w-lg">
 
       <!-- Logo -->
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl flex items-center justify-center font-extrabold text-sm text-white flex-shrink-0"
-          style="background: linear-gradient(135deg, #047857, #10b981); box-shadow: 0 6px 20px rgba(4,120,87,0.35);">SR
+      <div class="flex items-center gap-4">
+        <div class="h-14 w-14 rounded-2xl brand-mark flex items-center justify-center overflow-hidden flex-shrink-0 shadow-2xl">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
         </div>
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">SIREKPRODI</p>
-          <p class="text-xs text-slate-400">Sistem Rekomendasi Program Studi</p>
+          <p class="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400">SIREKPRODI</p>
+          <p class="text-sm text-slate-300 font-medium">Sistem Rekomendasi Program Studi</p>
         </div>
       </div>
 
       <!-- Headline -->
-      <div class="space-y-3">
-        <h1 class="text-3xl lg:text-4xl font-extrabold leading-tight text-white">
+      <div class="space-y-4">
+        <h1 class="text-4xl lg:text-5xl font-extrabold leading-[1.1] text-white tracking-tight">
           Rekomendasi prodi<br>
-          <span style="background: linear-gradient(90deg,#10b981,#34d399); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-            berbasis data.
+          <span style="background: linear-gradient(90deg, #10b981, #6ee7b7); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+            berbasis presisi.
           </span>
         </h1>
-        <p class="text-sm text-slate-400 max-w-sm leading-relaxed">
-          Dashboard clustering K-Means untuk tim promosi Polinema — identifikasi sekolah dan prodi prioritas secara cepat dan akurat.
+        <p class="text-base text-slate-400 max-w-sm leading-relaxed font-light">
+          Analisis clustering alumni untuk optimasi strategi promosi secara terukur dan efisien.
         </p>
       </div>
 
@@ -153,8 +176,7 @@
               class="dark-input" required autocomplete="current-password">
           </div>
           <button type="submit"
-            class="w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:brightness-110 active:scale-[0.98] mt-1"
-            style="background: linear-gradient(135deg, #047857, #10b981); box-shadow: 0 6px 18px rgba(4,120,87,0.30);">
+            class="btn-submit">
             Masuk
           </button>
         </form>

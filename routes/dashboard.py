@@ -107,6 +107,9 @@ def dashboard():
         "rekom_prodi_per_sekolah": rekom_prodi_per_sekolah,
         "rekom_sekolah_per_prodi": rekom_sekolah_per_prodi,
         "prodi_column_available": bool(prodi_column),
+        "total_sekolah": df_kmeans_full['ASAL SEKOLAH'].nunique() if 'ASAL SEKOLAH' in df_kmeans_full.columns else 0,
+        "active_model": active_model,
+        "data_rekomendasi": rekom_prodi_per_sekolah
     }
     _dash_cache_set(cache_key, ctx)
     return render_template("dashboard.html", **ctx)
@@ -191,7 +194,7 @@ def data_cluster():
     selected_prodi = request.args.get('prodi', 'all')
     limit_rows = request.args.get('limit', '500')
     search_sekolah = request.args.get('search', '').strip()
-    selected_cluster = request.args.get('cluster', 'all')
+    selected_label = request.args.get('label', 'all')
     
     prodi_column = 'PROGRAM STUDI' if 'PROGRAM STUDI' in df_kmeans.columns else None
     prodi_list = sorted(df_kmeans[prodi_column].dropna().unique().astype(str)) if prodi_column else []
@@ -227,12 +230,22 @@ def data_cluster():
         except Exception:
             cluster_options = sorted(df_kmeans['Cluster'].dropna().unique().tolist())
 
-    if selected_cluster != 'all' and 'Cluster' in df_kmeans.columns:
+    if selected_label != 'all' and 'Cluster' in df_kmeans.columns:
         try:
-            cluster_id = int(selected_cluster)
-            df_kmeans = df_kmeans[df_kmeans['Cluster'] == cluster_id]
-        except ValueError:
-            selected_cluster = 'all'
+            target_cluster_id = label_to_cluster.get(selected_label)
+            if target_cluster_id is not None:
+                df_kmeans = df_kmeans[df_kmeans['Cluster'] == target_cluster_id]
+        except Exception:
+            selected_label = 'all'
+
+    # Compute stats for each label to show in cards
+    algo_stats = {}
+    for lab, cid in label_to_cluster.items():
+        sub = df_kmeans_for_stats[df_kmeans_for_stats['Cluster'] == cid]
+        algo_stats[lab] = {
+            'total_mahasiswa': int(len(sub)),
+            'ipk_mean': float(sub['NILAI KESELURUHAN'].mean()) if not sub.empty else 0.0
+        }
 
     if limit_rows != 'all':
         try:
@@ -251,7 +264,9 @@ def data_cluster():
         prodi_list=prodi_list,
         selected_prodi=selected_prodi,
         cluster_options=cluster_options,
-        selected_cluster=selected_cluster,
+        selected_label=selected_label,
+        algo_stats=algo_stats,
+        labels=['A', 'B', 'C'],
         limit_rows=limit_rows,
         search_sekolah=search_sekolah,
         sekolah_list=sekolah_list

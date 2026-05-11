@@ -8,7 +8,7 @@
   <title>Data Cluster — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -32,7 +32,9 @@
   <header class="nav-glass">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 min-w-0">
-        <div class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center font-extrabold text-sm flex-shrink-0">SR</div>
+        <div class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+        </div>
         <div class="min-w-0">
           <p class="section-label">SIREKPRODI</p>
           <h1 class="text-base font-bold text-slate-900 leading-tight">Data Cluster</h1>
@@ -55,7 +57,7 @@
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-page-in">
     <div id="toast-anchor"></div>
 
     <section class="card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -85,63 +87,83 @@
           </div>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">PROGRAM STUDI</label>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PRODI</label>
           <select name="prodi" onchange="this.form.submit()"
-            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium max-w-[200px]">
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 text-slate-700 font-medium min-w-[140px]">
             <option value="all" {% if selected_prodi=='all' %}selected{% endif %}>Semua Prodi</option>
-            {% for prodi in prodi_list %}
-            <option value="{{ prodi }}" {% if selected_prodi==prodi %}selected{% endif %}>{{ prodi }}</option>
+            {% for pr in prodi_list %}
+            <option value="{{ pr }}" {% if selected_prodi==pr %}selected{% endif %}>{{ pr }}</option>
             {% endfor %}
           </select>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CLUSTER ID</label>
-          <select name="cluster" onchange="this.form.submit()"
-            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium pill">
-            <option value="all" {% if selected_cluster=='all' %}selected{% endif %}>Semua Cluster</option>
-            {% for cid in cluster_options %}
-            <option value="{{ cid }}" {% if selected_cluster != 'all' and (selected_cluster|int) == cid %}selected{% endif %}>Cluster {{ cid }}</option>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CLUSTER</label>
+          <select name="label" onchange="this.form.submit()"
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 text-slate-700 font-medium">
+            <option value="all" {% if selected_label=='all' %}selected{% endif %}>Semua Cluster</option>
+            {% for l in labels %}
+            <option value="{{ l }}" {% if selected_label==l %}selected{% endif %}>Label {{ l }}</option>
             {% endfor %}
           </select>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">LIMIT BARIS</label>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">LIMIT</label>
           <select name="limit" onchange="this.form.submit()"
-            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 font-medium pill">
-            <option value="100" {% if limit_rows=="100" %}selected{% endif %}>100 Baris</option>
-            <option value="500" {% if limit_rows=="500" %}selected{% endif %}>500 Baris</option>
-            <option value="1000" {% if limit_rows=="1000" %}selected{% endif %}>1000 Baris</option>
-            <option value="all" {% if limit_rows=="all" %}selected{% endif %}>Semua (Bisa Lag)</option>
+            class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-emerald-500 text-slate-700 font-medium">
+            <option value="100" {% if limit_rows=="100" %}selected{% endif %}>100</option>
+            <option value="500" {% if limit_rows=="500" %}selected{% endif %}>500</option>
+            <option value="1000" {% if limit_rows=="1000" %}selected{% endif %}>1000</option>
+            <option value="all" {% if limit_rows=="all" %}selected{% endif %}>Semua</option>
           </select>
         </div>
-        <div class="flex items-end pl-2">
-          <a href="{{ url_for('dashboard.download_cluster', search=search_sekolah, prodi=selected_prodi, cluster=selected_cluster) }}" target="_blank"
-            class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-            </svg>
-            Unduh Excel
+        <div class="flex items-end">
+          <a href="{{ url_for('dashboard.download_cluster', search=search_sekolah, prodi=selected_prodi, label=selected_label) }}" target="_blank"
+            class="btn-primary py-2 px-4 text-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Excel
           </a>
         </div>
+        {% if search_sekolah or selected_prodi != 'all' or selected_label != 'all' %}
+        <div class="flex items-end pb-2">
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="text-[11px] font-bold text-red-500 hover:text-red-600 underline decoration-red-200 underline-offset-4">Reset</a>
+        </div>
+        {% endif %}
       </form>
     </section>
 
     <!-- Visualisasi Section -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="card flex flex-col items-center">
-        <h3 class="text-sm font-bold text-slate-800 self-start mb-2">Sebaran Mahasiswa per Cluster</h3>
-        <div class="w-full max-w-[280px]">
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="card card-hover flex flex-col items-center">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest self-start mb-4">Sebaran Mahasiswa per Cluster</h3>
+        <div class="w-full max-w-[260px]">
           <canvas id="clusterPieChart"></canvas>
         </div>
       </div>
-      <div class="card flex flex-col">
-        <h3 class="text-sm font-bold text-slate-800 mb-2">Rata-rata IPK per Cluster</h3>
-        <div class="w-full flex-grow relative min-h-[200px]">
+      <div class="card card-hover flex flex-col">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Rata-rata IPK per Cluster</h3>
+        <div class="w-full flex-grow relative min-h-[220px]">
           <canvas id="ipkBarChart"></canvas>
         </div>
       </div>
     </section>
+
+    {% if selected_label != 'all' %}
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="card card-flat p-5 border-emerald-100 bg-emerald-50/30">
+        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">IPK Rata-rata (Cluster {{ selected_label }})</p>
+        <p class="text-3xl font-extrabold text-slate-900 leading-tight">
+          {{ '%.2f'|format(algo_stats[selected_label].ipk_mean) }}
+        </p>
+      </div>
+      <div class="card card-flat p-5 border-emerald-100 bg-emerald-50/30">
+        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Total Mahasiswa (Cluster {{ selected_label }})</p>
+        <p class="text-3xl font-extrabold text-slate-900 leading-tight">
+          {{ algo_stats[selected_label].total_mahasiswa }}
+        </p>
+      </div>
+    </section>
+    {% endif %}
 
     <!-- Table Section -->
     <section class="card p-0 overflow-hidden">
@@ -250,7 +272,9 @@
   <footer class="w-full bg-white border-t border-slate-100 mt-12">
     <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-2.5">
-        <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center font-bold text-white text-xs flex-shrink-0">SR</div>
+        <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+        </div>
         <div>
           <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
           <p class="text-xs text-slate-400">Inspeksi data cluster K-Means langsung pada dataset pendaftar.</p>
@@ -268,7 +292,7 @@
   </footer>
 
   <!-- Modal konfirmasi -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center px-4">
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4">
       <div class="flex items-start gap-3">
         <div id="confirm-icon" class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
@@ -289,26 +313,34 @@
   <script>
     const rawRecords = {{ records| tojson | safe }};
 
-    // Aggregasi Data
-    const clusterStats = { '0': { count: 0, ipk: 0 }, '1': { count: 0, ipk: 0 }, '2': { count: 0, ipk: 0 } };
+    const clusterToLabel = {{ cluster_to_label | tojson | safe }};
+    const labels = {{ labels | tojson | safe }}; // ['A', 'B', 'C']
+    
+    // Aggregasi Data berdasarkan Label
+    const labelStats = { 'A': { count: 0, ipk: 0 }, 'B': { count: 0, ipk: 0 }, 'C': { count: 0, ipk: 0 } };
     rawRecords.forEach(r => {
-      let c = String(r['Cluster'] || '0');
-      if (clusterStats[c]) {
-        clusterStats[c].count++;
-        clusterStats[c].ipk += (r['NILAI KESELURUHAN'] || 0);
+      let clusterId = r['Cluster'];
+      let lab = clusterToLabel[clusterId];
+      if (lab && labelStats[lab]) {
+        labelStats[lab].count++;
+        labelStats[lab].ipk += (r['NILAI KESELURUHAN'] || 0);
       }
     });
 
-    const labelsData = ['Cluster 0', 'Cluster 1', 'Cluster 2'];
-    const countsData = [clusterStats['0'].count, clusterStats['1'].count, clusterStats['2'].count];
-    const avgIpkData = [
-      clusterStats['0'].count > 0 ? (clusterStats['0'].ipk / clusterStats['0'].count).toFixed(2) : 0,
-      clusterStats['1'].count > 0 ? (clusterStats['1'].ipk / clusterStats['1'].count).toFixed(2) : 0,
-      clusterStats['2'].count > 0 ? (clusterStats['2'].ipk / clusterStats['2'].count).toFixed(2) : 0
-    ];
+    const labelsData = labels.map(l => `Cluster ${l}`);
+    const countsData = labels.map(l => labelStats[l].count);
+    const avgIpkData = labels.map(l => labelStats[l].count > 0 ? (labelStats[l].ipk / labelStats[l].count).toFixed(2) : 0);
 
-    const bgColors = ['rgba(16, 185, 129, 0.8)', 'rgba(59, 130, 246, 0.8)', 'rgba(245, 158, 11, 0.8)'];
-    const borderColors = ['#059669', '#2563eb', '#d97706'];
+    const bgColors = [
+      'rgba(16, 185, 129, 0.7)', // Emerald (A)
+      'rgba(99, 102, 241, 0.7)', // Indigo (B)
+      'rgba(245, 158, 11, 0.7)'  // Amber (C)
+    ];
+    const borderColors = [
+      '#059669', 
+      '#4f46e5', 
+      '#d97706'
+    ];
 
     // Pie Chart
     if (countsData.some(v => v > 0)) {
@@ -327,7 +359,7 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } } },
+            legend: { position: 'bottom', labels: { font: { family: 'Outfit', weight: 'bold' } } },
             datalabels: {
               color: '#fff',
               font: { weight: 'bold', size: 14 },

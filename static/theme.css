@@ -4,29 +4,21 @@
 */
 
 /* ── Google Fonts ────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* ── Design Tokens ───────────────────────────────────────────── */
 :root {
-  /* Brand */
-  --primary: #047857;
-  /* emerald-700 */
-  --primary-dark: #065f46;
-  /* emerald-800 */
+  /* Brand - Refined Emerald */
+  --primary: #064e3b;
+  --primary-mid: #059669;
   --primary-light: #10b981;
-  /* emerald-500 */
-  --primary-soft: #ecfdf5;
-  /* emerald-50  */
-  --primary-border: #a7f3d0;
-  /* emerald-200 */
+  --primary-soft: #f0fdf4;
+  --primary-border: #dcfce7;
 
-  /* Ink */
+  /* Ink - Deep Neutrals */
   --ink: #0f172a;
-  /* slate-900 */
   --ink-mid: #334155;
-  /* slate-700 */
   --ink-light: #64748b;
-  /* slate-500 */
   --ink-xlight: #94a3b8;
   /* slate-400 */
 
@@ -44,19 +36,19 @@
   --border-focus: #34d399;
   /* emerald-400 */
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
-  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
-  --shadow-brand: 0 6px 20px rgba(4, 120, 87, 0.18);
+  /* Shadows - Layered and natural */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-brand: 0 10px 25px -5px rgba(6, 78, 59, 0.15);
 
-  /* Radius */
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 18px;
-  --r-2xl: 24px;
+  /* Radius - More rounded for modern feel */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
 }
 
 /* ── Base Reset ──────────────────────────────────────────────── */
@@ -67,13 +59,12 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   background-color: var(--surface-base);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
-  animation: fadeInPage 0.35s ease-out both;
+  line-height: 1.5;
 }
 
 h1,
@@ -82,10 +73,10 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   color: var(--ink);
 }
 
@@ -98,13 +89,17 @@ a {
 @keyframes fadeInPage {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.animate-page-in {
+  animation: fadeInPage 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Navigation (Header) ─────────────────────────────────────── */
@@ -185,36 +180,38 @@ a {
 .card {
   background: var(--surface-card);
   border: 1px solid var(--border);
-  border-radius: var(--r-xl);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
+  padding: 24px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  border-color: var(--border-mid);
+}
+
+.card-flat {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 /* ── Brand Mark ─────────────────────────────────────────────── */
 .brand-mark {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: #fff;
-  box-shadow: var(--shadow-brand);
-  position: relative;
+  background: var(--primary);
+  border-radius: var(--r-md);
   overflow: hidden;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.brand-mark::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
+.brand-mark img {
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
-  animation: shine 3.5s infinite;
+  object-fit: cover;
 }
 
 @keyframes shine {
@@ -237,32 +234,31 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  gap: 8px;
+  background: var(--primary);
   color: #fff;
-  padding: 0.5rem 1.1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: var(--r-md);
   font-weight: 600;
-  font-size: 0.8125rem;
-  border: none;
+  font-size: 0.875rem;
+  border: 1px solid var(--primary);
   cursor: pointer;
   box-shadow: var(--shadow-brand);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition: all 0.2s;
   white-space: nowrap;
   text-decoration: none;
 }
 
 .btn-main:hover,
 .btn-primary:hover {
-  filter: brightness(1.06);
+  background: var(--primary-mid);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(4, 120, 87, 0.25);
+  box-shadow: 0 12px 24px -8px rgba(6, 78, 59, 0.3);
 }
 
 .btn-main:active,
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: var(--shadow-brand);
 }
 
 .btn-ghost {
@@ -684,4 +680,11 @@ textarea:focus {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--primary);
+}
+
+/* ── Modal Blur Overlay ─────────────────────────────────────── */
+.blur-overlay {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  background-color: rgba(15, 23, 42, 0.45) !important;
 }

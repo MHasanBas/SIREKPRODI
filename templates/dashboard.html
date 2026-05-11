@@ -9,7 +9,7 @@
   <title>Dashboard — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,7 +34,7 @@
 
   <!-- Modal: Detail mahasiswa -->
   <div id="modalMahasiswaDetail" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeMahasiswaDetail()"></div>
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm blur-overlay" onclick="closeMahasiswaDetail()"></div>
     <div
       class="relative w-[95vw] max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[88vh] overflow-hidden flex flex-col">
       <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
@@ -50,12 +50,12 @@
   <header class="nav-glass">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 min-w-0">
-        <div
-          class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center font-extrabold text-sm flex-shrink-0">SR
+        <div class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
         </div>
         <div class="min-w-0">
-          <p class="section-label">SIREKPRODI</p>
-          <h1 class="text-base font-bold text-slate-900 leading-tight">Dashboard Sekolah &amp; Prodi</h1>
+          <p class="section-label text-emerald-700">SIREKPRODI</p>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Dashboard Analitik</h1>
         </div>
       </div>
       {% set current = request.endpoint %}
@@ -81,8 +81,42 @@
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-5 space-y-4">
+  <main class="max-w-6xl mx-auto px-4 py-5 space-y-4 animate-page-in">
     <div id="toast-anchor"></div>
+
+    <!-- ── Dashboard Stats (Summary) ───────────────────────────── -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="card card-hover flex items-center gap-4">
+        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Sekolah</p>
+          <p class="text-3xl font-extrabold text-slate-900 leading-tight">{{ total_sekolah }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">Dataset pendaftar aktif</p>
+        </div>
+      </div>
+      <div class="card card-hover flex items-center gap-4">
+        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Rekomendasi</p>
+          <p class="text-3xl font-extrabold text-slate-900 leading-tight">{{ data_rekomendasi|length }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">Potensi unggulan</p>
+        </div>
+      </div>
+      <div class="card card-hover flex items-center gap-4">
+        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Model Aktif</p>
+          <p class="text-xl font-bold text-slate-900 leading-tight">{{ active_model }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">Mesin K-Means terpilih</p>
+        </div>
+      </div>
+    </div>
 
     <!-- ── Filter Bar (sticky) ──────────────────────────────────── -->
     <div id="filter-bar" class="card sticky top-[60px] z-30 flex flex-wrap items-center gap-3 py-2.5 px-4">
@@ -163,32 +197,36 @@
           class="{% if label != 'A' %}hidden{% endif %} space-y-4">
           <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{
             algo.deskripsi_cluster[label] }}</p>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="card shadow-none border border-slate-100">
-              <p class="text-xs text-slate-500 font-semibold uppercase">Total Mahasiswa</p>
-              <p class="text-2xl font-bold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card card-flat p-5 border-slate-100">
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Total Mahasiswa</p>
+              <p class="text-3xl font-extrabold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
             </div>
-            <div class="card shadow-none border border-slate-100">
-              <p class="text-xs text-slate-500 font-semibold uppercase">Rata-rata IPK</p>
-              <p class="text-2xl font-bold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
+            <div class="card card-flat p-5 border-slate-100">
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Rata-rata IPK</p>
+              <p class="text-3xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
             </div>
-            <div class="card shadow-none border border-slate-100">
-              <p class="text-xs text-slate-500 font-semibold uppercase">Kota IPK Tertinggi</p>
-              <p class="text-base font-semibold text-slate-900">{{ algo[label].kota_terbaik }}</p>
+            <div class="card card-flat p-5 border-slate-100">
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Kota Terbaik</p>
+              <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].kota_terbaik }}</p>
             </div>
-            <div class="card shadow-none border border-slate-100">
-              <p class="text-xs text-slate-500 font-semibold uppercase">Sekolah Terbaik</p>
-              <p class="text-base font-semibold text-slate-900">{{ algo[label].sekolah_terbaik }}</p>
+            <div class="card card-flat p-5 border-slate-100">
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sekolah Terbaik</p>
+              <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].sekolah_terbaik }}</p>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="card shadow-none border border-slate-100">
-              <h4 class="text-sm font-semibold text-slate-800 mb-2">Mahasiswa per Kota (Top 10)</h4>
-              <canvas id="lineChart_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="card card-flat p-6 border-slate-100">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Mhs per Kota (Top 10)</h4>
+              <div class="h-[240px]">
+                <canvas id="lineChart_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+              </div>
             </div>
-            <div class="card shadow-none border border-slate-100">
-              <h4 class="text-sm font-semibold text-slate-800 mb-2">Distribusi IPK Mahasiswa</h4>
-              <canvas id="barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+            <div class="card card-flat p-6 border-slate-100">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Distribusi IPK</h4>
+              <div class="h-[240px]">
+                <canvas id="barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+              </div>
             </div>
           </div>
           <div class="card shadow-none border border-slate-100">
@@ -271,7 +309,7 @@
     </div><!-- /tab-analitik -->
 
     <!-- ═══ TAB 2 — Sekolah Unggulan ════════════════════════════════════ -->
-    <div id="tab-unggulan" class="tab-pane hidden space-y-3">
+    <div id="tab-unggulan" class="tab-pane hidden space-y-6">
       {% if prodi_column_available %}
       <div class="card space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -500,9 +538,9 @@
   <footer class="w-full bg-white border-t border-slate-100 mt-12">
     <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-2.5">
-        <div
-          class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
-          SR</div>
+        <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+        </div>
         <div>
           <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
           <p class="text-xs text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
@@ -522,7 +560,7 @@
 
   <!-- Modal konfirmasi -->
   <div id="confirm-modal"
-    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center px-4">
+    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4">
       <div class="flex items-start gap-3">
         <div id="confirm-icon"
@@ -657,15 +695,17 @@
       datasets: [{
         label: 'Jumlah Mahasiswa',
         data: {{ algo[label].distribusi_ipk | map(attribute = 'count') | list | tojson }},
-      backgroundColor: '#0f766e'
+        backgroundColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
+        borderRadius: 4,
             }]
           },
       options: {
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         datalabels: {
-          anchor: 'end', align: 'top', color: '#0f172a',
-          font: { weight: 'bold', size: 10 },
+          anchor: 'end', align: 'top', color: '#475569',
+          font: { weight: 'bold', size: 10, family: 'Outfit' },
           formatter: val => val > 0 ? val : ''
         }
       },
@@ -684,15 +724,21 @@
       datasets: [{
         label: 'Jumlah Mahasiswa',
         data: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute = 'jumlah') | list | tojson }},
-      borderColor: '#0ea5e9',
-      backgroundColor: 'rgba(14,165,233,0.18)',
+      borderColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
+      backgroundColor: '{% if label == "A" %}rgba(5, 150, 105, 0.08){% elif label == "B" %}rgba(79, 70, 229, 0.08){% else %}rgba(217, 119, 6, 0.08){% endif %}',
+      pointBackgroundColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
+      pointRadius: 3,
       fill: true,
-      tension: 0.35
+      tension: 0.4
             }]
           },
       options: {
+      maintainAspectRatio: false,
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: { 
+        legend: { display: false },
+        datalabels: { display: false }
+      },
       scales: {
         y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
         x: {}
