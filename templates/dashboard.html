@@ -9,8 +9,7 @@
   <title>Dashboard — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -33,8 +32,8 @@
 <body>
 
   <!-- Modal: Detail mahasiswa -->
-  <div id="modalMahasiswaDetail" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm blur-overlay" onclick="closeMahasiswaDetail()"></div>
+  <div id="modalMahasiswaDetail" class="hidden fixed inset-0 z-[200] flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md blur-overlay" onclick="closeMahasiswaDetail()"></div>
     <div
       class="relative w-[95vw] max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[88vh] overflow-hidden flex flex-col">
       <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
@@ -47,521 +46,10 @@
     </div>
   </div>
 
-  <header class="nav-glass">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
-          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
-        </div>
-        <div class="min-w-0">
-          <p class="section-label text-emerald-700">SIREKPRODI</p>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">Dashboard Analitik</h1>
-        </div>
-      </div>
-      {% set current = request.endpoint %}
-      <nav class="nav-shell flex-shrink-0">
-        <div class="nav-links">
-          <div class="nav-indicator" id="nav-indicator"></div>
-          <a href="{{ url_for('dashboard.dashboard') }}"
-            class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}" data-nav-link>Dashboard</a>
-          <a href="{{ url_for('dashboard.data_cluster') }}"
-            class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}" data-nav-link>Data
-            Cluster</a>
-          <a href="{{ url_for('upload.upload') }}"
-            class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}" data-nav-link>Upload</a>
-          <a href="{{ url_for('model.pelatihan_model') }}"
-            class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan
-            Model</a>
-          <a href="{{ url_for('auth.logout') }}" class="nav-link nav-danger" data-nav-link data-confirm
-            data-confirm-title="Konfirmasi Logout"
-            data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
-            data-confirm-accent="red">Logout</a>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 py-5 space-y-4 animate-page-in">
-    <div id="toast-anchor"></div>
-
-    <!-- ── Dashboard Stats (Summary) ───────────────────────────── -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <div class="card card-hover flex items-center gap-4">
-        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Sekolah</p>
-          <p class="text-3xl font-extrabold text-slate-900 leading-tight">{{ total_sekolah }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">Dataset pendaftar aktif</p>
-        </div>
-      </div>
-      <div class="card card-hover flex items-center gap-4">
-        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Rekomendasi</p>
-          <p class="text-3xl font-extrabold text-slate-900 leading-tight">{{ data_rekomendasi|length }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">Potensi unggulan</p>
-        </div>
-      </div>
-      <div class="card card-hover flex items-center gap-4">
-        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Model Aktif</p>
-          <p class="text-xl font-bold text-slate-900 leading-tight">{{ active_model }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">Mesin K-Means terpilih</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Filter Bar (sticky) ──────────────────────────────────── -->
-    <div id="filter-bar" class="card sticky top-[60px] z-30 flex flex-wrap items-center gap-3 py-2.5 px-4">
-      <div class="flex items-center gap-2">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Cluster</span>
-        <div class="flex gap-1">
-          {% for lbl in ['A','B','C'] %}
-          <button type="button" id="globalBtn{{ lbl }}" onclick="setGlobalCluster('{{ lbl }}')"
-            class="pill text-xs font-bold {% if lbl == 'A' %}pill-active{% endif %}">
-            {{ lbl }}
-          </button>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="h-4 w-px bg-slate-200"></div>
-      {% if prodi_list %}
-      <form method="get" class="flex items-center gap-2">
-        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prodi</label>
-        <select name="prodi" onchange="this.form.submit()" class="pill text-xs pr-8 max-w-[200px] truncate">
-          <option value="all" {% if selected_prodi=='all' %}selected{% endif %}>Semua Prodi</option>
-          {% for prodi in prodi_list %}
-          <option value="{{ prodi }}" {% if selected_prodi==prodi %}selected{% endif %}>{{ prodi }}</option>
-          {% endfor %}
-        </select>
-        <input type="hidden" name="tampilkan" value="{{ request.args.get('tampilkan', 'top10') }}">
-      </form>
-      {% endif %}
-      <form method="get" class="flex items-center gap-2">
-        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Baris</label>
-        <select name="tampilkan" onchange="this.form.submit()" class="pill text-xs pr-8">
-          <option value="top10" {% if request.args.get('tampilkan','top10')=='top10' %}selected{% endif %}>10 Teratas
-          </option>
-          <option value="semua" {% if request.args.get('tampilkan')=='semua' %}selected{% endif %}>Semua</option>
-        </select>
-        <input type="hidden" name="prodi" value="{{ selected_prodi }}">
-      </form>
-      {% if selected_prodi != 'all' %}
-      <div class="ml-auto hidden md:flex">
-        <span class="badge badge-blue">{{ selected_prodi }}</span>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- ── Tab Switcher (pill style) ────────────────────────────── -->
-    <div class="tab-bar">
-      <button type="button" id="btn-tab-analitik" onclick="switchTab('tab-analitik')" class="tab-btn tab-active">
-        Analitik Cluster
-      </button>
-      <button type="button" id="btn-tab-unggulan" onclick="switchTab('tab-unggulan')" class="tab-btn">
-        Sekolah Unggulan
-      </button>
-      <button type="button" id="btn-tab-sasaran" onclick="switchTab('tab-sasaran')" class="tab-btn">
-        Sasaran per Prodi
-      </button>
-    </div>
-
-    <!-- ═══ TAB 1 — Analitik Cluster ═══════════════════════════════════ -->
-    <div id="tab-analitik" class="tab-pane space-y-4">
-      {% set algoritmas = [kmeans_data] %}
-      {% for algo in algoritmas %}
-      {% set algo_index = loop.index0 %}
-      <div class="card space-y-4" data-algo-index="{{ algo_index }}">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">{{ algo.algoritma }}</p>
-            <h2 class="text-xl font-bold text-slate-900">Analitik Cluster</h2>
-          </div>
-          <div class="flex gap-2">
-            {% for lbl in ['A','B','C'] %}
-            <button type="button" data-cluster-btn="{{ algo_index }}" data-label="{{ lbl }}"
-              onclick="toggleCluster({{ algo_index }}, '{{ lbl }}')"
-              class="pill text-sm font-bold {% if lbl == 'A' %}pill-active{% endif %}">Cluster {{ lbl }}</button>
-            {% endfor %}
-          </div>
-        </div>
-        {% for label in ['A', 'B', 'C'] %}
-        <div data-cluster-block="{{ algo_index }}" data-label="{{ label }}"
-          class="{% if label != 'A' %}hidden{% endif %} space-y-4">
-          <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{
-            algo.deskripsi_cluster[label] }}</p>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card card-flat p-5 border-slate-100">
-              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Total Mahasiswa</p>
-              <p class="text-3xl font-extrabold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
-            </div>
-            <div class="card card-flat p-5 border-slate-100">
-              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Rata-rata IPK</p>
-              <p class="text-3xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
-            </div>
-            <div class="card card-flat p-5 border-slate-100">
-              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Kota Terbaik</p>
-              <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].kota_terbaik }}</p>
-            </div>
-            <div class="card card-flat p-5 border-slate-100">
-              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sekolah Terbaik</p>
-              <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].sekolah_terbaik }}</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="card card-flat p-6 border-slate-100">
-              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Mhs per Kota (Top 10)</h4>
-              <div class="h-[240px]">
-                <canvas id="lineChart_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
-              </div>
-            </div>
-            <div class="card card-flat p-6 border-slate-100">
-              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Distribusi IPK</h4>
-              <div class="h-[240px]">
-                <canvas id="barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="card shadow-none border border-slate-100">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-              <h4 class="text-base font-semibold text-slate-900">Sekolah Rekomendasi — Cluster {{ label }}</h4>
-              <details class="text-[11px] cursor-pointer">
-                <summary class="font-bold text-sky-700 list-none flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  Cara Membaca Skor
-                </summary>
-                <div class="mt-1 bg-sky-50 border border-sky-100 rounded-lg p-2 text-sky-700/90">
-                  <ul class="list-disc list-inside space-y-0.5 ml-1">
-                    <li><b>Kategori:</b> Akademik (×2), Non-Akademik (×1)</li>
-                    <li><b>Tingkat:</b> Internasional/Nasional (3), Provinsi (2), Lainnya (1)</li>
-                    <li><b>Peringkat:</b> Juara 1 (3), Juara 2 (2), Juara 3 (1)</li>
-                  </ul>
-                </div>
-              </details>
-            </div>
-            <div class="mb-3 relative">
-              <input type="text" id="searchSekolah_{{ algo_index }}_{{ label }}"
-                data-search-target="table_{{ algo_index }}_{{ label }}" placeholder="Cari nama sekolah..."
-                class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
-                oninput="filterSekolahTable(this)">
-              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-              <span id="searchCount_{{ algo_index }}_{{ label }}"
-                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"></span>
-            </div>
-            <div class="scroll-shadow rounded-xl max-h-80 overflow-y-auto">
-              <table class="min-w-full text-sm table-sticky">
-                <thead>
-                  <tr class="text-left text-slate-500 uppercase text-xs">
-                    <th class="py-2 pr-3">Asal Sekolah</th>
-                    <th class="py-2 pr-3 text-right">Mhs</th>
-                    <th class="py-2 pr-3 text-right">IPK</th>
-                    <th class="py-2 pr-3 text-right">Std Dev</th>
-                    <th class="py-2 pr-3 text-right">Akad</th>
-                    <th class="py-2 pr-3 text-right">Non-Akad</th>
-                    <th class="py-2 pr-3">Kota</th>
-                    <th class="py-2 pr-3">Provinsi</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  {% for row in algo[label].tabel_rekomendasi %}
-                  <tr class="hover:bg-slate-50 odd:bg-slate-50/60 cursor-pointer transition-colors"
-                    data-table-id="table_{{ algo_index }}_{{ label }}"
-                    data-sekolah-name="{{ row['ASAL SEKOLAH']|lower }}" data-sekolah="{{ row['ASAL SEKOLAH'] }}"
-                    data-prodi="{{ selected_prodi }}" onclick="openMahasiswaDetail(this)"
-                    title="Klik untuk melihat detail mahasiswa & prestasi">
-                    <td class="py-2 pr-3 font-semibold text-slate-900">{{ row['ASAL SEKOLAH'] }}</td>
-                    <td class="py-2 pr-3 text-right font-semibold">{{ row['mahasiswa'] }}</td>
-                    <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['ipk']) }}</td>
-                    <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['deviasi']) }}</td>
-                    <td class="py-2 pr-3 text-right text-emerald-600 font-semibold"
-                      title="{{ row['teks_akademik'] }} ({{ row['poin_akademik'] }} Poin)">{{ row['poin_akademik'] }}
-                    </td>
-                    <td class="py-2 pr-3 text-right text-blue-600 font-semibold"
-                      title="{{ row['teks_non_akademik'] }} ({{ row['poin_non_akademik'] }} Poin)">{{
-                      row['poin_non_akademik'] }}</td>
-                    <td class="py-2 pr-3">{{ row['KOTA SEKOLAH'] }}</td>
-                    <td class="py-2 pr-3">{{ row['PROVINSI SEKOLAH'] }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      {% endfor %}
-    </div><!-- /tab-analitik -->
-
-    <!-- ═══ TAB 2 — Sekolah Unggulan ════════════════════════════════════ -->
-    <div id="tab-unggulan" class="tab-pane hidden space-y-6">
-      {% if prodi_column_available %}
-      <div class="card space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Fitur 1 · K-Means</p>
-            <h2 class="text-xl font-bold text-slate-900">Prodi di Sekolah Unggulan</h2>
-            <p class="text-sm text-slate-500">3 prodi terbaik per sekolah unggulan untuk prioritas promosi.</p>
-            <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
-              <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK.
-              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi (akademik &amp; non-akademik),
-              jumlah mahasiswa, dan stabilitas nilai (deviasi) — dipakai untuk urutan prioritas, bukan menggantikan IPK.
-            </p>
-          </div>
-          <span id="sekolahUnggulanCount"
-            class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">{{
-            rekom_prodi_per_sekolah|length }} sekolah</span>
-        </div>
-        <div class="relative">
-          <input type="text" id="searchSekolahUnggulan" placeholder="Cari nama sekolah..."
-            class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
-            oninput="filterSekolahUnggulan(this)">
-          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="sekolahUnggulanList">
-          {% if rekom_prodi_per_sekolah %}
-          {% for item in rekom_prodi_per_sekolah %}
-          <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
-            data-school-card data-school-name="{{ item.sekolah|lower }}" data-prodi-rows="{{ item.top_prodi|length }}">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <h4 class="font-bold text-slate-900 leading-snug truncate">{{ item.sekolah }}</h4>
-                <p class="text-xs text-slate-500 truncate">{{ item.kota }}, {{ item.provinsi }}</p>
-              </div>
-              <div class="text-right shrink-0">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</p>
-                <p class="text-xl font-bold text-emerald-700">{{ '%.2f'|format(item.ipk_mean) }}</p>
-                <p class="text-xs text-slate-400">{{ item.mahasiswa }} mhs</p>
-                <p class="text-[11px] text-amber-800/90 mt-1.5 font-medium leading-snug text-right"
-                  title="Semua mahasiswa sekolah ini, semua program studi">
-                  Total sekolah (semua prodi): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
-                  item.poin_non_akademik|default(0) }}
-                </p>
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
-              <label class="text-xs font-medium text-slate-600">Tampilkan prodi</label>
-              <select data-prodi-limit-select onchange="setSchoolProdiLimit(this)"
-                class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-                title="{% if item.prodi_total_asal|default(0) > item.top_prodi|length %}Hingga {{ item.top_prodi|length }} baris (data dibatasi){% else %}Urut prioritas{% endif %}">
-                <option value="3" selected>3</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="all">Semua ({{ item.top_prodi|length }})</option>
-              </select>
-            </div>
-            <div class="space-y-1.5 school-prodi-list">
-              {% for prodi in item.top_prodi %}
-              <div
-                class="flex items-center justify-between text-xs bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-1.5 gap-2 school-prodi-row cursor-pointer hover:bg-emerald-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
-                role="button" tabindex="0" data-sekolah="{{ item.sekolah }}" data-prodi="{{ prodi.prodi }}"
-                onclick="openMahasiswaDetail(this)"
-                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetail(this)}"
-                title="Klik untuk lihat detail mahasiswa">
-                <span class="font-semibold text-slate-800 truncate min-w-0">{{ prodi.prodi }}</span>
-                <span class="text-slate-500 shrink-0 text-right leading-tight">
-                  <span class="block font-semibold text-slate-700">{{ '%.2f'|format(prodi.ipk) }} IPK</span>
-                  <span class="block text-[10px] text-slate-400 leading-snug">{{ prodi.mahasiswa }} mhs · poin prestasi:
-                    akademik {{ (prodi.poin_akademik|default(0))|int }}, non-akademik {{
-                    (prodi.poin_non_akademik|default(0))|int }}</span>
-                </span>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-          {% endfor %}
-          {% else %}
-          <div class="col-span-2 text-sm text-slate-500">Belum ada data.</div>
-          {% endif %}
-        </div>
-        <div id="sekolahUnggulanEmpty" class="hidden empty-state mt-4">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <div class="empty-title">Tidak ada sekolah ditemukan</div>
-          <div class="empty-desc">Coba ubah kata kunci pencarian Anda.</div>
-        </div>
-      </div>
-      {% else %}
-      <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
-      {% endif %}
-    </div><!-- /tab-unggulan -->
-
-    <!-- ═══ TAB 3 — Sasaran per Prodi ═══════════════════════════════════ -->
-    <div id="tab-sasaran" class="tab-pane hidden space-y-3">
-      {% if prodi_column_available %}
-      <div class="card space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <p class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Fitur 2 · K-Means</p>
-            <h2 class="text-xl font-bold text-slate-900">Sekolah Sasaran per Prodi</h2>
-            <p class="text-sm text-slate-500">Sekolah prioritas untuk tiap prodi berdasarkan performa alumni.</p>
-            <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
-              <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK (per prodi dan per
-              sekolah dalam daftar).
-              <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi akademik &amp; non-akademik,
-              jumlah mahasiswa, dan stabilitas nilai — dipakai untuk urutan prioritas, bukan menggantikan IPK.
-            </p>
-          </div>
-          <span id="prodiSasaranCount"
-            class="text-blue-700 bg-blue-50 border border-blue-200 text-sm font-semibold px-3 py-1 rounded-full">{{
-            rekom_sekolah_per_prodi|length }} prodi</span>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prodi</label>
-          <select id="selectProdiSasaran" onchange="filterProdiSasaranDropdown(this)"
-            class="pill text-sm pr-8 max-w-[420px] truncate focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-            <option value="">Semua Prodi</option>
-            {% for item in rekom_sekolah_per_prodi %}
-            <option value="{{ item.prodi|lower }}">{{ item.prodi }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="relative mt-2">
-          <input type="text" id="searchSekolahSasaran" placeholder="Cari nama sekolah..."
-            class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-            oninput="filterSekolahInProdiSasaran(this)">
-          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="prodiSasaranList">
-          {% if rekom_sekolah_per_prodi %}
-          {% for item in rekom_sekolah_per_prodi %}
-          <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
-            data-prodi-card data-prodi-name="{{ item.prodi|lower }}" data-sekolah-rows="{{ item.top_sekolah|length }}"
-            data-prodi="{{ item.prodi }}">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <h4 class="font-bold text-slate-900 leading-snug">{{ item.prodi }}</h4>
-                <p class="text-xs text-slate-500 mt-0.5">Agregat seluruh mahasiswa pada prodi ini</p>
-              </div>
-              <div class="text-right shrink-0">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK prodi</p>
-                <p class="text-xl font-bold text-blue-700">{{ '%.2f'|format(item.ipk_mean) }}</p>
-                <p class="text-xs text-slate-400">{{ item.total_mahasiswa }} mhs</p>
-                <div class="text-[11px] text-amber-800/90 mt-1.5 space-y-0.5 font-medium leading-snug">
-                  <p title="Semua sekolah asal pada prodi ini">
-                    Total prodi (semua sekolah): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
-                    item.poin_non_akademik|default(0) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
-              <label class="text-xs font-medium text-slate-600">Tampilkan sekolah</label>
-              <select data-sekolah-limit-select onchange="setProdiSekolahLimit(this)"
-                class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                title="Urut prioritas">
-                <option value="3" selected>3</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="all">Semua ({{ item.top_sekolah|length }})</option>
-              </select>
-            </div>
-            <div class="space-y-1.5">
-              {% for sekolah in item.top_sekolah %}
-              <div
-                class="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs prodi-sekolah-row cursor-pointer hover:bg-blue-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
-                role="button" tabindex="0" data-school-name="{{ sekolah.sekolah|lower }}"
-                data-sekolah="{{ sekolah.sekolah }}" onclick="openMahasiswaDetailFromSasaran(this)"
-                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetailFromSasaran(this)}"
-                title="Klik untuk lihat detail mahasiswa">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0">
-                    <span class="font-semibold text-slate-900 block truncate">{{ sekolah.sekolah }}</span>
-                    <span class="text-slate-500 text-[11px] block mt-0.5">{{ sekolah.kota }}{% if sekolah.provinsi %},
-                      {{ sekolah.provinsi }}{% endif %}</span>
-                  </div>
-                  <div class="text-right shrink-0">
-                    <span class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</span>
-                    <span class="block font-bold text-blue-800">{{ '%.2f'|format(sekolah.ipk) }}</span>
-                  </div>
-                </div>
-                <div class="mt-1.5 pt-1.5 border-t border-blue-100/80 space-y-0.5 text-[11px] text-slate-600">
-                  <p>{{ sekolah.mahasiswa }} mahasiswa pada prodi ini</p>
-                  <p title="Poin agregat dari prestasi di sekolah ini (khusus jalur prodi yang dipilih)">
-                    Poin prestasi (penunjang): akademik {{ (sekolah.poin_akademik|default(0))|int }}, non-akademik {{
-                    (sekolah.poin_non_akademik|default(0))|int }}
-                  </p>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-          {% endfor %}
-          {% else %}
-          <div class="col-span-2 text-sm text-slate-500">Belum ada data sekolah sasaran.</div>
-          {% endif %}
-        </div>
-        <div id="prodiSasaranEmpty" class="hidden empty-state mt-4">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <div class="empty-title">Tidak ada program studi ditemukan</div>
-          <div class="empty-desc">Coba sesuaikan kata kunci pencarian atau filter.</div>
-        </div>
-      </div>
-      {% else %}
-      <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
-      {% endif %}
-    </div><!-- /tab-sasaran -->
-
-  </main>
-
-  <footer class="w-full bg-white border-t border-slate-100 mt-12">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
-          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
-          <p class="text-xs text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
-        </div>
-      </div>
-      <div class="flex flex-col gap-1 md:items-end">
-        <div class="flex gap-4 text-xs text-slate-400">
-          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-600 transition-colors">Dashboard</a>
-          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-600 transition-colors">Upload</a>
-          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-600 transition-colors">Pelatihan
-            Model</a>
-        </div>
-        <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
-      </div>
-    </div>
-  </footer>
-
   <!-- Modal konfirmasi -->
   <div id="confirm-modal"
-    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4">
+    class="hidden fixed inset-0 z-[200] bg-slate-900/50 backdrop-blur-md blur-overlay flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4 mb-20">
       <div class="flex items-start gap-3">
         <div id="confirm-icon"
           class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
@@ -582,41 +70,666 @@
     </div>
   </div>
 
-  <script>
-    // ===== Drill-down detail mahasiswa (Sekolah Unggulan -> klik prodi) =====
-    window.__activeDashboardCluster = window.__activeDashboardCluster || 'A';
 
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
 
-    function getActiveClusterForDetail() {
-      return window.__activeDashboardCluster || 'all';
-    }
+  <div class="app-container">
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div
+          class="h-10 w-10 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-brand">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+        </div>
+        <span class="sidebar-brand-text">SIREKPRODI</span>
+      </div>
 
-    function closeMahasiswaDetail() {
-      const modal = document.getElementById('modalMahasiswaDetail');
-      if (modal) modal.classList.add('hidden');
-    }
+      <div class="sidebar-section">
+        <p class="sidebar-label">MENU</p>
+        <nav class="sidebar-nav">
+          {% set current = request.endpoint %}
+          <a href="{{ url_for('dashboard.dashboard') }}"
+            class="sidebar-item {% if current == 'dashboard.dashboard' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            Dashboard
+          </a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="sidebar-item {% if current == 'dashboard.data_cluster' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            Data Cluster
+          </a>
+          <a href="{{ url_for('upload.upload') }}"
+            class="sidebar-item {% if current == 'upload.upload' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            Upload
+          </a>
+          <a href="{{ url_for('model.pelatihan_model') }}"
+            class="sidebar-item {% if current == 'model.pelatihan_model' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            Pelatihan Model
+          </a>
+        </nav>
+      </div>
 
-    async function openMahasiswaDetail(el) {
-      const sekolah = el?.dataset?.sekolah;
-      const prodi = el?.dataset?.prodi;
-      if (!sekolah || !prodi) return;
+      <div class="sidebar-section mt-auto">
+        <p class="sidebar-label">OTHER</p>
+        <nav class="sidebar-nav">
+          <a href="{{ url_for('auth.logout') }}" class="sidebar-item nav-danger" data-confirm
+            data-confirm-title="Konfirmasi Logout"
+            data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
+            data-confirm-accent="red">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            Logout
+          </a>
+        </nav>
+      </div>
+    </aside>
 
-      const cluster = getActiveClusterForDetail();
-      const modal = document.getElementById('modalMahasiswaDetail');
-      const title = document.getElementById('modalMahasiswaTitle');
-      const body = document.getElementById('modalMahasiswaBody');
-      if (!modal || !title || !body) return;
+    <!-- ── Main Content ─────────────────────────────────────────── -->
+    <main class="main-content animate-page-in">
+      <!-- ── Top Bar ────────────────────────────────────────────── -->
+      <div class="top-bar">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Dashboard Analitik</h1>
+          <p class="text-slate-500 font-medium">Selamat datang kembali di SIREKPRODI</p>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="search-container hidden md:block">
+            <svg class="search-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Cari data sekolah atau prodi..." class="search-input">
+          </div>
+          <div class="relative">
+            <button id="profileDropdownBtn" class="flex items-center gap-3 focus:outline-none group">
+              <div class="text-right hidden md:block">
+                <p class="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Admin SIREK
+                </p>
+                <p class="text-[10px] font-medium text-slate-400">Petugas Promosi</p>
+              </div>
+              <div
+                class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden group-hover:border-emerald-200 transition-all">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sirek&background=10b981&color=fff" alt="Avatar">
+              </div>
+            </button>
 
-      title.textContent = `Detail Mahasiswa — ${sekolah} — ${prodi} (Cluster ${cluster})`;
-      body.innerHTML = `
+            <div id="profileDropdownMenu"
+              class="hidden absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[300] animate-in fade-in slide-in-from-top-2 duration-200">
+              <a href="{{ url_for('auth.logout') }}" data-confirm data-confirm-title="Logout"
+                data-confirm-message="Yakin ingin keluar?"
+                class="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="toast-anchor"></div>
+
+      <!-- ── Dashboard Stats (KPI Cards) ─────────────────────────── -->
+      <div class="kpi-grid">
+        <div class="kpi-card emerald shadow-lg">
+          <div class="label">Total Alumni Terproses</div>
+          <div class="value counter" data-target="{{ total_alumni }}">{{ total_alumni }}</div>
+          <div class="trend">+12%</div>
+          <div class="kpi-icon-wrapper">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card mint border-slate-100">
+          <div class="label">Rekomendasi Terbit</div>
+          <div class="value counter" data-target="{{ data_rekomendasi|length }}">{{ data_rekomendasi|length }}</div>
+          <div class="trend">Aktif</div>
+          <div class="kpi-icon-wrapper">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z" />
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card blue border-slate-100">
+          <div class="label">Sekolah Prioritas</div>
+          <div class="value counter" data-target="{{ total_sekolah }}">{{ total_sekolah }}</div>
+          <div class="trend">Top 10</div>
+          <div class="kpi-icon-wrapper">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card yellow border-slate-100">
+          <div class="label">Accuracy Score</div>
+          <div class="value">94.2%</div>
+          <div class="trend">K-Means</div>
+          <div class="kpi-icon-wrapper">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Filter Bar (sticky) ──────────────────────────────────── -->
+      <div id="filter-bar" class="card sticky top-[60px] z-30 flex flex-wrap items-center gap-3 py-2.5 px-4">
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Cluster</span>
+          <div class="flex gap-1">
+            {% for lbl in ['A','B','C'] %}
+            <button type="button" id="globalBtn{{ lbl }}" onclick="setGlobalCluster('{{ lbl }}')"
+              class="pill text-xs font-bold {% if lbl == 'A' %}pill-active{% endif %}">
+              {{ lbl }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="h-4 w-px bg-slate-200"></div>
+        {% if prodi_list %}
+        <form method="get" class="flex items-center gap-2">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prodi</label>
+          <select name="prodi" onchange="this.form.submit()" class="pill text-xs pr-8 max-w-[200px] truncate">
+            <option value="all" {% if selected_prodi=='all' %}selected{% endif %}>Semua Prodi</option>
+            {% for prodi in prodi_list %}
+            <option value="{{ prodi }}" {% if selected_prodi==prodi %}selected{% endif %}>{{ prodi }}</option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="tampilkan" value="{{ request.args.get('tampilkan', 'top10') }}">
+        </form>
+        {% endif %}
+        <form method="get" class="flex items-center gap-2">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Baris</label>
+          <select name="tampilkan" onchange="this.form.submit()" class="pill text-xs pr-8">
+            <option value="top10" {% if request.args.get('tampilkan','top10')=='top10' %}selected{% endif %}>10 Teratas
+            </option>
+            <option value="semua" {% if request.args.get('tampilkan')=='semua' %}selected{% endif %}>Semua</option>
+          </select>
+          <input type="hidden" name="prodi" value="{{ selected_prodi }}">
+        </form>
+        <div class="ml-auto flex items-center gap-2">
+          <a href="{{ url_for('dashboard.download_rekomendasi', prodi=selected_prodi, tampilkan=request.args.get('tampilkan', 'top10')) }}"
+            class="btn-ghost !text-emerald-700 !bg-emerald-50 !border-emerald-200 hover:!bg-emerald-100 hidden md:inline-flex"
+            title="Export data rekomendasi ke Excel">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Export Rekomendasi
+          </a>
+          {% if selected_prodi != 'all' %}
+          <div class="hidden md:flex">
+            <span class="badge badge-blue">{{ selected_prodi }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── Tab Switcher (pill style) ────────────────────────────── -->
+      <div class="tab-bar">
+        <button type="button" id="btn-tab-analitik" onclick="switchTab('tab-analitik')" class="tab-btn tab-active">
+          Analitik Cluster
+        </button>
+        <button type="button" id="btn-tab-unggulan" onclick="switchTab('tab-unggulan')" class="tab-btn">
+          Sekolah Unggulan
+        </button>
+        <button type="button" id="btn-tab-sasaran" onclick="switchTab('tab-sasaran')" class="tab-btn">
+          Sasaran per Prodi
+        </button>
+      </div>
+
+      <!-- ═══ TAB 1 — Analitik Cluster ═══════════════════════════════════ -->
+      <div id="tab-analitik" class="tab-pane space-y-4">
+        {% set algoritmas = [kmeans_data] %}
+        {% for algo in algoritmas %}
+        {% set algo_index = loop.index0 %}
+        <div class="card space-y-4" data-algo-index="{{ algo_index }}">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">{{ algo.algoritma }}</p>
+              <h2 class="text-xl font-bold text-slate-900">Analitik Cluster</h2>
+            </div>
+            <div class="flex gap-2">
+              {% for lbl in ['A','B','C'] %}
+              <button type="button" data-cluster-btn="{{ algo_index }}" data-label="{{ lbl }}"
+                onclick="toggleCluster({{ algo_index }}, '{{ lbl }}')"
+                class="pill text-sm font-bold {% if lbl == 'A' %}pill-active{% endif %}">Cluster {{ lbl }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          {% for label in ['A', 'B', 'C'] %}
+          <div data-cluster-block="{{ algo_index }}" data-label="{{ label }}"
+            class="{% if label != 'A' %}hidden{% endif %} space-y-4">
+            <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{
+              algo.deskripsi_cluster[label] }}</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Total Mahasiswa</p>
+                <p class="text-3xl font-extrabold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
+              </div>
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Rata-rata IPK</p>
+                <p class="text-3xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
+              </div>
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Kota Terbaik</p>
+                <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].kota_terbaik }}</p>
+              </div>
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sekolah Terbaik</p>
+                <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].sekolah_terbaik }}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="card card-flat p-6 border-slate-100">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Mhs per Kota (Top 10)</h4>
+                <div class="h-[240px]">
+                  <canvas id="lineChart_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+                </div>
+              </div>
+              <div class="card card-flat p-6 border-slate-100">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Distribusi IPK</h4>
+                <div class="h-[240px]">
+                  <canvas
+                    id="barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(' ', '_') }}_{{ label }}"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="card shadow-none border border-slate-100">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <h4 class="text-base font-semibold text-slate-900">Sekolah Rekomendasi — Cluster {{ label }}</h4>
+                <details class="text-[11px] cursor-pointer">
+                  <summary class="font-bold text-sky-700 list-none flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    Cara Membaca Skor
+                  </summary>
+                  <div class="mt-1 bg-sky-50 border border-sky-100 rounded-lg p-2 text-sky-700/90">
+                    <ul class="list-disc list-inside space-y-0.5 ml-1">
+                      <li><b>Kategori:</b> Akademik (×2), Non-Akademik (×1)</li>
+                      <li><b>Tingkat:</b> Internasional/Nasional (3), Provinsi (2), Lainnya (1)</li>
+                      <li><b>Peringkat:</b> Juara 1 (3), Juara 2 (2), Juara 3 (1)</li>
+                    </ul>
+                  </div>
+                </details>
+              </div>
+              <div class="mb-3 relative">
+                <input type="text" id="searchSekolah_{{ algo_index }}_{{ label }}"
+                  data-search-target="table_{{ algo_index }}_{{ label }}" placeholder="Cari nama sekolah..."
+                  class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
+                  oninput="filterSekolahTable(this)">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <span id="searchCount_{{ algo_index }}_{{ label }}"
+                  class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"></span>
+              </div>
+              <div class="scroll-shadow rounded-xl max-h-80 overflow-y-auto">
+                <table class="min-w-full text-sm table-sticky">
+                  <thead>
+                    <tr class="text-left text-slate-500 uppercase text-xs">
+                      <th class="py-2 pr-3">Asal Sekolah</th>
+                      <th class="py-2 pr-3 text-right">Mhs</th>
+                      <th class="py-2 pr-3 text-right">IPK</th>
+                      <th class="py-2 pr-3 text-right">Std Dev</th>
+                      <th class="py-2 pr-3 text-right">Akad</th>
+                      <th class="py-2 pr-3 text-right">Non-Akad</th>
+                      <th class="py-2 pr-3">Kota</th>
+                      <th class="py-2 pr-3">Provinsi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    {% for row in algo[label].tabel_rekomendasi %}
+                    <tr class="hover:bg-slate-50 odd:bg-slate-50/60 cursor-pointer transition-colors"
+                      data-table-id="table_{{ algo_index }}_{{ label }}"
+                      data-sekolah-name="{{ row['ASAL SEKOLAH']|lower }}" data-sekolah="{{ row['ASAL SEKOLAH'] }}"
+                      data-prodi="{{ selected_prodi }}" onclick="openMahasiswaDetail(this)"
+                      title="Klik untuk melihat detail mahasiswa & prestasi">
+                      <td class="py-2 pr-3 font-semibold text-slate-900">{{ row['ASAL SEKOLAH'] }}</td>
+                      <td class="py-2 pr-3 text-right font-semibold">{{ row['mahasiswa'] }}</td>
+                      <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['ipk']) }}</td>
+                      <td class="py-2 pr-3 text-right">{{ '%.2f'|format(row['deviasi']) }}</td>
+                      <td class="py-2 pr-3 text-right text-emerald-600 font-semibold"
+                        title="{{ row['teks_akademik'] }} ({{ row['poin_akademik'] }} Poin)">{{ row['poin_akademik'] }}
+                      </td>
+                      <td class="py-2 pr-3 text-right text-blue-600 font-semibold"
+                        title="{{ row['teks_non_akademik'] }} ({{ row['poin_non_akademik'] }} Poin)">{{
+                        row['poin_non_akademik'] }}</td>
+                      <td class="py-2 pr-3">{{ row['KOTA SEKOLAH'] }}</td>
+                      <td class="py-2 pr-3">{{ row['PROVINSI SEKOLAH'] }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div><!-- /tab-analitik -->
+
+      <!-- ═══ TAB 2 — Sekolah Unggulan ════════════════════════════════════ -->
+      <div id="tab-unggulan" class="tab-pane hidden space-y-6">
+        {% if prodi_column_available %}
+        <div class="card space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Fitur 1 · K-Means</p>
+              <h2 class="text-xl font-bold text-slate-900">Prodi di Sekolah Unggulan</h2>
+              <p class="text-sm text-slate-500">3 prodi terbaik per sekolah unggulan untuk prioritas promosi.</p>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
+                <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK.
+                <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi (akademik &amp;
+                non-akademik),
+                jumlah mahasiswa, dan stabilitas nilai (deviasi) — dipakai untuk urutan prioritas, bukan menggantikan
+                IPK.
+              </p>
+            </div>
+            <span id="sekolahUnggulanCount"
+              class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">{{
+              rekom_prodi_per_sekolah|length }} sekolah</span>
+          </div>
+          <div class="relative">
+            <input type="text" id="searchSekolahUnggulan" placeholder="Cari nama sekolah..."
+              class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
+              oninput="filterSekolahUnggulan(this)">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1"
+            id="sekolahUnggulanList">
+            {% if rekom_prodi_per_sekolah %}
+            {% for item in rekom_prodi_per_sekolah %}
+            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
+              data-school-card data-school-name="{{ item.sekolah|lower }}"
+              data-prodi-rows="{{ item.top_prodi|length }}">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-slate-900 leading-snug truncate">{{ item.sekolah }}</h4>
+                  <p class="text-xs text-slate-500 truncate">{{ item.kota }}, {{ item.provinsi }}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</p>
+                  <p class="text-xl font-bold text-emerald-700">{{ '%.2f'|format(item.ipk_mean) }}</p>
+                  <p class="text-xs text-slate-400">{{ item.mahasiswa }} mhs</p>
+                  <p class="text-[11px] text-amber-800/90 mt-1.5 font-medium leading-snug text-right"
+                    title="Semua mahasiswa sekolah ini, semua program studi">
+                    Total sekolah (semua prodi): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
+                    item.poin_non_akademik|default(0) }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                <label class="text-xs font-medium text-slate-600">Tampilkan prodi</label>
+                <select data-prodi-limit-select onchange="setSchoolProdiLimit(this)"
+                  class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  title="{% if item.prodi_total_asal|default(0) > item.top_prodi|length %}Hingga {{ item.top_prodi|length }} baris (data dibatasi){% else %}Urut prioritas{% endif %}">
+                  <option value="3" selected>3</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="all">Semua ({{ item.top_prodi|length }})</option>
+                </select>
+              </div>
+              <div class="space-y-1.5 school-prodi-list">
+                {% for prodi in item.top_prodi %}
+                <div
+                  class="flex items-center justify-between text-xs bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-1.5 gap-2 school-prodi-row cursor-pointer hover:bg-emerald-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
+                  role="button" tabindex="0" data-sekolah="{{ item.sekolah }}" data-prodi="{{ prodi.prodi }}"
+                  onclick="openMahasiswaDetail(this)"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetail(this)}"
+                  title="Klik untuk lihat detail mahasiswa">
+                  <span class="font-semibold text-slate-800 truncate min-w-0">{{ prodi.prodi }}</span>
+                  <span class="text-slate-500 shrink-0 text-right leading-tight">
+                    <span class="block font-semibold text-slate-700">{{ '%.2f'|format(prodi.ipk) }} IPK</span>
+                    <span class="block text-[10px] text-slate-400 leading-snug">{{ prodi.mahasiswa }} mhs · poin
+                      prestasi:
+                      akademik {{ (prodi.poin_akademik|default(0))|int }}, non-akademik {{
+                      (prodi.poin_non_akademik|default(0))|int }}</span>
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-span-2 text-sm text-slate-500">Belum ada data.</div>
+            {% endif %}
+          </div>
+          <div id="sekolahUnggulanEmpty" class="hidden empty-state mt-4">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="empty-title">Tidak ada sekolah ditemukan</div>
+            <div class="empty-desc">Coba ubah kata kunci pencarian Anda.</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
+        {% endif %}
+      </div><!-- /tab-unggulan -->
+
+      <!-- ═══ TAB 3 — Sasaran per Prodi ═══════════════════════════════════ -->
+      <div id="tab-sasaran" class="tab-pane hidden space-y-3">
+        {% if prodi_column_available %}
+        <div class="card space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Fitur 2 · K-Means</p>
+              <h2 class="text-xl font-bold text-slate-900">Sekolah Sasaran per Prodi</h2>
+              <p class="text-sm text-slate-500">Sekolah prioritas untuk tiap prodi berdasarkan performa alumni.</p>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
+                <span class="font-semibold text-slate-700">Indikator utama:</span> rata-rata IPK (per prodi dan per
+                sekolah dalam daftar).
+                <span class="font-semibold text-slate-700">Penunjang:</span> poin prestasi akademik &amp; non-akademik,
+                jumlah mahasiswa, dan stabilitas nilai — dipakai untuk urutan prioritas, bukan menggantikan IPK.
+              </p>
+            </div>
+            <span id="prodiSasaranCount"
+              class="text-blue-700 bg-blue-50 border border-blue-200 text-sm font-semibold px-3 py-1 rounded-full">{{
+              rekom_sekolah_per_prodi|length }} prodi</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prodi</label>
+            <select id="selectProdiSasaran" onchange="filterProdiSasaranDropdown(this)"
+              class="pill text-sm pr-8 max-w-[420px] truncate focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Semua Prodi</option>
+              {% for item in rekom_sekolah_per_prodi %}
+              <option value="{{ item.prodi|lower }}">{{ item.prodi }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="relative mt-2">
+            <input type="text" id="searchSekolahSasaran" placeholder="Cari nama sekolah..."
+              class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+              oninput="filterSekolahInProdiSasaran(this)">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="prodiSasaranList">
+            {% if rekom_sekolah_per_prodi %}
+            {% for item in rekom_sekolah_per_prodi %}
+            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
+              data-prodi-card data-prodi-name="{{ item.prodi|lower }}" data-sekolah-rows="{{ item.top_sekolah|length }}"
+              data-prodi="{{ item.prodi }}">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-slate-900 leading-snug">{{ item.prodi }}</h4>
+                  <p class="text-xs text-slate-500 mt-0.5">Agregat seluruh mahasiswa pada prodi ini</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK prodi</p>
+                  <p class="text-xl font-bold text-blue-700">{{ '%.2f'|format(item.ipk_mean) }}</p>
+                  <p class="text-xs text-slate-400">{{ item.total_mahasiswa }} mhs</p>
+                  <div class="text-[11px] text-amber-800/90 mt-1.5 space-y-0.5 font-medium leading-snug">
+                    <p title="Semua sekolah asal pada prodi ini">
+                      Total prodi (semua sekolah): akademik {{ item.poin_akademik|default(0) }}, non-akademik {{
+                      item.poin_non_akademik|default(0) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                <label class="text-xs font-medium text-slate-600">Tampilkan sekolah</label>
+                <select data-sekolah-limit-select onchange="setProdiSekolahLimit(this)"
+                  class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  title="Urut prioritas">
+                  <option value="3" selected>3</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="all">Semua ({{ item.top_sekolah|length }})</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                {% for sekolah in item.top_sekolah %}
+                <div
+                  class="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs prodi-sekolah-row cursor-pointer hover:bg-blue-100 transition {% if loop.index0 >= 3 %}hidden{% endif %}"
+                  role="button" tabindex="0" data-school-name="{{ sekolah.sekolah|lower }}"
+                  data-sekolah="{{ sekolah.sekolah }}" onclick="openMahasiswaDetailFromSasaran(this)"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMahasiswaDetailFromSasaran(this)}"
+                  title="Klik untuk lihat detail mahasiswa">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <span class="font-semibold text-slate-900 block truncate">{{ sekolah.sekolah }}</span>
+                      <span class="text-slate-500 text-[11px] block mt-0.5">{{ sekolah.kota }}{% if sekolah.provinsi %},
+                        {{ sekolah.provinsi }}{% endif %}</span>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <span class="text-xs text-slate-500 font-medium uppercase tracking-wide">Rata IPK</span>
+                      <span class="block font-bold text-blue-800">{{ '%.2f'|format(sekolah.ipk) }}</span>
+                    </div>
+                  </div>
+                  <div class="mt-1.5 pt-1.5 border-t border-blue-100/80 space-y-0.5 text-[11px] text-slate-600">
+                    <p>{{ sekolah.mahasiswa }} mahasiswa pada prodi ini</p>
+                    <p title="Poin agregat dari prestasi di sekolah ini (khusus jalur prodi yang dipilih)">
+                      Poin prestasi (penunjang): akademik {{ (sekolah.poin_akademik|default(0))|int }}, non-akademik {{
+                      (sekolah.poin_non_akademik|default(0))|int }}
+                    </p>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-span-2 text-sm text-slate-500">Belum ada data sekolah sasaran.</div>
+            {% endif %}
+          </div>
+          <div id="prodiSasaranEmpty" class="hidden empty-state mt-4">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="empty-title">Tidak ada program studi ditemukan</div>
+            <div class="empty-desc">Coba sesuaikan kata kunci pencarian atau filter.</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="card text-sm text-slate-600">Kolom Program Studi tidak ditemukan pada model aktif.</div>
+        {% endif %}
+      </div><!-- /tab-sasaran -->
+
+      <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
+              <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-600 transition-colors">Upload</a>
+              <a href="{{ url_for('model.pelatihan_model') }}"
+                class="hover:text-emerald-600 transition-colors">Pelatihan
+                Model</a>
+            </div>
+            <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
+          </div>
+        </div>
+      </footer>
+
+
+
+      <script>
+        // ===== Drill-down detail mahasiswa (Sekolah Unggulan -> klik prodi) =====
+        window.__activeDashboardCluster = window.__activeDashboardCluster || 'A';
+
+        function escapeHtml(str) {
+          return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        }
+
+        function getActiveClusterForDetail() {
+          return window.__activeDashboardCluster || 'all';
+        }
+
+        function closeMahasiswaDetail() {
+          const modal = document.getElementById('modalMahasiswaDetail');
+          if (modal) modal.classList.add('hidden');
+        }
+
+        async function openMahasiswaDetail(el) {
+          const sekolah = el?.dataset?.sekolah;
+          const prodi = el?.dataset?.prodi;
+          if (!sekolah || !prodi) return;
+
+          const cluster = getActiveClusterForDetail();
+          const modal = document.getElementById('modalMahasiswaDetail');
+          const title = document.getElementById('modalMahasiswaTitle');
+          const body = document.getElementById('modalMahasiswaBody');
+          if (!modal || !title || !body) return;
+
+          title.textContent = `Detail Mahasiswa — ${sekolah} — ${prodi} (Cluster ${cluster})`;
+          body.innerHTML = `
         <div class="space-y-3 p-2">
           <div class="skeleton h-4 w-1/3"></div>
           <div class="skeleton h-10 w-full"></div>
@@ -624,36 +737,36 @@
           <div class="skeleton h-10 w-full"></div>
         </div>
       `;
-      modal.classList.remove('hidden');
+          modal.classList.remove('hidden');
 
-      try {
-        const url = new URL('/api/mahasiswa_detail', window.location.origin);
-        url.searchParams.set('sekolah', sekolah);
-        url.searchParams.set('prodi', prodi);
-        url.searchParams.set('cluster', cluster);
-        url.searchParams.set('limit', '200');
+          try {
+            const url = new URL('/api/mahasiswa_detail', window.location.origin);
+            url.searchParams.set('sekolah', sekolah);
+            url.searchParams.set('prodi', prodi);
+            url.searchParams.set('cluster', cluster);
+            url.searchParams.set('limit', '200');
 
-        const resp = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
-        const json = await resp.json();
-        if (!resp.ok || !json.ok) {
-          const msg = json?.error || `Gagal memuat data (HTTP ${resp.status})`;
-          body.innerHTML = `<div class="text-sm text-red-600">${escapeHtml(msg)}</div>`;
-          return;
-        }
+            const resp = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+            const json = await resp.json();
+            if (!resp.ok || !json.ok) {
+              const msg = json?.error || `Gagal memuat data (HTTP ${resp.status})`;
+              body.innerHTML = `<div class="text-sm text-red-600">${escapeHtml(msg)}</div>`;
+              return;
+            }
 
-        if (!json.rows || json.rows.length === 0) {
-          body.innerHTML = '<div class="text-sm text-gray-600">Tidak ada data mahasiswa untuk filter ini.</div>';
-          return;
-        }
+            if (!json.rows || json.rows.length === 0) {
+              body.innerHTML = '<div class="text-sm text-gray-600">Tidak ada data mahasiswa untuk filter ini.</div>';
+              return;
+            }
 
-        const cols = json.columns || Object.keys(json.rows[0] || {});
-        const header = cols.map(c => `<th class="px-2 py-2 text-left font-semibold whitespace-nowrap">${escapeHtml(c)}</th>`).join('');
-        const rowsHtml = json.rows.map(r => {
-          const tds = cols.map(c => `<td class="px-2 py-2 whitespace-nowrap">${escapeHtml(r[c])}</td>`).join('');
-          return `<tr class="border-t">${tds}</tr>`;
-        }).join('');
+            const cols = json.columns || Object.keys(json.rows[0] || {});
+            const header = cols.map(c => `<th class="px-2 py-2 text-left font-semibold whitespace-nowrap">${escapeHtml(c)}</th>`).join('');
+            const rowsHtml = json.rows.map(r => {
+              const tds = cols.map(c => `<td class="px-2 py-2 whitespace-nowrap">${escapeHtml(r[c])}</td>`).join('');
+              return `<tr class="border-t">${tds}</tr>`;
+            }).join('');
 
-        body.innerHTML = `
+            body.innerHTML = `
           <div class="text-xs text-gray-600 mb-2">Menampilkan ${json.count} baris (maks 200).</div>
           <div class="overflow-auto max-h-[60vh] border rounded-lg">
             <table class="min-w-full text-xs">
@@ -664,291 +777,293 @@
             </table>
           </div>
         `;
-      } catch (e) {
-        body.innerHTML = `<div class="text-sm text-red-600">Error: ${escapeHtml(e?.message || e)}</div>`;
-      }
-    }
-
-    function openMahasiswaDetailFromSasaran(rowEl) {
-      const sekolah = rowEl?.dataset?.sekolah;
-      const card = rowEl?.closest?.('[data-prodi-card]');
-      const prodi = card?.dataset?.prodi;
-      if (!sekolah || !prodi) return;
-
-      // Reuse the same loader by passing a mock element with dataset.
-      openMahasiswaDetail({ dataset: { sekolah, prodi } });
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeMahasiswaDetail();
-    });
-
-    {% set algoritmas = [kmeans_data] %}
-    {% for algo in algoritmas %}
-    {% set algo_index = loop.index0 %}
-    {% for label in ['A', 'B', 'C'] %}
-
-    new Chart(document.getElementById('barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
-      type: 'bar',
-      data: {
-        labels: {{ algo[label].distribusi_ipk | map(attribute = 'jumlah') | list | tojson }},
-      datasets: [{
-        label: 'Jumlah Mahasiswa',
-        data: {{ algo[label].distribusi_ipk | map(attribute = 'count') | list | tojson }},
-        backgroundColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
-        borderRadius: 4,
-            }]
-          },
-      options: {
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          anchor: 'end', align: 'top', color: '#475569',
-          font: { weight: 'bold', size: 10, family: 'Outfit' },
-          formatter: val => val > 0 ? val : ''
-        }
-      },
-      scales: {
-        y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
-        x: { title: { display: true, text: 'Rentang IPK' } }
-      }
-    },
-      plugins: [ChartDataLabels]
-        });
-
-    new Chart(document.getElementById('lineChart_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
-      type: 'line',
-      data: {
-        labels: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute = 'kota') | list | tojson }},
-      datasets: [{
-        label: 'Jumlah Mahasiswa',
-        data: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute = 'jumlah') | list | tojson }},
-      borderColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
-      backgroundColor: '{% if label == "A" %}rgba(5, 150, 105, 0.08){% elif label == "B" %}rgba(79, 70, 229, 0.08){% else %}rgba(217, 119, 6, 0.08){% endif %}',
-      pointBackgroundColor: '{% if label == "A" %}#059669{% elif label == "B" %}#4f46e5{% else %}#d97706{% endif %}',
-      pointRadius: 3,
-      fill: true,
-      tension: 0.4
-            }]
-          },
-      options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      plugins: { 
-        legend: { display: false },
-        datalabels: { display: false }
-      },
-      scales: {
-        y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
-        x: {}
-      }
-    }
-        });
-
-    {% endfor %}
-    {% endfor %}
-
-    // Tab switcher
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-      document.getElementById(tabId).classList.remove('hidden');
-      document.getElementById('btn-' + tabId).classList.add('tab-active');
-
-      const filterBar = document.getElementById('filter-bar');
-      if (filterBar) {
-        if (tabId === 'tab-analitik') {
-          filterBar.style.display = 'flex';
-        } else {
-          filterBar.style.display = 'none';
-        }
-      }
-    }
-
-    // Global cluster toggle
-    function setGlobalCluster(label) {
-      window.__activeDashboardCluster = label;
-      ['A', 'B', 'C'].forEach(l => {
-        const btn = document.getElementById('globalBtn' + l);
-        if (btn) btn.classList.toggle('pill-active', l === label);
-      });
-      document.querySelectorAll('[data-algo-index]').forEach(el =>
-        toggleCluster(el.dataset.algoIndex, label));
-    }
-
-    // Sync in-card cluster buttons
-    document.querySelectorAll('[data-cluster-btn]:not([id^="globalBtn"])').forEach(btn => {
-      btn.addEventListener('click', () => {
-        setGlobalCluster(btn.dataset.label);
-      });
-    });
-
-    function setSchoolProdiLimit(selectEl) {
-      const card = selectEl.closest('[data-school-card]');
-      if (!card) return;
-      const totalRows = parseInt(card.dataset.prodiRows || '0', 10);
-      const v = selectEl.value;
-      const n = v === 'all' ? totalRows : Math.min(parseInt(v, 10) || 0, totalRows);
-      card.querySelectorAll('.school-prodi-row').forEach((row, i) => {
-        row.classList.toggle('hidden', i >= n);
-      });
-    }
-
-    document.querySelectorAll('[data-school-card] select[data-prodi-limit-select]').forEach((sel) => {
-      setSchoolProdiLimit(sel);
-    });
-
-    // Per-card limit untuk sekolah pada Tab Sasaran per Prodi
-    function setProdiSekolahLimit(selectEl) {
-      const card = selectEl.closest('[data-prodi-card]');
-      if (!card) return;
-      const totalRows = parseInt(card.dataset.sekolahRows || '0', 10);
-      const v = selectEl.value;
-      const n = v === 'all' ? totalRows : Math.min(parseInt(v, 10) || 0, totalRows);
-      card.dataset.sekolahLimit = String(n);
-      // apply without changing filter query
-      const input = document.getElementById('searchSekolahSasaran');
-      filterSekolahInProdiSasaran(input || { value: '' });
-    }
-
-    // init default limit untuk setiap kartu prodi
-    document.querySelectorAll('[data-prodi-card] select[data-sekolah-limit-select]').forEach((sel) => {
-      setProdiSekolahLimit(sel);
-    });
-
-    // Live search kartu Prodi di Sekolah Unggulan (scoped ke container)
-    function filterSekolahUnggulan(input) {
-      const query = input.value.toLowerCase().trim();
-      const list = document.getElementById('sekolahUnggulanList');
-      if (!list) return;
-      const cards = list.querySelectorAll('[data-school-card]');
-      const countEl = document.getElementById('sekolahUnggulanCount');
-      const emptyEl = document.getElementById('sekolahUnggulanEmpty');
-      let visible = 0;
-      cards.forEach(card => {
-        const name = card.dataset.schoolName || '';
-        const match = !query || name.includes(query);
-        card.style.display = match ? '' : 'none';
-        if (match) visible++;
-      });
-      if (countEl) countEl.textContent = `${visible} sekolah`;
-      if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
-    }
-
-    // Filter dropdown untuk kartu Sasaran per Prodi
-    function filterProdiSasaranDropdown(selectEl) {
-      const selected = (selectEl?.value || '').toLowerCase().trim();
-      const list = document.getElementById('prodiSasaranList');
-      if (!list) return;
-      const cards = list.querySelectorAll('[data-prodi-card]');
-      const countEl = document.getElementById('prodiSasaranCount');
-      const emptyEl = document.getElementById('prodiSasaranEmpty');
-
-      // Step 1: filter kartu prodi (hanya berdasarkan prodi)
-      cards.forEach(card => {
-        const name = (card.dataset.prodiName || '').toLowerCase();
-        const match = !selected || name === selected;
-        card.style.display = match ? '' : 'none';
-      });
-
-      // Step 2: re-apply filter sekolah + limit (yang juga akan update counter & empty state)
-      const sekolahInput = document.getElementById('searchSekolahSasaran');
-      filterSekolahInProdiSasaran(sekolahInput || { value: '' });
-    }
-
-    // Live search sekolah di dalam setiap kartu Prodi (Sasaran per Prodi)
-    function filterSekolahInProdiSasaran(input) {
-      const q = input.value.toLowerCase().trim();
-      const list = document.getElementById('prodiSasaranList');
-      if (!list) return;
-      const cards = list.querySelectorAll('[data-prodi-card]');
-      const countEl = document.getElementById('prodiSasaranCount');
-      const emptyEl = document.getElementById('prodiSasaranEmpty');
-      let visibleCards = 0;
-      cards.forEach(card => {
-        // Skip kartu yang sedang di-hide oleh dropdown prodi
-        if (card.style.display === 'none') return;
-
-        const schoolEls = card.querySelectorAll('.prodi-sekolah-row');
-        const limit = parseInt(card.dataset.sekolahLimit || '3', 10);
-        let anyVisible = false;
-        let shown = 0;
-        schoolEls.forEach(se => {
-          const name = (se.dataset.schoolName || se.textContent || '').toLowerCase();
-          const match = !q || name.includes(q);
-
-          // Terapkan limit hanya pada item yang match
-          const unlimited = Number.isNaN(limit) || limit === 0 || limit === -1;
-          const show = match && (unlimited ? true : (shown < limit));
-
-          // IMPORTANT: override class 'hidden' bawaan dari Jinja
-          se.classList.toggle('hidden', !show);
-          if (show) {
-            anyVisible = true;
-            shown++;
+          } catch (e) {
+            body.innerHTML = `<div class="text-sm text-red-600">Error: ${escapeHtml(e?.message || e)}</div>`;
           }
-        });
-        // If no matching school inside, hide the whole prodi card
-        card.style.display = anyVisible ? '' : 'none';
-        if (anyVisible) visibleCards++;
-      });
-      if (countEl) countEl.textContent = `${visibleCards} prodi`;
-      if (emptyEl) emptyEl.classList.toggle('hidden', visibleCards > 0);
-    }
-
-    // Debounce versi aman (kurangi lag tanpa ubah struktur UI)
-    function debounce(fn, wait = 180) {
-      let t;
-      return function (...args) {
-        clearTimeout(t);
-        t = setTimeout(() => fn.apply(this, args), wait);
-      };
-    }
-
-    // Patch handler oninput/onchange yang berat ke versi debounce
-    (function setupDebouncedFilters() {
-      const sasaranInput = document.getElementById('searchSekolahSasaran');
-      if (sasaranInput) {
-        const debounced = debounce(() => filterSekolahInProdiSasaran(sasaranInput), 180);
-        sasaranInput.oninput = debounced;
-      }
-
-      const unggulanInput = document.getElementById('searchSekolahUnggulan');
-      if (unggulanInput && typeof filterSekolahUnggulan === 'function') {
-        const debouncedUnggulan = debounce(() => filterSekolahUnggulan(unggulanInput), 180);
-        unggulanInput.oninput = debouncedUnggulan;
-      }
-    })();
-
-    // Live search sekolah di tabel rekomendasi (scoped ke tableId spesifik)
-    function filterSekolahTable(input) {
-      const query = input.value.toLowerCase().trim();
-      const tableId = input.dataset.searchTarget;
-      if (!tableId) return;
-      const countId = 'searchCount_' + tableId.replace('table_', '');
-      const count = document.getElementById(countId);
-      const rows = document.querySelectorAll(`tr[data-table-id="${tableId}"]`);
-      let visible = 0;
-      rows.forEach(row => {
-        const name = row.dataset.sekolahName || '';
-        const match = !query || name.includes(query);
-        row.style.display = match ? '' : 'none';
-        if (match) visible++;
-      });
-      if (count) {
-        if (query) {
-          count.textContent = `${visible} ditemukan`;
-          count.classList.remove('hidden');
-        } else {
-          count.classList.add('hidden');
         }
-      }
-    }
 
-    // Load global flash messages for theme.js
-    window.__FLASH_MESSAGES__ = {{ get_flashed_messages(with_categories = true) | tojson }};
-  </script>
+        function openMahasiswaDetailFromSasaran(rowEl) {
+          const sekolah = rowEl?.dataset?.sekolah;
+          const card = rowEl?.closest?.('[data-prodi-card]');
+          const prodi = card?.dataset?.prodi;
+          if (!sekolah || !prodi) return;
+
+          // Reuse the same loader by passing a mock element with dataset.
+          openMahasiswaDetail({ dataset: { sekolah, prodi } });
+        }
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeMahasiswaDetail();
+        });
+
+        {% set algoritmas = [kmeans_data] %}
+        {% for algo in algoritmas %}
+        {% set algo_index = loop.index0 %}
+        {% for label in ['A', 'B', 'C'] %}
+
+        new Chart(document.getElementById('barDistribusi_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
+          type: 'bar',
+          data: {
+            labels: {{ algo[label].distribusi_ipk | map(attribute = 'jumlah') | list | tojson }},
+          datasets: [{
+            label: 'Jumlah Mahasiswa',
+            data: {{ algo[label].distribusi_ipk | map(attribute = 'count') | list | tojson }},
+          backgroundColor: '{% if label == "A" %}#10b981{% elif label == "B" %}#0ea5e9{% else %}#f59e0b{% endif %}',
+          borderRadius: 6,
+        }]
+      },
+          options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end', align: 'top', color: '#64748b',
+              font: { weight: 'bold', size: 10, family: 'Outfit' },
+              formatter: val => val > 0 ? val : ''
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { display: false }, ticks: { font: { family: 'Outfit' } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } }
+          }
+        },
+          plugins: [ChartDataLabels]
+    });
+
+        new Chart(document.getElementById('lineChart_{{ algo_index }}_{{ algo.algoritma | replace(" ", "_") }}_{{ label }}'), {
+          type: 'line',
+          data: {
+            labels: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute = 'kota') | list | tojson }},
+          datasets: [{
+            label: 'Jumlah Mahasiswa',
+            data: {{ algo[label].mahasiswa_per_kota_top10 | map(attribute = 'jumlah') | list | tojson }},
+          borderColor: '{% if label == "A" %}#10b981{% elif label == "B" %}#0ea5e9{% else %}#f59e0b{% endif %}',
+          backgroundColor: '{% if label == "A" %}rgba(16, 185, 129, 0.1){% elif label == "B" %}rgba(14, 165, 233, 0.1){% else %}rgba(245, 158, 11, 0.1){% endif %}',
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '{% if label == "A" %}#10b981{% elif label == "B" %}#0ea5e9{% else %}#f59e0b{% endif %}',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+          options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { family: 'Outfit' } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } }
+          }
+        }
+    });
+
+        {% endfor %}
+        {% endfor %}
+
+        // Tab switcher
+        function switchTab(tabId) {
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+          document.getElementById(tabId).classList.remove('hidden');
+          document.getElementById('btn-' + tabId).classList.add('tab-active');
+
+          const filterBar = document.getElementById('filter-bar');
+          if (filterBar) {
+            if (tabId === 'tab-analitik') {
+              filterBar.style.display = 'flex';
+            } else {
+              filterBar.style.display = 'none';
+            }
+          }
+        }
+
+        // Global cluster toggle
+        function setGlobalCluster(label) {
+          window.__activeDashboardCluster = label;
+          ['A', 'B', 'C'].forEach(l => {
+            const btn = document.getElementById('globalBtn' + l);
+            if (btn) btn.classList.toggle('pill-active', l === label);
+          });
+          document.querySelectorAll('[data-algo-index]').forEach(el =>
+            toggleCluster(el.dataset.algoIndex, label));
+        }
+
+        // Sync in-card cluster buttons
+        document.querySelectorAll('[data-cluster-btn]:not([id^="globalBtn"])').forEach(btn => {
+          btn.addEventListener('click', () => {
+            setGlobalCluster(btn.dataset.label);
+          });
+        });
+
+        function setSchoolProdiLimit(selectEl) {
+          const card = selectEl.closest('[data-school-card]');
+          if (!card) return;
+          const totalRows = parseInt(card.dataset.prodiRows || '0', 10);
+          const v = selectEl.value;
+          const n = v === 'all' ? totalRows : Math.min(parseInt(v, 10) || 0, totalRows);
+          card.querySelectorAll('.school-prodi-row').forEach((row, i) => {
+            row.classList.toggle('hidden', i >= n);
+          });
+        }
+
+        document.querySelectorAll('[data-school-card] select[data-prodi-limit-select]').forEach((sel) => {
+          setSchoolProdiLimit(sel);
+        });
+
+        // Per-card limit untuk sekolah pada Tab Sasaran per Prodi
+        function setProdiSekolahLimit(selectEl) {
+          const card = selectEl.closest('[data-prodi-card]');
+          if (!card) return;
+          const totalRows = parseInt(card.dataset.sekolahRows || '0', 10);
+          const v = selectEl.value;
+          const n = v === 'all' ? totalRows : Math.min(parseInt(v, 10) || 0, totalRows);
+          card.dataset.sekolahLimit = String(n);
+          // apply without changing filter query
+          const input = document.getElementById('searchSekolahSasaran');
+          filterSekolahInProdiSasaran(input || { value: '' });
+        }
+
+        // init default limit untuk setiap kartu prodi
+        document.querySelectorAll('[data-prodi-card] select[data-sekolah-limit-select]').forEach((sel) => {
+          setProdiSekolahLimit(sel);
+        });
+
+        // Live search kartu Prodi di Sekolah Unggulan (scoped ke container)
+        function filterSekolahUnggulan(input) {
+          const query = input.value.toLowerCase().trim();
+          const list = document.getElementById('sekolahUnggulanList');
+          if (!list) return;
+          const cards = list.querySelectorAll('[data-school-card]');
+          const countEl = document.getElementById('sekolahUnggulanCount');
+          const emptyEl = document.getElementById('sekolahUnggulanEmpty');
+          let visible = 0;
+          cards.forEach(card => {
+            const name = card.dataset.schoolName || '';
+            const match = !query || name.includes(query);
+            card.style.display = match ? '' : 'none';
+            if (match) visible++;
+          });
+          if (countEl) countEl.textContent = `${visible} sekolah`;
+          if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
+        }
+
+        // Filter dropdown untuk kartu Sasaran per Prodi
+        function filterProdiSasaranDropdown(selectEl) {
+          const selected = (selectEl?.value || '').toLowerCase().trim();
+          const list = document.getElementById('prodiSasaranList');
+          if (!list) return;
+          const cards = list.querySelectorAll('[data-prodi-card]');
+          const countEl = document.getElementById('prodiSasaranCount');
+          const emptyEl = document.getElementById('prodiSasaranEmpty');
+
+          // Step 1: filter kartu prodi (hanya berdasarkan prodi)
+          cards.forEach(card => {
+            const name = (card.dataset.prodiName || '').toLowerCase();
+            const match = !selected || name === selected;
+            card.style.display = match ? '' : 'none';
+          });
+
+          // Step 2: re-apply filter sekolah + limit (yang juga akan update counter & empty state)
+          const sekolahInput = document.getElementById('searchSekolahSasaran');
+          filterSekolahInProdiSasaran(sekolahInput || { value: '' });
+        }
+
+        // Live search sekolah di dalam setiap kartu Prodi (Sasaran per Prodi)
+        function filterSekolahInProdiSasaran(input) {
+          const q = input.value.toLowerCase().trim();
+          const list = document.getElementById('prodiSasaranList');
+          if (!list) return;
+          const cards = list.querySelectorAll('[data-prodi-card]');
+          const countEl = document.getElementById('prodiSasaranCount');
+          const emptyEl = document.getElementById('prodiSasaranEmpty');
+          let visibleCards = 0;
+          cards.forEach(card => {
+            // Skip kartu yang sedang di-hide oleh dropdown prodi
+            if (card.style.display === 'none') return;
+
+            const schoolEls = card.querySelectorAll('.prodi-sekolah-row');
+            const limit = parseInt(card.dataset.sekolahLimit || '3', 10);
+            let anyVisible = false;
+            let shown = 0;
+            schoolEls.forEach(se => {
+              const name = (se.dataset.schoolName || se.textContent || '').toLowerCase();
+              const match = !q || name.includes(q);
+
+              // Terapkan limit hanya pada item yang match
+              const unlimited = Number.isNaN(limit) || limit === 0 || limit === -1;
+              const show = match && (unlimited ? true : (shown < limit));
+
+              // IMPORTANT: override class 'hidden' bawaan dari Jinja
+              se.classList.toggle('hidden', !show);
+              if (show) {
+                anyVisible = true;
+                shown++;
+              }
+            });
+            // If no matching school inside, hide the whole prodi card
+            card.style.display = anyVisible ? '' : 'none';
+            if (anyVisible) visibleCards++;
+          });
+          if (countEl) countEl.textContent = `${visibleCards} prodi`;
+          if (emptyEl) emptyEl.classList.toggle('hidden', visibleCards > 0);
+        }
+
+        // Debounce versi aman (kurangi lag tanpa ubah struktur UI)
+        function debounce(fn, wait = 180) {
+          let t;
+          return function (...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+          };
+        }
+
+        // Patch handler oninput/onchange yang berat ke versi debounce
+        (function setupDebouncedFilters() {
+          const sasaranInput = document.getElementById('searchSekolahSasaran');
+          if (sasaranInput) {
+            const debounced = debounce(() => filterSekolahInProdiSasaran(sasaranInput), 180);
+            sasaranInput.oninput = debounced;
+          }
+
+          const unggulanInput = document.getElementById('searchSekolahUnggulan');
+          if (unggulanInput && typeof filterSekolahUnggulan === 'function') {
+            const debouncedUnggulan = debounce(() => filterSekolahUnggulan(unggulanInput), 180);
+            unggulanInput.oninput = debouncedUnggulan;
+          }
+        })();
+
+        // Live search sekolah di tabel rekomendasi (scoped ke tableId spesifik)
+        function filterSekolahTable(input) {
+          const query = input.value.toLowerCase().trim();
+          const tableId = input.dataset.searchTarget;
+          if (!tableId) return;
+          const countId = 'searchCount_' + tableId.replace('table_', '');
+          const count = document.getElementById(countId);
+          const rows = document.querySelectorAll(`tr[data-table-id="${tableId}"]`);
+          let visible = 0;
+          rows.forEach(row => {
+            const name = row.dataset.sekolahName || '';
+            const match = !query || name.includes(query);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+          });
+          if (count) {
+            if (query) {
+              count.textContent = `${visible} ditemukan`;
+              count.classList.remove('hidden');
+            } else {
+              count.classList.add('hidden');
+            }
+          }
+        }
+
+        // Load global flash messages for theme.js
+        window.__FLASH_MESSAGES__ = {{ get_flashed_messages(with_categories = true) | tojson }};
+      </script>
 </body>
 
 </html>

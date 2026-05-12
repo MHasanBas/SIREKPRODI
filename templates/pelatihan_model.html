@@ -4,241 +4,357 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="SIREKPRODI — Kelola dan aktifkan model clustering K-Means untuk menghasilkan rekomendasi promosi yang selalu akurat." />
+  <meta name="description"
+    content="SIREKPRODI — Kelola dan aktifkan model clustering K-Means untuk menghasilkan rekomendasi promosi yang selalu akurat." />
   <title>Pelatihan Model — SIREKPRODI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
   <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
+  <!-- Modal konfirmasi -->
+  <div id="confirm-modal"
+    class="hidden fixed inset-0 z-[200] bg-slate-900/50 backdrop-blur-md blur-overlay flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4 mb-20">
+      <div class="flex items-start gap-3">
+        <div id="confirm-icon"
+          class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <div class="space-y-0.5">
+          <h3 id="confirm-title" class="text-base font-bold text-slate-900">Konfirmasi</h3>
+          <p id="confirm-message" class="text-sm text-slate-500">Apakah Anda yakin?</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel" type="button" class="btn-ghost text-sm">Batal</button>
+        <a id="confirm-action" href="#" class="btn-danger text-sm">Lanjutkan</a>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-anchor"></div>
   <!-- Navbar konsisten -->
-  <header class="nav-glass">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="h-9 w-9 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+  <div class="app-container">
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div
+          class="h-10 w-10 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-brand">
           <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
         </div>
-        <div class="min-w-0">
-          <p class="section-label">SIREKPRODI</p>
-          <h1 class="text-base font-bold text-slate-900 leading-tight">Pelatihan &amp; Model</h1>
-        </div>
+        <span class="sidebar-brand-text">SIREKPRODI</span>
       </div>
-      {% set current = request.endpoint %}
-      <nav class="nav-shell flex-shrink-0">
-        <div class="nav-links">
-          <div class="nav-indicator" id="nav-indicator"></div>
-          <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link {% if current == 'dashboard.dashboard' %}is-active{% endif %}" data-nav-link>Dashboard</a>
-          <a href="{{ url_for('dashboard.data_cluster') }}" class="nav-link {% if current == 'dashboard.data_cluster' %}is-active{% endif %}" data-nav-link>Data Cluster</a>
-          <a href="{{ url_for('upload.upload') }}" class="nav-link {% if current == 'upload.upload' %}is-active{% endif %}" data-nav-link>Upload</a>
-          <a href="{{ url_for('model.pelatihan_model') }}" class="nav-link {% if current == 'model.pelatihan_model' %}is-active{% endif %}" data-nav-link>Pelatihan Model</a>
-          <a href="{{ url_for('auth.logout') }}" class="nav-link nav-danger" data-nav-link data-confirm
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">MENU</p>
+        <nav class="sidebar-nav">
+          {% set current = request.endpoint %}
+          <a href="{{ url_for('dashboard.dashboard') }}"
+            class="sidebar-item {% if current == 'dashboard.dashboard' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            Dashboard
+          </a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="sidebar-item {% if current == 'dashboard.data_cluster' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            Data Cluster
+          </a>
+          <a href="{{ url_for('upload.upload') }}"
+            class="sidebar-item {% if current == 'upload.upload' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            Upload
+          </a>
+          <a href="{{ url_for('model.pelatihan_model') }}"
+            class="sidebar-item {% if current == 'model.pelatihan_model' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            Pelatihan Model
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section mt-auto">
+        <p class="sidebar-label">OTHER</p>
+        <nav class="sidebar-nav">
+          <a href="{{ url_for('auth.logout') }}" class="sidebar-item nav-danger" data-confirm
             data-confirm-title="Konfirmasi Logout"
-            data-confirm-message="Anda akan keluar dari aplikasi. Simpan pekerjaan Anda terlebih dahulu."
-            data-confirm-accent="red">Logout</a>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <main class="w-full max-w-6xl mx-auto flex-1 px-4 py-6 space-y-6 animate-page-in">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div class="space-y-1">
-        <p class="text-[12px] font-semibold text-emerald-700 uppercase tracking-[0.2em]">Model Management</p>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">Pelatihan & Pemilihan Model</h1>
-        <p class="text-sm text-slate-800">Aktifkan model clustering terbaik untuk rekomendasi promosi yang selalu
-          mutakhir.</p>
+            data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
+            data-confirm-accent="red">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            Logout
+          </a>
+        </nav>
       </div>
-    </div>
+    </aside>
 
-    <!-- Stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="card flex items-center gap-3">
-        <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-base font-bold flex-shrink-0">&Sigma;</div>
+    <!-- ── Main Content ─────────────────────────────────────────── -->
+    <main class="main-content animate-page-in">
+      <!-- ── Top Bar ────────────────────────────────────────────── -->
+      <div class="top-bar">
         <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Model</p>
-          <p class="text-2xl font-extrabold text-slate-900 leading-none mt-0.5">{{ model_list|length }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">Semua model yang pernah dilatih.</p>
+          <h1 class="text-2xl font-extrabold text-slate-900">Pelatihan & Model</h1>
+          <p class="text-slate-500 font-medium">Kelola dan aktifkan model clustering K-Means</p>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="relative">
+            <button id="profileDropdownBtn" class="flex items-center gap-3 focus:outline-none group">
+              <div class="text-right hidden md:block">
+                <p class="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Admin SIREK
+                </p>
+                <p class="text-[10px] font-medium text-slate-400">Petugas Promosi</p>
+              </div>
+              <div
+                class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden group-hover:border-emerald-200 transition-all">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sirek&background=10b981&color=fff" alt="Avatar">
+              </div>
+            </button>
+
+            <div id="profileDropdownMenu"
+              class="hidden absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[300] animate-in fade-in slide-in-from-top-2 duration-200">
+              <a href="{{ url_for('auth.logout') }}" data-confirm data-confirm-title="Logout"
+                data-confirm-message="Yakin ingin keluar?"
+                class="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="card flex items-center gap-3">
-        <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-base font-bold flex-shrink-0">&starf;</div>
-        <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Model Aktif</p>
-          {% set active_count = model_list | selectattr('status','equalto','Aktif') | list | length %}
-          <p class="text-2xl font-extrabold text-slate-900 leading-none mt-0.5">{{ active_count }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">Model yang sedang dipakai di dashboard.</p>
+
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-6 flex items-center gap-5">
+          <div
+            class="h-12 w-12 flex items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Model</p>
+            <p class="text-3xl font-extrabold text-slate-900 leading-none mt-1">{{ model_list|length }}</p>
+          </div>
+        </div>
+
+        <div class="card p-6 flex items-center gap-5">
+          <div
+            class="h-12 w-12 flex items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Model Aktif</p>
+            {% set active_count = model_list | selectattr('status','equalto','Aktif') | list | length %}
+            <p class="text-3xl font-extrabold text-slate-900 leading-none mt-1">{{ active_count }}</p>
+          </div>
+        </div>
+
+        <div class="card p-6 flex items-center gap-5 border-amber-100 bg-amber-50/30">
+          <div class="h-12 w-12 flex items-center justify-center rounded-2xl bg-amber-100 text-amber-600 flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Status Sistem</p>
+            <p class="text-sm font-bold text-slate-900 mt-1">Siap Beroperasi</p>
+          </div>
         </div>
       </div>
-      <div class="card flex items-center gap-3">
-        <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-teal-50 border border-teal-100 text-teal-700 text-base font-bold flex-shrink-0">&circlearrowleft;</div>
-        <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi Cepat</p>
-          <p class="text-sm font-semibold text-slate-800 mt-0.5">Terapkan atau hapus model</p>
-          <p class="text-xs text-slate-400">Tanpa perlu melatih ulang.</p>
+
+      <div class="bg-white/50 border border-slate-100 p-4 rounded-2xl flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <p class="text-sm text-slate-600">Model aktif digunakan untuk memberikan rekomendasi prodi di seluruh
+            dashboard.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">AUTO-CLEANUP ON</span>
         </div>
       </div>
-    </div>
 
-    <!-- Info Banner -->
-    <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-      <div class="h-7 w-7 flex items-center justify-center rounded-full bg-blue-100 border border-blue-200 text-blue-600 flex-shrink-0 mt-0.5">
-        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-slate-800">Tips</p>
-        <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">Gunakan tombol <strong>Terapkan</strong> untuk mengganti model aktif tanpa perlu melatih ulang. Hapus model yang tidak relevan agar daftar tetap rapi.</p>
-      </div>
-    </div>
+      <!-- Tabel -->
+      <div class="max-h-[720px] overflow-auto rounded-2xl shadow-2xl border border-emerald-50 bg-white">
+        <table class="min-w-full table-fixed">
+          <thead class="table-head text-xs uppercase tracking-wide">
+            <tr>
+              <th class="px-6 py-4 text-left" style="width:18%;">Nama Model</th>
+              <th class="px-6 py-4 text-left" style="width:28%;">Nama Data</th>
+              <th class="px-6 py-4 text-left" style="width:18%;">Tanggal Upload</th>
+              <th class="px-6 py-4 text-left" style="width:12%;">Status</th>
+              <th class="px-6 py-4 text-left" style="width:24%;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-emerald-50">
+            {% if model_list %}
+            {% for model in model_list %}
+            <tr class="hover:bg-emerald-50/80 transition duration-150">
+              <td class="px-6 py-3 font-semibold text-slate-900 truncate">
+                {{ model.nama_model }}
+              </td>
+              <td class="px-6 py-3 text-sm text-slate-700">
+                <div class="font-semibold text-slate-900 truncate">{{ model.nama_data }}</div>
+              </td>
+              <td class="px-6 py-3 text-[12px] text-slate-700 font-mono whitespace-nowrap">
+                {% if model.uploaded_at and model.uploaded_at != '-' %}
+                {{ model.uploaded_at }}
+                {% else %}
+                <span class="text-slate-400">-</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-3 whitespace-nowrap">
+                {% if model.status == "Aktif" %}
+                <span
+                  class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-semibold">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Aktif
+                </span>
+                {% else %}
+                <span
+                  class="inline-flex items-center gap-2 bg-slate-200 text-slate-700 text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap">
+                  <span class="h-2 w-2 rounded-full bg-slate-500"></span> Tidak aktif
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-3">
+                <div class="grid grid-cols-2 gap-2 items-center">
+                  <button type="button"
+                    class="inline-flex w-full justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
+                    data-preview data-model="{{ model.nama_model }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path d="M1.5 12s3.75-7.5 10.5-7.5S22.5 12 22.5 12s-3.75 7.5-10.5 7.5S1.5 12 1.5 12Z" />
+                      <circle cx="12" cy="12" r="3.5" />
+                    </svg>
+                    <span>Preview</span>
+                  </button>
 
-	    <!-- Tabel -->
-	    <div class="max-h-[720px] overflow-auto rounded-2xl shadow-2xl border border-emerald-50 bg-white">
-	      <table class="min-w-full table-fixed">
-	        <thead class="table-head text-xs uppercase tracking-wide">
-	          <tr>
-            <th class="px-6 py-4 text-left" style="width:18%;">Nama Model</th>
-            <th class="px-6 py-4 text-left" style="width:28%;">Nama Data</th>
-            <th class="px-6 py-4 text-left" style="width:18%;">Tanggal Upload</th>
-            <th class="px-6 py-4 text-left" style="width:12%;">Status</th>
-            <th class="px-6 py-4 text-left" style="width:24%;">Aksi</th>
-	          </tr>
-	        </thead>
-        <tbody class="divide-y divide-emerald-50">
-          {% if model_list %}
-          {% for model in model_list %}
-          <tr class="hover:bg-emerald-50/80 transition duration-150">
-            <td class="px-6 py-3 font-semibold text-slate-900 truncate">
-              {{ model.nama_model }}
-            </td>
-            <td class="px-6 py-3 text-sm text-slate-700">
-              <div class="font-semibold text-slate-900 truncate">{{ model.nama_data }}</div>
-            </td>
-            <td class="px-6 py-3 text-[12px] text-slate-700 font-mono whitespace-nowrap">
-              {% if model.uploaded_at and model.uploaded_at != '-' %}
-              {{ model.uploaded_at }}
-              {% else %}
-              <span class="text-slate-400">-</span>
-              {% endif %}
-            </td>
-	            <td class="px-6 py-3 whitespace-nowrap">
-	              {% if model.status == "Aktif" %}
-	              <span
-	                class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-semibold">
-                <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Aktif
-              </span>
-	              {% else %}
-	              <span
-	                class="inline-flex items-center gap-2 bg-slate-200 text-slate-700 text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap">
-	                <span class="h-2 w-2 rounded-full bg-slate-500"></span> Tidak aktif
-	              </span>
-	              {% endif %}
-	            </td>
-	            <td class="px-6 py-3">
-	              <div class="grid grid-cols-2 gap-2 items-center">
-	                <button type="button"
-	                  class="inline-flex w-full justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
-	                  data-preview data-model="{{ model.nama_model }}">
-	                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-	                    stroke="currentColor" stroke-width="1.5">
-                    <path d="M1.5 12s3.75-7.5 10.5-7.5S22.5 12 22.5 12s-3.75 7.5-10.5 7.5S1.5 12 1.5 12Z" />
-                    <circle cx="12" cy="12" r="3.5" />
-                  </svg>
-	                  <span>Preview</span>
-	                </button>
+                  <button type="button"
+                    class="inline-flex w-full justify-center items-center gap-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
+                    data-edit data-model="{{ model.nama_model }}" data-nama-data="{{ model.nama_data }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L8.5 19.036 4 20l.964-4.5Z" />
+                    </svg>
+                    <span>Edit Nama</span>
+                  </button>
 
-	                <button type="button"
-	                  class="inline-flex w-full justify-center items-center gap-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
-	                  data-edit data-model="{{ model.nama_model }}" data-nama-data="{{ model.nama_data }}">
-	                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-	                    stroke="currentColor" stroke-width="1.5">
-                    <path d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L8.5 19.036 4 20l.964-4.5Z" />
-                  </svg>
-	                  <span>Edit Nama</span>
-	                </button>
+                  {% if model.status != "Aktif" %}
+                  <a href="{{ url_for('model.terapkan_model', nama_model=model.nama_model) }}"
+                    class="inline-flex w-full justify-center items-center gap-2 btn-primary text-xs px-3 py-2 whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>Terapkan</span>
+                  </a>
 
-	                {% if model.status != "Aktif" %}
-	                <a href="{{ url_for('model.terapkan_model', nama_model=model.nama_model) }}"
-	                  class="inline-flex w-full justify-center items-center gap-2 btn-primary text-xs px-3 py-2 whitespace-nowrap">
-	                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-	                    stroke="currentColor" stroke-width="1.5">
-	                    <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-	                  <span>Terapkan</span>
-	                </a>
-
-	                <a href="{{ url_for('model.hapus_model', nama_model=model.nama_model) }}"
-	                  class="inline-flex w-full justify-center items-center gap-2 btn-danger text-xs px-3 py-2 whitespace-nowrap" data-confirm
-	                  data-confirm-title="Hapus Model"
-	                  data-confirm-message="Model {{ model.nama_model }} akan dihapus permanen. Lanjutkan?"
-	                  data-confirm-accent="red">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="none"
-                    stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M6 6h8m-7 3h6m-5 3h4m-6-9V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1h3v2H3V6h3Z" fill="none" />
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M5 8h10l-.6 8.2A1 1 0 0 1 13.4 17H6.6a1 1 0 0 1-.99-.8L5 8Z" />
-                  </svg>
-	                  <span>Hapus</span>
-	                </a>
-	                {% else %}
-	                <span
-	                  class="inline-flex col-span-2 w-full justify-center items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap">
-	                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 24 24"
-	                    fill="currentColor" stroke="currentColor" stroke-width="1.2">
-                    <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.75 9.75 0 0 0 12 2.25Z" opacity="0.15" />
-                    <path d="M9.5 12.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                    <circle cx="12" cy="12" r="9.75" fill="none" />
-                  </svg>
-	                  <span>Sudah diterapkan</span>
-	                </span>
-	                {% endif %}
-	              </div>
-	            </td>
-          </tr>
-          {% endfor %}
-          {% else %}
-          <tr>
-	            <td colspan="5" class="p-8">
-                <div class="empty-state border-0 bg-transparent">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                  <div class="empty-title">Belum Ada Model</div>
-                  <div class="empty-desc">Silakan unggah data pada menu Upload untuk membuat model clustering pertama Anda.</div>
+                  <a href="{{ url_for('model.hapus_model', nama_model=model.nama_model) }}"
+                    class="inline-flex w-full justify-center items-center gap-2 btn-danger text-xs px-3 py-2 whitespace-nowrap"
+                    data-confirm data-confirm-title="Hapus Model"
+                    data-confirm-message="Model {{ model.nama_model }} akan dihapus permanen. Lanjutkan?"
+                    data-confirm-accent="red">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="none"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6 6h8m-7 3h6m-5 3h4m-6-9V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1h3v2H3V6h3Z" fill="none" />
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M5 8h10l-.6 8.2A1 1 0 0 1 13.4 17H6.6a1 1 0 0 1-.99-.8L5 8Z" />
+                    </svg>
+                    <span>Hapus</span>
+                  </a>
+                  {% else %}
+                  <span
+                    class="inline-flex col-span-2 w-full justify-center items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 24 24"
+                      fill="currentColor" stroke="currentColor" stroke-width="1.2">
+                      <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.75 9.75 0 0 0 12 2.25Z" opacity="0.15" />
+                      <path d="M9.5 12.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                      <circle cx="12" cy="12" r="9.75" fill="none" />
+                    </svg>
+                    <span>Sudah diterapkan</span>
+                  </span>
+                  {% endif %}
                 </div>
-	            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
-  </main>
-
-  <footer class="w-full bg-white border-t border-slate-100 mt-12">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
-          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
-          <p class="text-xs text-slate-400">Pantau dan kelola model clustering untuk menjaga rekomendasi tetap akurat.</p>
-        </div>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+              <td colspan="5" class="p-8">
+                <div class="empty-state border-0 bg-transparent">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                    </path>
+                  </svg>
+                  <div class="empty-title">Belum Ada Model</div>
+                  <div class="empty-desc">Silakan unggah data pada menu Upload untuk membuat model clustering pertama
+                    Anda.</div>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
       </div>
-      <div class="flex flex-col gap-1 md:items-end">
-        <div class="flex gap-4 text-xs text-slate-400">
-          <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-emerald-600 transition-colors">Dashboard</a>
-          <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-600 transition-colors">Upload</a>
-          <a href="{{ url_for('model.pelatihan_model') }}" class="hover:text-emerald-600 transition-colors">Pelatihan Model</a>
+      <!-- Footer inside main-content -->
+      <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
+              <p class="text-[11px] text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.
+              </p>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
         </div>
-        <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
-      </div>
-    </div>
-  </footer>
+      </footer>
+    </main>
+  </div>
 
   <!-- Modal Preview -->
   <div id="preview-modal"
@@ -300,25 +416,6 @@
           class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow">Simpan</button>
       </div>
       <div id="edit-message" class="text-xs text-slate-500"></div>
-    </div>
-  </div>
-
-  <!-- Modal konfirmasi -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4">
-      <div class="flex items-start gap-3">
-        <div id="confirm-icon" class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-        </div>
-        <div class="space-y-0.5">
-          <h3 id="confirm-title" class="text-base font-bold text-slate-900">Konfirmasi</h3>
-          <p id="confirm-message" class="text-sm text-slate-500">Apakah Anda yakin?</p>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2">
-        <button id="confirm-cancel" type="button" class="btn-ghost text-sm">Batal</button>
-        <a id="confirm-action" href="#" class="btn-danger text-sm">Lanjutkan</a>
-      </div>
     </div>
   </div>
 

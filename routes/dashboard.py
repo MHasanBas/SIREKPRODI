@@ -109,7 +109,8 @@ def dashboard():
         "prodi_column_available": bool(prodi_column),
         "total_sekolah": df_kmeans_full['ASAL SEKOLAH'].nunique() if 'ASAL SEKOLAH' in df_kmeans_full.columns else 0,
         "active_model": active_model,
-        "data_rekomendasi": rekom_prodi_per_sekolah
+        "data_rekomendasi": rekom_prodi_per_sekolah,
+        "total_alumni": len(df_kmeans_full)
     }
     _dash_cache_set(cache_key, ctx)
     return render_template("dashboard.html", **ctx)
@@ -316,3 +317,51 @@ def download_cluster():
     os.close(fd)
     df.to_excel(path, index=False)
     return send_file(path, as_attachment=True, download_name="Data_Cluster_SIREKPRODI.xlsx")
+
+@dashboard_bp.route('/download_rekomendasi')
+def download_rekomendasi():
+    if 'user' not in session:
+        return redirect(url_for('auth.login'))
+        
+    active_model = load_active_model_name()
+    tampilkan = request.args.get('tampilkan', 'top10')
+    selected_prodi = request.args.get('prodi', 'all')
+    
+    try:
+        df_kmeans_full = _load_df_kmeans_cached(active_model)
+    except Exception:
+        flash("Gagal memuat file hasil clustering.", "error")
+        return redirect(url_for('dashboard.dashboard'))
+        
+    prodi_column = _get_prodi_column(df_kmeans_full)
+    df_kmeans = df_kmeans_full
+    if prodi_column and selected_prodi != 'all':
+        df_kmeans = df_kmeans_full[df_kmeans_full[prodi_column] == selected_prodi].copy()
+        
+    rekom_prodi_per_sekolah, _, _ = process_dashboard_data(df_kmeans, prodi_column, tampilkan)
+    
+    # Flatten data for Excel
+    flat_data = []
+    for row in rekom_prodi_per_sekolah:
+        sekolah = row['sekolah']
+        kota = row['kota']
+        for p in row['top_prodi']:
+            flat_data.append({
+                'Asal Sekolah': sekolah,
+                'Kota': kota,
+                'Program Studi Rekomendasi': p['prodi'],
+                'Rata-rata IPK': p['ipk'],
+                'Jumlah Mahasiswa': p['mahasiswa'],
+                'Poin Akademik': p.get('poin_akademik', 0),
+                'Poin Non-Akademik': p.get('poin_non_akademik', 0)
+            })
+            
+    df_out = pd.DataFrame(flat_data)
+    
+    import tempfile
+    fd, path = tempfile.mkstemp(suffix=".xlsx")
+    os.close(fd)
+    df_out.to_excel(path, index=False)
+    
+    filename = f"Rekomendasi_Promosi_{selected_prodi}.xlsx" if selected_prodi != 'all' else "Rekomendasi_Promosi_Semua.xlsx"
+    return send_file(path, as_attachment=True, download_name=filename)

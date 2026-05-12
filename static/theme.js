@@ -176,4 +176,87 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
+  // --- 5. Profile Dropdown Logic ---
+  const profileBtn = document.getElementById('profileDropdownBtn');
+  const profileMenu = document.getElementById('profileDropdownMenu');
+
+  if (profileBtn && profileMenu) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+      profileMenu.classList.add('hidden');
+    });
+
+    profileMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  // --- 6. Number Counter Animation for KPIs ---
+  const kpiValues = document.querySelectorAll('.kpi-card .value');
+  
+  if (kpiValues.length > 0) {
+    const animateValue = (el, start, end, duration) => {
+      let startTimestamp = null;
+      const isPercent = el.textContent.includes('%');
+      
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        
+        // Easing function (easeOutExpo)
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        
+        const current = Math.floor(ease * (end - start) + start);
+        
+        // Keep % sign if it was there
+        if (isPercent) {
+           el.textContent = (ease * (end - start) + start).toFixed(1) + '%';
+        } else {
+           el.textContent = current.toLocaleString('id-ID');
+        }
+        
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+           if (isPercent) {
+             el.textContent = end.toFixed(1) + '%';
+           } else {
+             el.textContent = end.toLocaleString('id-ID');
+           }
+        }
+      };
+      window.requestAnimationFrame(step);
+    };
+
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          let textValue = el.textContent.replace(/[^0-9.]/g, '');
+          if (textValue) {
+            const endValue = parseFloat(textValue);
+            if (!isNaN(endValue)) {
+              el.style.opacity = '1';
+              animateValue(el, 0, endValue, 1500);
+            }
+          }
+          observer.unobserve(el);
+        }
+      });
+    }, observerOptions);
+
+    kpiValues.forEach(el => {
+      observer.observe(el);
+    });
+  }
 });
