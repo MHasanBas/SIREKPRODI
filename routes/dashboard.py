@@ -58,6 +58,26 @@ def _compute_label_to_cluster_map(df: pd.DataFrame):
 
     return {label: int(ordered_clusters[i]) for i, label in enumerate(labels) if i < len(ordered_clusters)}
 
+
+def _filter_school_search(df: pd.DataFrame, search_value: str) -> pd.DataFrame:
+    if not search_value or 'ASAL SEKOLAH' not in df.columns:
+        return df
+
+    terms = [term for term in re.split(r'\s+', search_value.strip()) if term]
+    if not terms:
+        return df
+
+    school_series = df['ASAL SEKOLAH'].astype(str)
+    mask = pd.Series(True, index=df.index)
+    for term in terms:
+        escaped_term = re.escape(term)
+        if term.isdigit():
+            pattern = rf'(?<!\d){escaped_term}(?!\d)'
+        else:
+            pattern = escaped_term
+        mask &= school_series.str.contains(pattern, case=False, na=False, regex=True)
+    return df[mask]
+
 @dashboard_bp.route('/dashboard')
 def dashboard():
     if 'user' not in session:
@@ -204,13 +224,27 @@ def data_cluster():
         return redirect(url_for('upload.upload'))
 
     selected_prodi = request.args.get('prodi', 'all')
-    limit_rows = request.args.get('limit', '500')
+    limit_rows = request.args.get('limit', '100')
+    page_param = request.args.get('page', '1')
     search_sekolah = request.args.get('search', '').strip()
     selected_cluster = request.args.get('cluster', 'all')
     selected_label = request.args.get('label', 'all')
     selected_status = request.args.get('status', 'all')
+    try:
+        per_page = int(limit_rows)
+    except (TypeError, ValueError):
+        per_page = 100
+        limit_rows = '100'
+    per_page = min(max(per_page, 25), 500)
+    limit_rows = str(per_page)
+
+    try:
+        current_page = int(page_param)
+    except (TypeError, ValueError):
+        current_page = 1
+    current_page = max(current_page, 1)
     
-    prodi_column = 'PROGRAM STUDI' if 'PROGRAM STUDI' in df_kmeans.columns else None
+    prodi_column = _get_prodi_column(df_kmeans)
     prodi_list = sorted(df_kmeans[prodi_column].dropna().unique().astype(str)) if prodi_column else []
 
     # === Hitung pemetaan label cluster berdasarkan prodi yang dipilih (lokal) agar konsisten ===
@@ -238,17 +272,14 @@ def data_cluster():
     if 'ASAL SEKOLAH' in df_kmeans.columns:
         sekolah_list = sorted(df_kmeans['ASAL SEKOLAH'].dropna().unique().astype(str))
 
-    if search_sekolah and 'ASAL SEKOLAH' in df_kmeans.columns:
-        escaped_search = re.escape(search_sekolah)
-        pattern = r'\b' + escaped_search + r'\b'
-        df_kmeans = df_kmeans[df_kmeans['ASAL SEKOLAH'].str.contains(pattern, case=False, na=False, regex=True)]
+    df_kmeans = _filter_school_search(df_kmeans, search_sekolah)
 
     # Filter by Lolos / Gagal status
     if selected_status != 'all' and not df_kmeans.empty:
         def match_status(row):
             key = str(row.get('ASAL SEKOLAH', '')) + '_' + str(row.get(prodi_column, '')) if prodi_column else str(row.get('ASAL SEKOLAH', ''))
             stat = crosscheck_map.get(key, {})
-            is_lolos = (stat.get('status', '') == 'Lolos Syarat')
+            is_lolos = (stat.get('status', '') == 'Masuk Rekomendasi')
             if selected_status == 'lolos':
                 return is_lolos
             elif selected_status == 'gagal':
@@ -347,14 +378,15 @@ def data_cluster():
             None
         )
 
-    if limit_rows != 'all':
-        try:
-            lim = int(limit_rows)
-            df_kmeans = df_kmeans.head(lim)
-        except ValueError:
-            pass
+    filtered_total_before_limit = len(df_kmeans)
+    total_pages = max(1, (filtered_total_before_limit + per_page - 1) // per_page)
+    current_page = min(current_page, total_pages)
+    page_start = (current_page - 1) * per_page
+    page_end = page_start + per_page
+    df_kmeans = df_kmeans.iloc[page_start:page_end]
 
     records = df_kmeans.to_dict(orient='records')
+    displayed_total = len(df_kmeans)
     
     return render_template(
         "data_cluster.html",
@@ -377,8 +409,14 @@ def data_cluster():
         active_model=active_model,
         active_model_meta=active_model_meta,
         selected_status=selected_status,
-        filtered_total=len(df_kmeans),
+        filtered_total=filtered_total_before_limit,
+        displayed_total=displayed_total,
         total_rows=len(df_kmeans_for_stats),
+        current_page=current_page,
+        total_pages=total_pages,
+        per_page=per_page,
+        page_start=page_start + 1 if filtered_total_before_limit else 0,
+        page_end=min(page_end, filtered_total_before_limit),
     )
 
 @dashboard_bp.route('/download_cluster')
@@ -411,26 +449,24 @@ def download_cluster():
     df_full = df.copy()
     
     # === Hitung pemetaan label cluster berdasarkan prodi yang dipilih (lokal) agar konsisten ===
-    if 'PROGRAM STUDI' in df.columns and selected_prodi != 'all':
-        df_prodi = df[df['PROGRAM STUDI'] == selected_prodi]
+    prodi_column = _get_prodi_column(df)
+
+    if prodi_column and selected_prodi != 'all':
+        df_prodi = df[df[prodi_column] == selected_prodi]
         label_to_cluster = _compute_label_to_cluster_map(df_prodi)
     else:
         label_to_cluster = _compute_label_to_cluster_map(df_full)
     cluster_to_label = {v: k for k, v in label_to_cluster.items()}
 
-    if 'PROGRAM STUDI' in df.columns and selected_prodi != 'all':
-        df = df[df['PROGRAM STUDI'] == selected_prodi]
+    if prodi_column and selected_prodi != 'all':
+        df = df[df[prodi_column] == selected_prodi]
 
-    if search_sekolah and 'ASAL SEKOLAH' in df.columns:
-        escaped_search = re.escape(search_sekolah)
-        pattern = r'\b' + escaped_search + r'\b'
-        df = df[df['ASAL SEKOLAH'].str.contains(pattern, case=False, na=False, regex=True)]
+    df = _filter_school_search(df, search_sekolah)
 
     # Filter by Lolos / Gagal status
     if selected_status != 'all' and not df.empty:
         from services.dashboard_service import get_crosscheck_data
         crosscheck_records = get_crosscheck_data(df_full)
-        prodi_column = 'PROGRAM STUDI' if 'PROGRAM STUDI' in df.columns else None
         if prodi_column:
             crosscheck_map = {str(r.get('ASAL SEKOLAH', '')) + '_' + str(r.get(prodi_column, '')): r for r in crosscheck_records}
         else:
@@ -439,7 +475,7 @@ def download_cluster():
         def match_status(row):
             key = str(row.get('ASAL SEKOLAH', '')) + '_' + str(row.get(prodi_column, '')) if prodi_column else str(row.get('ASAL SEKOLAH', ''))
             stat = crosscheck_map.get(key, {})
-            is_lolos = (stat.get('status', '') == 'Lolos Syarat')
+            is_lolos = (stat.get('status', '') == 'Masuk Rekomendasi')
             if selected_status == 'lolos':
                 return is_lolos
             elif selected_status == 'gagal':
@@ -481,6 +517,8 @@ def download_rekomendasi():
     
     try:
         df_kmeans_full = _load_df_kmeans_cached(active_model)
+        model_path = f"models/{active_model}/hasil_kmeans_3cluster.pkl"
+        _ensure_prestasi_cached(active_model, os.path.getmtime(model_path))
     except Exception:
         flash("Gagal memuat file hasil clustering.", "error")
         return redirect(url_for('dashboard.dashboard'))

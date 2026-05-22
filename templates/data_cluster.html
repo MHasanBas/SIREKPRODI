@@ -179,13 +179,15 @@
           <h2 class="text-2xl font-bold text-slate-900 leading-snug">Jejak Data Cluster Asli</h2>
           <p class="text-sm text-slate-600">Tinjau hasil pemetaan algoritma K-Means langsung pada dataset pendaftar.</p>
         </div>
-        <form action="{{ url_for('dashboard.data_cluster') }}" method="GET"
+        <form id="dataClusterFilterForm" action="{{ url_for('dashboard.data_cluster') }}" method="GET"
           class="flex flex-wrap items-end gap-3 w-full lg:w-auto mt-4 lg:mt-0">
           <div class="flex-grow max-w-[250px]">
             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CARI SEKOLAH</label>
             <div class="relative">
-              <input type="text" name="search" value="{{ search_sekolah }}" list="sekolahList"
-                placeholder="Ketik atau pilih sekolah..." onchange="this.form.submit()"
+              <input id="searchSekolahInput" type="text" name="search" value="{{ search_sekolah }}" list="sekolahList"
+                placeholder="Ketik atau pilih sekolah..."
+                autocomplete="off" data-initial-value="{{ search_sekolah }}"
+                onchange="this.form.requestSubmit()"
                 class="w-full text-sm border border-slate-300 rounded-xl pl-9 pr-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 focus:ring-emerald-500 text-slate-700 font-medium transition-shadow">
               <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,25 +222,33 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">STATUS SELEKSI</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">STATUS REKOMENDASI</label>
             <select name="status" onchange="this.form.submit()"
               class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:border-emerald-500 text-slate-700 font-medium">
               <option value="all" {% if selected_status=='all' %}selected{% endif %}>Semua Status</option>
-              <option value="lolos" {% if selected_status=='lolos' %}selected{% endif %}>Lolos Syarat</option>
-              <option value="gagal" {% if selected_status=='gagal' %}selected{% endif %}>Gagal Syarat</option>
+              <option value="lolos" {% if selected_status=='lolos' %}selected{% endif %}>Masuk Rekomendasi</option>
+              <option value="gagal" {% if selected_status=='gagal' %}selected{% endif %}>Tidak Direkomendasikan</option>
             </select>
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">LIMIT</label>
             <select name="limit" onchange="this.form.submit()"
               class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-emerald-500 text-slate-700 font-medium">
+              <option value="50" {% if limit_rows=="50" %}selected{% endif %}>50</option>
               <option value="100" {% if limit_rows=="100" %}selected{% endif %}>100</option>
+              <option value="250" {% if limit_rows=="250" %}selected{% endif %}>250</option>
               <option value="500" {% if limit_rows=="500" %}selected{% endif %}>500</option>
-              <option value="1000" {% if limit_rows=="1000" %}selected{% endif %}>1000</option>
-              <option value="all" {% if limit_rows=="all" %}selected{% endif %}>Semua</option>
             </select>
+            <input type="hidden" name="page" value="1">
           </div>
           <div class="flex items-end gap-2">
+            <button type="submit" class="btn-primary py-2 px-4 text-xs">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Cari
+            </button>
             <a href="{{ url_for('dashboard.download_cluster', search=search_sekolah, prodi=selected_prodi, cluster=selected_cluster, status=selected_status) }}"
               target="_blank" class="btn-primary py-2 px-4 text-xs">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,7 +281,7 @@
         <div class="summary-stat">
           <p class="summary-label">Baris Tersaring</p>
           <p class="summary-value">{{ filtered_total }}</p>
-          <p class="summary-subvalue">Dari {{ total_rows }} baris setelah filter prodi</p>
+          <p class="summary-subvalue">{{ displayed_total }} ditampilkan dari {{ total_rows }} baris setelah filter prodi</p>
         </div>
         <div class="summary-stat">
           <p class="summary-label">DBI Model</p>
@@ -299,7 +309,7 @@
       </section>
 
       <div class="quality-note mb-6">
-        Cluster K-Means tidak memiliki ranking intrinsik. Gunakan kolom Cluster Asli untuk inspeksi algoritma, dan kolom Prioritas Akademik hanya sebagai pemetaan interpretatif berbasis IPK.
+        Cluster K-Means tidak memiliki ranking intrinsik. Gunakan kolom Cluster Asli untuk inspeksi algoritma, dan kolom Prioritas Akademik hanya sebagai pemetaan interpretatif berbasis IPK. Status rekomendasi diselaraskan dengan dashboard.
       </div>
 
       <!-- Visualisasi Section -->
@@ -419,52 +429,50 @@
           </div>
           <p
             class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
-            Menampilkan {{ records|length }} Baris
+            Menampilkan {{ page_start }}-{{ page_end }} dari {{ filtered_total }} Baris
           </p>
         </div>
 
-        <div class="scroll-shadow max-h-[600px]">
-          <table class="min-w-full text-left text-sm table-sticky">
+        <div class="max-h-[600px] overflow-y-auto">
+          <table class="w-full table-fixed text-left text-sm table-sticky">
             <thead>
               <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
-                <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">Program Studi</th>
-                <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">NPSN / Asal Sekolah</th>
-                <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">Wilayah</th>
-                <th class="py-3 px-6 font-bold text-center whitespace-nowrap bg-slate-50/60 text-slate-600">Cluster
-                  Mentah</th>
-                <th class="py-3 px-6 font-bold text-center whitespace-nowrap bg-emerald-50/60 text-emerald-800">Prioritas
-                  Akademik</th>
-                <th class="py-3 px-6 font-bold whitespace-nowrap bg-white">Status Prodi di Sekolah</th>
+                <th class="py-3 px-4 font-bold bg-white w-[24%]">Program Studi</th>
+                <th class="py-3 px-4 font-bold bg-white w-[26%]">Asal Sekolah</th>
+                <th class="py-3 px-4 font-bold bg-white w-[18%]">Wilayah</th>
+                <th class="py-3 px-3 font-bold text-center bg-slate-50/60 text-slate-600 w-[10%]">Cluster</th>
+                <th class="py-3 px-3 font-bold text-center bg-emerald-50/60 text-emerald-800 w-[10%]">Prioritas</th>
+                <th class="py-3 px-4 font-bold bg-white w-[12%]">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               {% for row in records %}
               <tr class="hover:bg-slate-50/70 transition-colors odd:bg-slate-50/30">
-                <td class="py-3 px-6 text-slate-700 font-medium whitespace-nowrap">
+                <td class="py-3 px-4 text-slate-700 font-medium align-top">
                   <span
-                    class="bg-slate-100 px-2 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-semibold">{{
+                    class="inline-block max-w-full bg-slate-100 px-2 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-semibold leading-snug break-words">{{
                     row.get('PROGRAM STUDI', '-') }}</span>
                 </td>
-                <td class="py-3 px-6 whitespace-nowrap">
-                  <div class="font-bold text-slate-800">{{ row.get('ASAL SEKOLAH', '-') }}</div>
-                  <div class="text-[11px] text-slate-500 font-mono mt-0.5">NPSN: {{ row.get('NPSN SEKOLAH', '-') }}
+                <td class="py-3 px-4 align-top">
+                  <div class="font-bold text-slate-800 leading-snug break-words">{{ row.get('ASAL SEKOLAH', '-') }}</div>
+                  <div class="text-[11px] text-slate-500 font-mono mt-1 break-words">NPSN: {{ row.get('NPSN SEKOLAH', '-') }}
                   </div>
                 </td>
-                <td class="py-3 px-6 whitespace-nowrap">
-                  <div class="text-slate-700 text-xs">{{ row.get('KOTA SEKOLAH', '-') }}</div>
-                  <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{{ row.get('PROVINSI
+                <td class="py-3 px-4 align-top">
+                  <div class="text-slate-700 text-xs leading-snug break-words">{{ row.get('KOTA SEKOLAH', '-') }}</div>
+                  <div class="text-[10px] uppercase text-slate-400 font-semibold leading-snug break-words">{{ row.get('PROVINSI
                     SEKOLAH', '-') }}</div>
                 </td>
-                <td class="py-3 px-6 text-center border-l border-slate-100 bg-slate-50/40">
+                <td class="py-3 px-3 text-center border-l border-slate-100 bg-slate-50/40 align-top">
                   {% set cid = row.get('Cluster', '-') %}
                   <span
                     class="font-mono text-slate-500 font-bold text-sm bg-white border border-slate-200 px-2 py-1 rounded inline-block shadow-sm">
                     {{ cid }}
                   </span>
-                  <div class="mt-1 text-[10px] text-slate-500">Nilai: {{ "%.2f"|format(row.get('NILAI KESELURUHAN', 0))
+                  <div class="mt-1 text-[10px] text-slate-500 leading-tight">Nilai {{ "%.2f"|format(row.get('NILAI KESELURUHAN', 0))
                     }}</div>
                 </td>
-                <td class="py-3 px-6 text-center bg-emerald-50/20 border-r border-slate-100">
+                <td class="py-3 px-3 text-center bg-emerald-50/20 border-r border-slate-100 align-top">
                   {% set label = cluster_to_label.get(cid, cid) %}
                   <div class="flex flex-col items-center">
                     <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shadow-sm
@@ -474,46 +482,36 @@
                     {% else %}bg-slate-400 text-white{% endif %}">
                       {{ label }}
                     </span>
-                    <div class="mt-1.5 text-[9px] uppercase tracking-widest font-black 
+                    <div class="mt-1.5 text-[9px] uppercase font-black leading-tight
                     {% if label in ('A','B') %}text-emerald-600{% else %}text-slate-400{% endif %}">
-                      {% if label in ('A','B','C') %}Prioritas {{ label }}{% else %}Tidak dipetakan{% endif %}
+                      {% if label in ('A','B','C') %}P{{ label }}{% else %}Tidak dipetakan{% endif %}
                     </div>
                   </div>
                 </td>
-                <td class="py-3 px-6 font-medium whitespace-nowrap min-w-[200px]">
+                <td class="py-3 px-4 font-medium align-top">
                   {% set key = (row.get('ASAL SEKOLAH', '')|string) ~ '_' ~ (row.get('PROGRAM STUDI', '')|string) if
                   'PROGRAM STUDI' in row else (row.get('ASAL SEKOLAH', '')|string) %}
                   {% set stat = crosscheck_map.get(key, {}) %}
                   {% if stat %}
                   <div class="flex flex-col gap-2">
                     <div class="flex items-center gap-2">
-                      {% if stat.get('status', 'Lolos Syarat') == 'Lolos Syarat' %}
+                      {% if stat.get('status', 'Masuk Rekomendasi') == 'Masuk Rekomendasi' %}
                       <div
-                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100/50">
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100/50">
                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-tight">Lolos
-                          Syarat</span>
+                        <span class="text-[10px] font-bold text-emerald-700 uppercase leading-tight">Masuk</span>
                       </div>
                       {% else %}
                       <div
-                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-50 border border-red-100/50">
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-50 border border-red-100/50">
                         <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                        <span class="text-[10px] font-bold text-red-700 uppercase tracking-tight">{{ stat.get('status')
-                          }}</span>
+                        <span class="text-[10px] font-bold text-red-700 uppercase leading-tight">Tidak</span>
                       </div>
                       {% endif %}
                     </div>
-                    <div class="flex items-center gap-3 pl-1">
-                      <div class="flex items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Rasio</span>
-                        <span class="text-[11px] font-extrabold text-slate-700">{{ "%.1f"|format(stat.get('rasio', 0))
-                          }}%</span>
-                      </div>
-                      <div class="w-px h-2.5 bg-slate-200"></div>
-                      <div class="flex items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Mhs</span>
-                        <span class="text-[11px] font-extrabold text-slate-700">{{ stat.get('mahasiswa', 0) }}</span>
-                      </div>
+                    <div class="flex items-center gap-1 pl-1">
+                      <span class="text-[10px] font-bold text-slate-400 uppercase">Mhs</span>
+                      <span class="text-[11px] font-extrabold text-slate-700">{{ stat.get('mahasiswa', 0) }}</span>
                     </div>
                   </div>
                   {% else %}
@@ -536,6 +534,37 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs font-semibold text-slate-500">
+            Halaman {{ current_page }} dari {{ total_pages }} · {{ per_page }} baris per halaman
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            {% if current_page > 1 %}
+            <a class="btn-ghost text-xs"
+              href="{{ url_for('dashboard.data_cluster', search=search_sekolah, prodi=selected_prodi, cluster=selected_cluster, label=selected_label, status=selected_status, limit=limit_rows, page=current_page-1) }}">Sebelumnya</a>
+            {% else %}
+            <span class="btn-ghost text-xs opacity-40 pointer-events-none">Sebelumnya</span>
+            {% endif %}
+            <form action="{{ url_for('dashboard.data_cluster') }}" method="GET" class="flex items-center gap-1">
+              <input type="hidden" name="search" value="{{ search_sekolah }}">
+              <input type="hidden" name="prodi" value="{{ selected_prodi }}">
+              <input type="hidden" name="cluster" value="{{ selected_cluster }}">
+              <input type="hidden" name="label" value="{{ selected_label }}">
+              <input type="hidden" name="status" value="{{ selected_status }}">
+              <input type="hidden" name="limit" value="{{ limit_rows }}">
+              <label for="pageJump" class="text-xs font-semibold text-slate-500">Ke</label>
+              <input id="pageJump" type="number" name="page" min="1" max="{{ total_pages }}" value="{{ current_page }}"
+                class="w-20 text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-500">
+              <button type="submit" class="btn-ghost text-xs">Buka</button>
+            </form>
+            {% if current_page < total_pages %}
+            <a class="btn-ghost text-xs"
+              href="{{ url_for('dashboard.data_cluster', search=search_sekolah, prodi=selected_prodi, cluster=selected_cluster, label=selected_label, status=selected_status, limit=limit_rows, page=current_page+1) }}">Berikutnya</a>
+            {% else %}
+            <span class="btn-ghost text-xs opacity-40 pointer-events-none">Berikutnya</span>
+            {% endif %}
+          </div>
         </div>
       </section>
       </div><!-- /main-content-inner -->

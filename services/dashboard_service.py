@@ -60,13 +60,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
     rekom_prodi_per_sekolah = []
     rekom_sekolah_per_prodi = []
 
-    if 'Cluster' in df_kmeans.columns:
-        ordered_clusters = ordered_academic_clusters(df_kmeans)
-        superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
-        df_kmeans['is_superior'] = df_kmeans['Cluster'].isin(superior_clusters)
-    else:
-        df_kmeans['is_superior'] = True
-
     if prodi_column:
         sekolah_stats = df_kmeans.groupby('ASAL SEKOLAH', as_index=False).agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
@@ -99,6 +92,8 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             poin_akademik=('POIN_AKADEMIK', 'sum'),
             poin_non_akademik=('POIN_NON_AKADEMIK', 'sum')
         ).fillna(0).rename(columns={prodi_column: 'prodi'})
+
+        prodi_agg = prodi_agg[prodi_agg['mahasiswa'] >= 3].copy()
         
         prodi_agg['mhs_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'mahasiswa')
         prodi_agg['ipk_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'ipk')
@@ -131,6 +126,8 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             nama_sekolah = row['ASAL SEKOLAH']
             info = info_sekolah.loc[nama_sekolah]
             tp = all_prodi_map.get(nama_sekolah, [])
+            if not tp:
+                continue
             rekom_prodi_per_sekolah.append({
                 "sekolah": nama_sekolah,
                 "kota": info['kota'],
@@ -203,6 +200,8 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             p_na = int(df_p["POIN_NON_AKADEMIK"].sum()) if "POIN_NON_AKADEMIK" in df_p.columns else 0
             ts5 = top5_map.get(prodi, [])
             tsN = topN_map.get(prodi, [])
+            if not tsN:
+                continue
             poin_ak_top5 = int(sum(int(float(s.get("poin_akademik", 0) or 0)) for s in ts5))
             poin_na_top5 = int(sum(int(float(s.get("poin_non_akademik", 0) or 0)) for s in ts5))
             rekom_sekolah_per_prodi.append({
@@ -355,13 +354,6 @@ def get_crosscheck_data(df_kmeans):
 
     df_cross = df_kmeans.copy()
 
-    if 'Cluster' in df_cross.columns:
-        ordered_clusters = ordered_academic_clusters(df_cross)
-        superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
-        df_cross['is_superior'] = df_cross['Cluster'].isin(superior_clusters)
-    else:
-        df_cross['is_superior'] = True
-
     prodi_col = None
     for kandidat in ['PROGRAM STUDI', 'PROGRAM_STUDI', 'PRODI']:
         if kandidat in df_cross.columns:
@@ -369,32 +361,26 @@ def get_crosscheck_data(df_kmeans):
             break
 
     if prodi_col:
+        school_totals = df_cross.groupby('ASAL SEKOLAH')['NILAI KESELURUHAN'].count()
         stats = df_cross.groupby(['ASAL SEKOLAH', prodi_col]).agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
-            superior_count=('is_superior', 'sum'),
             ipk_mean=('NILAI KESELURUHAN', 'mean')
         ).reset_index()
+        stats['mahasiswa_sekolah'] = stats['ASAL SEKOLAH'].map(school_totals).fillna(0).astype(int)
     else:
         stats = df_cross.groupby('ASAL SEKOLAH').agg(
             mahasiswa=('NILAI KESELURUHAN', 'count'),
-            superior_count=('is_superior', 'sum'),
             ipk_mean=('NILAI KESELURUHAN', 'mean')
         ).reset_index()
-
-    stats['rasio'] = (stats['superior_count'] / stats['mahasiswa']) * 100
+        stats['mahasiswa_sekolah'] = stats['mahasiswa']
 
     def get_status(row):
-        reasons = []
-        if row['mahasiswa'] < 3:
-            reasons.append("Mahasiswa < 3")
-        if row['rasio'] < 50.0:
-            reasons.append("Rasio < 50%")
-            
-        if not reasons:
-            return "Lolos Syarat"
-        return "Gagal: " + ", ".join(reasons)
+        # Status rekomendasi per sekolah-prodi butuh sampel minimal pada prodi itu.
+        if row['mahasiswa'] >= 3:
+            return "Masuk Rekomendasi"
+        return "Tidak Direkomendasikan: Mahasiswa prodi < 3"
 
     stats['status'] = stats.apply(get_status, axis=1)
-    stats = stats.sort_values(['rasio', 'mahasiswa'], ascending=[False, False])
+    stats = stats.sort_values(['status', 'mahasiswa', 'mahasiswa_sekolah'], ascending=[True, False, False])
     
     return stats.to_dict(orient='records')
