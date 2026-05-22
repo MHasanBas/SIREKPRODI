@@ -1,4 +1,21 @@
 import pandas as pd
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+JAKARTA_TZ = ZoneInfo("Asia/Jakarta")
+
+
+def format_datetime_jakarta(value) -> str:
+    if value in (None, "", "-"):
+        return "-"
+
+    try:
+        dt = datetime.fromisoformat(str(value))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=JAKARTA_TZ)
+        return dt.astimezone(JAKARTA_TZ).strftime("%d/%m/%Y %H:%M:%S WIB")
+    except Exception:
+        return str(value)
 
 def _norm_series(series: pd.Series) -> pd.Series:
     # Normalisasi min-max yang aman untuk series konstan.

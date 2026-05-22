@@ -122,6 +122,7 @@
 
     <!-- ── Main Content ─────────────────────────────────────────── -->
     <main class="main-content animate-page-in">
+      <div class="main-content-inner">
       <!-- ── Top Bar ────────────────────────────────────────────── -->
       <div class="top-bar">
         <div>
@@ -216,102 +217,223 @@
       <!-- Tabel -->
       <div class="max-h-[720px] overflow-auto rounded-2xl shadow-2xl border border-emerald-50 bg-white">
         <table class="min-w-full table-fixed">
-          <thead class="table-head text-xs uppercase tracking-wide">
+          <thead class="table-head text-[11px] uppercase tracking-wide">
             <tr>
-              <th class="px-6 py-4 text-left" style="width:18%;">Nama Model</th>
-              <th class="px-6 py-4 text-left" style="width:28%;">Nama Data</th>
-              <th class="px-6 py-4 text-left" style="width:18%;">Tanggal Upload</th>
-              <th class="px-6 py-4 text-left" style="width:12%;">Status</th>
-              <th class="px-6 py-4 text-left" style="width:24%;">Aksi</th>
+              <th class="px-3 py-3 text-left" style="width:10%;">Nama Model</th>
+              <th class="px-3 py-3 text-left" style="width:12%;">Nama Data</th>
+              <th class="px-3 py-3 text-left" style="width:10%;">Tanggal Upload</th>
+              <th class="px-3 py-3 text-center" style="width:10%;">Silhouette ↑</th>
+              <th class="px-3 py-3 text-center" style="width:15%;">DBI: KMeans → GA ↓</th>
+              <th class="px-3 py-3 text-center" style="width:10%;">CH Score ↑</th>
+              <th class="px-3 py-3 text-center" style="width:5%;">k</th>
+              <th class="px-3 py-3 text-left" style="width:8%;">Status</th>
+              <th class="px-3 py-3 text-left" style="width:20%;">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-emerald-50">
             {% if model_list %}
             {% for model in model_list %}
             <tr class="hover:bg-emerald-50/80 transition duration-150">
-              <td class="px-6 py-3 font-semibold text-slate-900 truncate">
+              <td class="px-3 py-2.5 font-bold text-slate-900 truncate text-xs">
                 {{ model.nama_model }}
               </td>
-              <td class="px-6 py-3 text-sm text-slate-700">
+              <td class="px-3 py-2.5 text-xs text-slate-700">
                 <div class="font-semibold text-slate-900 truncate">{{ model.nama_data }}</div>
               </td>
-              <td class="px-6 py-3 text-[12px] text-slate-700 font-mono whitespace-nowrap">
+              <td class="px-3 py-2.5 text-[11px] text-slate-700 font-mono">
                 {% if model.uploaded_at and model.uploaded_at != '-' %}
-                {{ model.uploaded_at }}
+                  {% set parts = model.uploaded_at.split(' ') %}
+                  <div class="font-semibold text-slate-800 text-[11px]">{{ parts[0] }}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">{{ parts[1] }} {{ parts[2] if parts|length > 2 else '' }}</div>
                 {% else %}
-                <span class="text-slate-400">-</span>
+                  <span class="text-slate-400">-</span>
                 {% endif %}
               </td>
-              <td class="px-6 py-3 whitespace-nowrap">
+
+              <!-- Silhouette Score -->
+              <td class="px-3 py-2.5 text-center">
+                {% if model.silhouette_score is not none %}
+                  {% set sil = model.silhouette_score %}
+                  {% if sil >= 0.7 %}
+                    <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                      {{ "%.3f"|format(sil) }}
+                    </span>
+                  {% elif sil >= 0.5 %}
+                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                      {{ "%.3f"|format(sil) }}
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                      {{ "%.3f"|format(sil) }}
+                    </span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-slate-300 text-xs">—</span>
+                {% endif %}
+              </td>
+
+              <!-- DBI Comparison: Sebelum vs Sesudah GA -->
+              <td class="px-3 py-2.5 text-center">
+                {% if model.dbi_before_ga is not none and model.dbi_after_ga is not none %}
+                  <div class="flex flex-col items-center gap-1">
+                    <!-- Before → After -->
+                    <div class="flex items-center gap-1 text-[11px] font-semibold">
+                      <span class="text-slate-500">{{ "%.3f"|format(model.dbi_before_ga) }}</span>
+                      <svg class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      {% set dbi = model.dbi_after_ga %}
+                      {% if dbi < 0.5 %}
+                        <span class="text-emerald-700 font-bold">{{ "%.3f"|format(dbi) }}</span>
+                      {% elif dbi < 1.0 %}
+                        <span class="text-blue-700 font-bold">{{ "%.3f"|format(dbi) }}</span>
+                      {% else %}
+                        <span class="text-amber-700 font-bold">{{ "%.3f"|format(dbi) }}</span>
+                      {% endif %}
+                    </div>
+                    <!-- Improvement badge -->
+                    {% if model.dbi_improvement_pct is not none %}
+                      {% set imp = model.dbi_improvement_pct %}
+                      {% if imp > 0 %}
+                        <span class="inline-flex items-center gap-0.5 bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+                          ▼ {{ "%.1f"|format(imp) }}%
+                        </span>
+                      {% elif imp < 0 %}
+                        <span class="inline-flex items-center gap-0.5 bg-red-100 text-red-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+                          ▲ {{ "%.1f"|format(imp|abs) }}%
+                        </span>
+                      {% else %}
+                        <span class="inline-flex items-center bg-slate-100 text-slate-500 text-[9px] px-1.5 py-0.5 rounded-full font-bold">±0%</span>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                {% elif model.dbi_score is not none %}
+                  {# Model lama hanya punya dbi_score tanpa perbandingan #}
+                  {% set dbi = model.dbi_score %}
+                  {% if dbi < 0.5 %}
+                    <span class="inline-flex items-center bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ "%.3f"|format(dbi) }}</span>
+                  {% elif dbi < 1.0 %}
+                    <span class="inline-flex items-center bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ "%.3f"|format(dbi) }}</span>
+                  {% else %}
+                    <span class="inline-flex items-center bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ "%.3f"|format(dbi) }}</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-slate-300 text-xs">—</span>
+                {% endif %}
+              </td>
+
+              <!-- CH Score -->
+              <td class="px-3 py-2.5 text-center">
+                {% if model.ch_score is not none %}
+                  <span class="inline-flex items-center gap-1 bg-violet-100 text-violet-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    {{ "%.2f"|format(model.ch_score) }}
+                  </span>
+                {% else %}
+                  <span class="text-slate-300 text-xs">—</span>
+                {% endif %}
+              </td>
+
+              <!-- K Optimal -->
+              <td class="px-3 py-2.5 text-center">
+                {% if model.n_clusters_used is not none %}
+                  <button class="btn-elbow text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full hover:bg-emerald-100 transition"
+                    data-elbow='{{ model.elbow_data | tojson if model.elbow_data else "null" }}'
+                    data-k="{{ model.n_clusters_used }}">
+                    k={{ model.n_clusters_used }}
+                  </button>
+                {% else %}
+                  <span class="text-slate-300 text-xs">—</span>
+                {% endif %}
+              </td>
+
+              <td class="px-3 py-2.5 whitespace-nowrap">
                 {% if model.status == "Aktif" %}
                 <span
-                  class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-semibold">
-                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Aktif
+                  class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Aktif
                 </span>
                 {% else %}
                 <span
-                  class="inline-flex items-center gap-2 bg-slate-200 text-slate-700 text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap">
-                  <span class="h-2 w-2 rounded-full bg-slate-500"></span> Tidak aktif
+                  class="inline-flex items-center gap-1.5 bg-slate-200 text-slate-700 text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
+                  <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span> Tidak aktif
                 </span>
                 {% endif %}
               </td>
-              <td class="px-6 py-3">
-                <div class="grid grid-cols-2 gap-2 items-center">
+              <td class="px-3 py-2.5">
+                <div class="flex flex-wrap gap-1.5 max-w-[280px]">
                   <button type="button"
-                    class="inline-flex w-full justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
+                    class="inline-flex justify-center items-center gap-1 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-2 py-1 rounded-md text-[10px] font-bold shadow-xs whitespace-nowrap transition duration-150"
                     data-preview data-model="{{ model.nama_model }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
                       <path d="M1.5 12s3.75-7.5 10.5-7.5S22.5 12 22.5 12s-3.75 7.5-10.5 7.5S1.5 12 1.5 12Z" />
                       <circle cx="12" cy="12" r="3.5" />
                     </svg>
-                    <span>Preview</span>
+                    Preview
                   </button>
 
                   <button type="button"
-                    class="inline-flex w-full justify-center items-center gap-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap"
+                    class="inline-flex justify-center items-center gap-1 bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 px-2 py-1 rounded-md text-[10px] font-bold shadow-xs whitespace-nowrap transition duration-150"
+                    data-comparison data-model="{{ model.nama_model }}">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    Banding
+                  </button>
+
+                  <button type="button"
+                    class="inline-flex justify-center items-center gap-1 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded-md text-[10px] font-bold shadow-xs whitespace-nowrap transition duration-150"
                     data-edit data-model="{{ model.nama_model }}" data-nama-data="{{ model.nama_data }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
                       <path d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L8.5 19.036 4 20l.964-4.5Z" />
                     </svg>
-                    <span>Edit Nama</span>
+                    Edit
+                  </button>
+
+                  <button type="button"
+                    class="inline-flex justify-center items-center gap-1 bg-white border border-violet-200 text-violet-700 hover:bg-violet-50 px-2 py-1 rounded-md text-[10px] font-bold shadow-xs whitespace-nowrap transition duration-150"
+                    data-pca data-model="{{ model.nama_model }}">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="9" cy="9" r="2"/><circle cx="15" cy="6" r="2"/><circle cx="6" cy="15" r="2"/>
+                      <circle cx="16" cy="15" r="2"/><circle cx="12" cy="19" r="2"/>
+                      <path d="M9 9l6-3M9 9l-3 6M15 6l1 7M6 15l10 0M16 15l-4 4" stroke-linecap="round"/>
+                    </svg>
+                    PCA
                   </button>
 
                   {% if model.status != "Aktif" %}
                   <a href="{{ url_for('model.terapkan_model', nama_model=model.nama_model) }}"
-                    class="inline-flex w-full justify-center items-center gap-2 btn-primary text-xs px-3 py-2 whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.5">
+                    class="inline-flex justify-center items-center gap-1 btn-primary text-[10px] px-2 py-1 rounded-md font-bold shadow-xs whitespace-nowrap transition duration-150"
+                    style="box-shadow: none; padding: 4px 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
                       <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                    <span>Terapkan</span>
+                    Terapkan
                   </a>
 
                   <a href="{{ url_for('model.hapus_model', nama_model=model.nama_model) }}"
-                    class="inline-flex w-full justify-center items-center gap-2 btn-danger text-xs px-3 py-2 whitespace-nowrap"
+                    class="inline-flex justify-center items-center gap-1 btn-danger text-[10px] px-2 py-1 rounded-md font-bold whitespace-nowrap transition duration-150"
+                    style="padding: 4px 8px;"
                     data-confirm data-confirm-title="Hapus Model"
                     data-confirm-message="Model {{ model.nama_model }} akan dihapus permanen. Lanjutkan?"
                     data-confirm-accent="red">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="none"
-                      stroke="currentColor" stroke-width="1.5">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6 6h8m-7 3h6m-5 3h4m-6-9V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1h3v2H3V6h3Z" fill="none" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="none"
+                      stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M5 8h10l-.6 8.2A1 1 0 0 1 13.4 17H6.6a1 1 0 0 1-.99-.8L5 8Z" />
                     </svg>
-                    <span>Hapus</span>
+                    Hapus
                   </a>
                   {% else %}
                   <span
-                    class="inline-flex col-span-2 w-full justify-center items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 24 24"
-                      fill="currentColor" stroke="currentColor" stroke-width="1.2">
-                      <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.75 9.75 0 0 0 12 2.25Z" opacity="0.15" />
+                    class="inline-flex justify-center items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-1 rounded-md text-[10px] font-bold shadow-xs whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-emerald-600" viewBox="0 0 24 24"
+                      fill="currentColor" stroke="currentColor" stroke-width="2">
                       <path d="M9.5 12.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
                       <circle cx="12" cy="12" r="9.75" fill="none" />
                     </svg>
-                    <span>Sudah diterapkan</span>
+                    Diterapkan
                   </span>
                   {% endif %}
                 </div>
@@ -320,7 +442,7 @@
             {% endfor %}
             {% else %}
             <tr>
-              <td colspan="5" class="p-8">
+              <td colspan="9" class="p-8">
                 <div class="empty-state border-0 bg-transparent">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -337,6 +459,8 @@
           </tbody>
         </table>
       </div>
+      </div><!-- /main-content-inner -->
+
       <!-- Footer inside main-content -->
       <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
         <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -416,6 +540,157 @@
           class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow">Simpan</button>
       </div>
       <div id="edit-message" class="text-xs text-slate-500"></div>
+    </div>
+  </div>
+
+  <!-- ══ Modal Perbandingan DBI: KMeans vs KMeans+GA ══ -->
+  <div id="comparison-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-4xl p-6 space-y-5 max-h-[90vh] flex flex-col">
+
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-3 flex-shrink-0">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Perbandingan DBI: KMeans vs KMeans+GA</h3>
+          <p id="cmp-subtitle" class="text-sm text-slate-500">Seberapa besar Genetic Algorithm memperbaiki kualitas cluster.</p>
+        </div>
+        <button id="comparison-close" class="text-slate-500 hover:text-slate-700 text-lg flex-shrink-0">✕</button>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-3 gap-3 text-xs flex-shrink-0">
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">DBI KMeans (Sebelum)</p>
+          <p id="cmp-before" class="text-slate-800 font-black text-xl">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">DBI KMeans+GA (Sesudah)</p>
+          <p id="cmp-after" class="text-emerald-700 font-black text-xl">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Peningkatan GA</p>
+          <p id="cmp-improvement" class="font-black text-xl">—</p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-auto flex-1 rounded-xl border border-slate-100">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] sticky top-0">
+            <tr>
+              <th class="px-4 py-3 font-semibold">Program Studi</th>
+              <th class="px-3 py-3 font-semibold text-center">n</th>
+              <th class="px-3 py-3 font-semibold text-center">k</th>
+              <th class="px-4 py-3 font-semibold text-center">DBI KMeans</th>
+              <th class="px-4 py-3 font-semibold text-center">DBI KMeans+GA</th>
+              <th class="px-4 py-3 font-semibold text-center">Δ Perbaikan</th>
+              <th class="px-4 py-3 font-semibold text-center">CH Score</th>
+            </tr>
+          </thead>
+          <tbody id="cmp-tbody" class="divide-y divide-slate-50">
+            <!-- Diisi oleh JS -->
+          </tbody>
+        </table>
+        <div id="cmp-loading" class="py-10 flex flex-col items-center gap-3">
+          <div class="w-7 h-7 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-sm text-slate-400">Memuat data perbandingan...</p>
+        </div>
+        <div id="cmp-error" class="hidden py-10 text-center text-sm text-red-500 font-medium"></div>
+      </div>
+
+      <p class="text-[10px] text-slate-400 flex-shrink-0">
+        ↑ GA lebih baik jika DBI sesudah &lt; DBI sebelum. Diurutkan dari perbaikan terbesar.
+        Fungsi fitness GA: <code class="bg-slate-100 px-1 rounded">(0.6 * 1/DBI) + (0.4 * silhouette)</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Modal PCA Scatter Plot (Saran #7) -->
+  <div id="pca-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-5xl p-6 space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Visualisasi Cluster — PCA 2D</h3>
+          <p id="pca-subtitle" class="text-sm text-slate-500">Memproyeksikan data multidimensi ke 2 dimensi via Principal Component Analysis.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <select id="pca-prodi-select" class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 hidden">
+            <option value="Global">Global (Semua Prodi)</option>
+          </select>
+          <button id="pca-close" class="text-slate-500 hover:text-slate-700 text-lg">✕</button>
+        </div>
+      </div>
+
+      <!-- Info bar -->
+      <div id="pca-info" class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Variance PC1</p>
+          <p id="pca-var1" class="text-slate-800 font-black text-lg">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Variance PC2</p>
+          <p id="pca-var2" class="text-slate-800 font-black text-lg">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Total Explained</p>
+          <p id="pca-total" class="text-emerald-700 font-black text-lg">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Kualitas 2D</p>
+          <p id="pca-quality" class="text-slate-800 font-black text-lg">—</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Jumlah Fitur</p>
+          <p id="pca-feature-count" class="text-slate-800 font-black text-lg">—</p>
+        </div>
+      </div>
+
+      <div id="pca-quality-note" class="hidden rounded-xl border px-4 py-3 text-sm font-medium"></div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.85fr)] gap-4">
+        <!-- Scatter chart -->
+        <div id="pca-chart-wrap" class="relative" style="height: 340px;">
+          <canvas id="pca-chart"></canvas>
+          <div id="pca-loading" class="absolute inset-0 flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-sm text-slate-400 font-medium">Memuat data PCA...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="border border-slate-100 rounded-2xl bg-slate-50/70 p-4 space-y-3">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fitur Dominan</p>
+            <p class="text-sm text-slate-600">Kontributor terbesar ke PC1 dan PC2.</p>
+          </div>
+          <div id="pca-feature-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div id="pca-legend" class="flex flex-wrap gap-3 text-xs font-semibold"></div>
+
+      <p class="text-[10px] text-slate-400">Scatter plot menampilkan sampel maksimal 2.000 titik. Gunakan PCA untuk inspeksi pola kasar, bukan sebagai ukuran utama kualitas clustering.</p>
+    </div>
+  </div>
+
+  <!-- Modal Elbow Chart (Saran #2) -->
+  <div id="elbow-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm blur-overlay flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Elbow Method — Analisis K Optimal</h3>
+          <p class="text-sm text-slate-500">Grafik inertia terhadap jumlah cluster. Titik "siku" adalah k optimal yang dipilih sistem.</p>
+        </div>
+        <button id="elbow-close" class="text-slate-500 hover:text-slate-700 text-lg">✕</button>
+      </div>
+      <div class="relative" style="height: 280px;">
+        <canvas id="elbow-chart"></canvas>
+      </div>
+      <div id="elbow-info" class="text-xs text-slate-500 bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl font-medium"></div>
     </div>
   </div>
 
@@ -585,8 +860,445 @@
 
     // Load global flash messages for theme.js
     window.__FLASH_MESSAGES__ = {{ get_flashed_messages(with_categories = true) | tojson }};
+
+    // ── Comparison Modal (DBI KMeans vs KMeans+GA) ───────────────
+    const cmpModal   = document.getElementById('comparison-modal');
+    const cmpClose   = document.getElementById('comparison-close');
+    const cmpTbody   = document.getElementById('cmp-tbody');
+    const cmpLoading = document.getElementById('cmp-loading');
+    const cmpError   = document.getElementById('cmp-error');
+
+    function openComparisonModal(modelName) {
+      cmpModal.classList.remove('hidden');
+      cmpLoading.classList.remove('hidden');
+      cmpError.classList.add('hidden');
+      cmpTbody.innerHTML = '';
+      document.getElementById('cmp-before').textContent = '—';
+      document.getElementById('cmp-after').textContent  = '—';
+      const impEl = document.getElementById('cmp-improvement');
+      impEl.textContent = '—';
+      impEl.className = 'font-black text-xl';
+      document.getElementById('cmp-subtitle').textContent =
+        `Memuat data perbandingan untuk ${modelName}...`;
+
+      fetch(`/comparison_data/${modelName}`)
+        .then(r => r.json())
+        .then(data => {
+          cmpLoading.classList.add('hidden');
+          if (!data.success) {
+            cmpError.textContent = data.error;
+            cmpError.classList.remove('hidden');
+            return;
+          }
+
+          // Summary cards
+          document.getElementById('cmp-before').textContent = data.dbi_before_ga?.toFixed(4) ?? '—';
+          document.getElementById('cmp-after').textContent  = data.dbi_after_ga?.toFixed(4) ?? '—';
+          const imp = data.dbi_improvement_pct;
+          if (imp !== null && imp !== undefined) {
+            impEl.textContent = `${imp > 0 ? '▼' : '▲'} ${Math.abs(imp).toFixed(2)}%`;
+            impEl.className = `font-black text-xl ${imp > 0 ? 'text-emerald-600' : 'text-red-600'}`;
+          }
+          document.getElementById('cmp-subtitle').textContent =
+            `${data.rows.length} Program Studi dianalisis · ` +
+            (imp > 0 ? `GA membaik rata-rata ${imp.toFixed(2)}%` : `GA memperburuk rata-rata ${Math.abs(imp).toFixed(2)}%`);
+
+          // Rows
+          data.rows.forEach(row => {
+            const isBetter = row.improvement_pct > 0;
+            const badge = isBetter
+              ? `<span class="inline-flex items-center gap-0.5 bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">▼ ${row.improvement_pct.toFixed(1)}%</span>`
+              : row.improvement_pct < 0
+                ? `<span class="inline-flex items-center gap-0.5 bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full font-bold">▲ ${Math.abs(row.improvement_pct).toFixed(1)}%</span>`
+                : `<span class="inline-flex items-center bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">±0%</span>`;
+
+            const afterColor = isBetter ? 'text-emerald-700 font-bold' : 'text-red-600 font-bold';
+            const chVal = (row.ch_score !== null && row.ch_score !== undefined) ? row.ch_score.toFixed(2) : '—';
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-orange-50/60 transition';
+            tr.innerHTML = `
+              <td class="px-4 py-2.5 font-medium text-slate-800 max-w-[220px] truncate" title="${row.prodi}">${row.prodi}</td>
+              <td class="px-3 py-2.5 text-center text-slate-500">${row.n}</td>
+              <td class="px-3 py-2.5 text-center text-slate-500">${row.k}</td>
+              <td class="px-4 py-2.5 text-center text-slate-600 font-semibold">${row.dbi_before.toFixed(4)}</td>
+              <td class="px-4 py-2.5 text-center ${afterColor}">${row.dbi_after.toFixed(4)}</td>
+              <td class="px-4 py-2.5 text-center">${badge}</td>
+              <td class="px-4 py-2.5 text-center font-semibold text-violet-700">${chVal}</td>`;
+            cmpTbody.appendChild(tr);
+          });
+        })
+        .catch(() => {
+          cmpLoading.classList.add('hidden');
+          cmpError.textContent = 'Gagal memuat data dari server.';
+          cmpError.classList.remove('hidden');
+        });
+    }
+
+    document.querySelectorAll('[data-comparison]').forEach(btn => {
+      btn.addEventListener('click', () => openComparisonModal(btn.dataset.model));
+    });
+    cmpClose?.addEventListener('click', () => cmpModal.classList.add('hidden'));
+    cmpModal?.addEventListener('click', e => { if (e.target === cmpModal) cmpModal.classList.add('hidden'); });
+
+    // ── PCA Scatter Plot Modal (Saran #7) ─────────────────────────
+    const pcaModal = document.getElementById('pca-modal');
+    const pcaClose = document.getElementById('pca-close');
+    let pcaChartInstance = null;
+
+    const CLUSTER_COLORS = [
+      '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
+      '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+    ];
+
+    function hexToRgba(hex, alpha = 1) {
+      const clean = String(hex || '').replace('#', '');
+      if (clean.length !== 6) return `rgba(148, 163, 184, ${alpha})`;
+      const bigint = parseInt(clean, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function prettifyPcaFeatureName(rawName) {
+      const name = String(rawName || '').trim();
+      if (!name) return 'Fitur tidak diketahui';
+
+      const categoricalPrefixes = [
+        'PROGRAM STUDI_',
+        'TYPE_',
+        'TIPE_',
+        'JENIS SEKOLAH_',
+      ];
+
+      for (const prefix of categoricalPrefixes) {
+        if (name.startsWith(prefix)) {
+          const rawValue = name.slice(prefix.length).replace(/^Prop\.\s*/i, '');
+          const labelMap = {
+            'PROGRAM STUDI_': 'Program Studi',
+            'TYPE_': 'Type',
+            'TIPE_': 'Tipe',
+            'JENIS SEKOLAH_': 'Jenis Sekolah',
+          };
+          return `${labelMap[prefix]} = ${rawValue}`;
+        }
+      }
+
+      return name
+        .replaceAll('_', ' ')
+        .replace(/\bProp\.\s*/gi, '')
+        .toLowerCase()
+        .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    let currentPcaModel = null;
+    function openPcaModal(modelName, prodi = 'Global') {
+      currentPcaModel = modelName;
+      pcaModal.classList.remove('hidden');
+      document.getElementById('pca-subtitle').textContent = 'Memproyeksikan data multidimensi ke 2 dimensi via Principal Component Analysis.';
+      document.getElementById('pca-legend').innerHTML = '';
+      document.getElementById('pca-feature-list').innerHTML = '';
+      document.getElementById('pca-var1').textContent = '—';
+      document.getElementById('pca-var2').textContent = '—';
+      document.getElementById('pca-total').textContent = '—';
+      document.getElementById('pca-quality').textContent = '—';
+      document.getElementById('pca-feature-count').textContent = '—';
+      const qualityNoteEl = document.getElementById('pca-quality-note');
+      qualityNoteEl.className = 'hidden rounded-xl border px-4 py-3 text-sm font-medium';
+      qualityNoteEl.textContent = '';
+
+      if (pcaChartInstance) { pcaChartInstance.destroy(); pcaChartInstance = null; }
+      const chartWrap = document.getElementById('pca-chart-wrap');
+      if (chartWrap) {
+        chartWrap.innerHTML = `
+          <canvas id="pca-chart"></canvas>
+          <div id="pca-loading" class="absolute inset-0 flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-sm text-slate-400 font-medium">Memuat data PCA...</p>
+            </div>
+          </div>
+        `;
+      }
+      const activePcaLoading = document.getElementById('pca-loading');
+      if (activePcaLoading) activePcaLoading.classList.remove('hidden');
+
+      const url = prodi === 'Global' ? `/pca_data/${modelName}` : `/pca_data/${modelName}?prodi=${encodeURIComponent(prodi)}`;
+      
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          const currentLoader = document.getElementById('pca-loading');
+          if (currentLoader) currentLoader.classList.add('hidden');
+
+          if (!data.success) {
+            document.getElementById('pca-subtitle').textContent = data.error || 'Gagal memuat data PCA.';
+            return;
+          }
+
+          // Populate Prodi dropdown
+          const selectEl = document.getElementById('pca-prodi-select');
+          selectEl.innerHTML = '<option value="Global">Global (Semua Prodi)</option>';
+          if (data.prodi_list && data.prodi_list.length > 0) {
+            selectEl.classList.remove('hidden');
+            data.prodi_list.forEach(p => {
+              const opt = document.createElement('option');
+              opt.value = p;
+              opt.textContent = p;
+              selectEl.appendChild(opt);
+            });
+          } else {
+            selectEl.classList.add('hidden');
+          }
+          selectEl.value = prodi;
+
+          // Update info cards
+          const varianceRatio = Array.isArray(data.variance_ratio) ? data.variance_ratio : [];
+          const pc1 = Number(varianceRatio[0] || 0);
+          const pc2 = Number(varianceRatio[1] || 0);
+          const totalExplained = Number(data.total_variance_explained || 0);
+          const featureCount = Number(data.feature_count || 0);
+
+          document.getElementById('pca-var1').textContent = (pc1 * 100).toFixed(1) + '%';
+          document.getElementById('pca-var2').textContent = (pc2 * 100).toFixed(1) + '%';
+          document.getElementById('pca-total').textContent = (totalExplained * 100).toFixed(1) + '%';
+          document.getElementById('pca-quality').textContent = data.quality_label || '—';
+          document.getElementById('pca-feature-count').textContent = featureCount ? featureCount.toLocaleString() : '—';
+          document.getElementById('pca-subtitle').textContent =
+            `${data.n_sample.toLocaleString()} dari ${data.n_total.toLocaleString()} titik data ditampilkan.`;
+
+          if (data.quality_band === 'weak') {
+            qualityNoteEl.className = 'rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800';
+            qualityNoteEl.textContent = `Proyeksi 2D hanya menjelaskan ${(totalExplained * 100).toFixed(1)}% variasi data. Gunakan DBI dan Silhouette sebagai dasar utama evaluasi.`;
+          } else if (data.quality_band === 'moderate') {
+            qualityNoteEl.className = 'rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800';
+            qualityNoteEl.textContent = `Proyeksi 2D cukup membantu untuk membaca pola umum, tetapi masih menyederhanakan struktur data asli.`;
+          } else {
+            qualityNoteEl.className = 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800';
+            qualityNoteEl.textContent = `Proyeksi 2D cukup representatif untuk inspeksi visual cluster pada data ini.`;
+          }
+
+          // Group by cluster
+          const clusters = {};
+          (Array.isArray(data.points) ? data.points : []).forEach(p => {
+            const x = Number(p.x);
+            const y = Number(p.y);
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+            if (!clusters[p.cluster]) clusters[p.cluster] = [];
+            clusters[p.cluster].push({
+              x,
+              y,
+              prodi: p.prodi,
+              sekolah: p.sekolah,
+              nilai: typeof p.nilai === 'number' ? p.nilai : (p.nilai !== null && p.nilai !== undefined ? Number(p.nilai) : null),
+            });
+          });
+
+          const datasets = Object.entries(clusters).sort((a,b) => a[0]-b[0]).map(([k, pts]) => ({
+            label: `Cluster ${k}`,
+            data: pts,
+            backgroundColor: hexToRgba(CLUSTER_COLORS[parseInt(k, 10)] || '#94a3b8', 0.75),
+            borderColor: hexToRgba(CLUSTER_COLORS[parseInt(k, 10)] || '#94a3b8', 0.95),
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBorderWidth: 0.5,
+            showLine: false,
+          }));
+
+          if (!datasets.length) {
+            document.getElementById('pca-subtitle').textContent = 'Data PCA tersedia, tetapi tidak ada titik valid untuk divisualisasikan.';
+            return;
+          }
+
+          // Build legend
+          const legendEl = document.getElementById('pca-legend');
+          datasets.forEach(ds => {
+            const chip = document.createElement('div');
+            chip.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold';
+            chip.style.borderColor = ds.borderColor;
+            chip.style.color = ds.borderColor;
+            chip.innerHTML = `<span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${ds.backgroundColor}"></span>${ds.label}`;
+            legendEl.appendChild(chip);
+          });
+
+          const featureListEl = document.getElementById('pca-feature-list');
+          if (Array.isArray(data.top_features) && data.top_features.length) {
+            data.top_features.slice(0, 8).forEach(item => {
+              const row = document.createElement('div');
+              row.className = 'flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2';
+              const prettyFeatureName = prettifyPcaFeatureName(item.feature);
+              row.innerHTML = `
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate" title="${prettyFeatureName}">${prettyFeatureName}</p>
+                  <p class="text-[11px] text-slate-500">${item.component}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-sm font-bold text-slate-800">${item.loading > 0 ? '+' : ''}${item.loading.toFixed(3)}</p>
+                  <p class="text-[11px] text-slate-400">Kontribusi ${item.magnitude.toFixed(3)}</p>
+                </div>
+              `;
+              featureListEl.appendChild(row);
+            });
+          } else {
+            featureListEl.innerHTML = '<p class="text-sm text-slate-500">Kontribusi fitur tidak tersedia.</p>';
+          }
+
+          setTimeout(() => {
+            try {
+              if (typeof Chart === 'undefined') {
+                document.getElementById('pca-subtitle').textContent = 'Chart.js tidak termuat, sehingga visualisasi PCA tidak bisa dirender.';
+                return;
+              }
+              const canvas = document.getElementById('pca-chart');
+              if (!canvas) {
+                document.getElementById('pca-subtitle').textContent = 'Canvas PCA tidak ditemukan.';
+                return;
+              }
+              const ctx = canvas.getContext('2d');
+              pcaChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                  animation: false,
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  normalized: true,
+                  devicePixelRatio: 2,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      callbacks: {
+                        label: ctx => {
+                          const p = ctx.raw;
+                          return [
+                            `Cluster ${ctx.dataset.label.split(' ')[1]}`,
+                            p.prodi ? `Prodi: ${p.prodi}` : null,
+                            p.sekolah ? `Sekolah: ${p.sekolah}` : null,
+                            typeof p.nilai === 'number' && Number.isFinite(p.nilai) ? `Nilai: ${p.nilai.toFixed(2)}` : null,
+                            `PC1: ${p.x.toFixed(3)}, PC2: ${p.y.toFixed(3)}`
+                          ].filter(Boolean);
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      type: 'linear',
+                      offset: false,
+                      title: { display: true, text: 'Principal Component 1', font: { family: 'Outfit', size: 12 } },
+                      grid: { color: '#f1f5f9' }
+                    },
+                    y: {
+                      type: 'linear',
+                      offset: false,
+                      title: { display: true, text: 'Principal Component 2', font: { family: 'Outfit', size: 12 } },
+                      grid: { color: '#f1f5f9' }
+                    }
+                  }
+                }
+              });
+              pcaChartInstance.resize();
+              pcaChartInstance.update('none');
+              document.getElementById('pca-subtitle').textContent =
+                `${data.n_sample.toLocaleString()} dari ${data.n_total.toLocaleString()} titik data ditampilkan. ${datasets.length} cluster divisualisasikan.`;
+            } catch (err) {
+              document.getElementById('pca-subtitle').textContent = `Gagal merender chart PCA: ${err.message}`;
+            }
+          }, 80);
+        })
+        .catch(() => {
+          const currentLoader = document.getElementById('pca-loading');
+          if (currentLoader) currentLoader.classList.add('hidden');
+          document.getElementById('pca-subtitle').textContent = 'Gagal memuat data PCA dari server.';
+        });
+    }
+
+    document.querySelectorAll('[data-pca]').forEach(btn => {
+      btn.addEventListener('click', () => openPcaModal(btn.dataset.model));
+    });
+    
+    document.getElementById('pca-prodi-select')?.addEventListener('change', (e) => {
+      if (currentPcaModel) {
+        openPcaModal(currentPcaModel, e.target.value);
+      }
+    });
+
+    pcaClose?.addEventListener('click', () => pcaModal.classList.add('hidden'));
+    pcaModal?.addEventListener('click', e => { if (e.target === pcaModal) pcaModal.classList.add('hidden'); });
+
+    // ── Elbow Chart Modal (Saran #2) ──────────────────────────────
+    const elbowModal = document.getElementById('elbow-modal');
+    const elbowClose = document.getElementById('elbow-close');
+    let elbowChartInstance = null;
+
+    document.querySelectorAll('.btn-elbow').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rawData = btn.dataset.elbow;
+        const optimalK = parseInt(btn.dataset.k, 10);
+        let elbowData = null;
+        try { elbowData = JSON.parse(rawData); } catch (e) {}
+
+        elbowModal.classList.remove('hidden');
+
+        const infoEl = document.getElementById('elbow-info');
+        infoEl.textContent = `K optimal yang dipilih sistem: k = ${optimalK}. Titik ini adalah "siku" dari kurva inertia di bawah.`;
+
+        if (elbowChartInstance) {
+          elbowChartInstance.destroy();
+          elbowChartInstance = null;
+        }
+
+        if (!elbowData || !elbowData.k_values) {
+          infoEl.textContent = 'Data elbow tidak tersedia untuk model ini. Upload ulang data untuk menghasilkan analisis elbow.';
+          return;
+        }
+
+        const ctx = document.getElementById('elbow-chart').getContext('2d');
+        const colors = elbowData.k_values.map(k => k === optimalK ? '#059669' : '#cbd5e1');
+        const radii  = elbowData.k_values.map(k => k === optimalK ? 8 : 4);
+
+        elbowChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: elbowData.k_values.map(k => `k = ${k}`),
+            datasets: [{
+              label: 'Inertia',
+              data: elbowData.inertias,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              borderWidth: 2.5,
+              pointBackgroundColor: colors,
+              pointRadius: radii,
+              pointHoverRadius: 10,
+              tension: 0.35,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => `Inertia: ${ctx.parsed.y.toFixed(2)}${ctx.label === `k = ${optimalK}` ? ' ← K Optimal' : ''}`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit', size: 12 } } },
+              y: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit', size: 11 } } }
+            }
+          }
+        });
+      });
+    });
+
+    elbowClose?.addEventListener('click', () => elbowModal.classList.add('hidden'));
+    elbowModal?.addEventListener('click', e => { if (e.target === elbowModal) elbowModal.classList.add('hidden'); });
   </script>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 
 </html>

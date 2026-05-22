@@ -151,6 +151,7 @@
 
     <!-- ── Main Content ─────────────────────────────────────────── -->
     <main class="main-content animate-page-in">
+      <div class="main-content-inner">
       <!-- ── Top Bar ────────────────────────────────────────────── -->
       <div class="top-bar">
         <div>
@@ -158,12 +159,8 @@
           <p class="text-slate-500 font-medium">Selamat datang kembali di SIREKPRODI</p>
         </div>
         <div class="flex items-center gap-6">
-          <div class="search-container hidden md:block">
-            <svg class="search-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" placeholder="Cari data sekolah atau prodi..." class="search-input">
+          <div class="hidden md:block">
+            <!-- Space for top bar left side if needed -->
           </div>
           <div class="relative">
             <button id="profileDropdownBtn" class="flex items-center gap-3 focus:outline-none group">
@@ -194,6 +191,61 @@
         </div>
       </div>
       <div id="toast-anchor"></div>
+
+      <section class="summary-strip has-5-stats mb-6">
+        <div class="summary-main">
+          <p class="summary-kicker">Model Aktif</p>
+          <h2 class="summary-title">{{ active_model or 'Belum ada model aktif' }}</h2>
+          <p class="summary-copy">
+            Dashboard ini membaca rekomendasi dari model aktif yang sama dengan halaman cluster dan pelatihan model.
+          </p>
+        </div>
+        <div class="summary-stat">
+          <p class="summary-label">DBI</p>
+          <p class="summary-value">
+            {% if active_model_meta.get('dbi_after_ga') is not none %}
+              {{ "%.3f"|format(active_model_meta.get('dbi_after_ga')) }}
+            {% else %}
+              —
+            {% endif %}
+          </p>
+          <p class="summary-subvalue">Target lebih rendah</p>
+        </div>
+        <div class="summary-stat">
+          <p class="summary-label">Silhouette</p>
+          <p class="summary-value">
+            {% if active_model_meta.get('silhouette_score') is not none %}
+              {{ "%.3f"|format(active_model_meta.get('silhouette_score')) }}
+            {% else %}
+              —
+            {% endif %}
+          </p>
+          <p class="summary-subvalue">Target lebih tinggi</p>
+        </div>
+        <div class="summary-stat">
+          <p class="summary-label">CH Score</p>
+          <p class="summary-value">
+            {% if active_model_meta.get('ch_score') is not none %}
+              {{ "%.2f"|format(active_model_meta.get('ch_score')) }}
+            {% else %}
+              —
+            {% endif %}
+          </p>
+          <p class="summary-subvalue">Target lebih tinggi</p>
+        </div>
+        <div class="summary-stat">
+          <p class="summary-label">Rentang k</p>
+          <p class="summary-value">{{ active_model_meta.get('n_clusters_used', '—') }}</p>
+          <p class="summary-subvalue">Mode per-prodi tersimpan transparan</p>
+        </div>
+        <div class="summary-stat">
+          <p class="summary-label">Baris Aktif</p>
+          <p class="summary-value">{{ filtered_total }}</p>
+          <p class="summary-subvalue">
+            {% if selected_prodi != 'all' %}Filter prodi {{ selected_prodi }}{% else %}Semua prodi{% endif %}
+          </p>
+        </div>
+      </section>
 
       <!-- ── Dashboard Stats (KPI Cards) ─────────────────────────── -->
       <div class="kpi-grid">
@@ -231,9 +283,25 @@
           </div>
         </div>
         <div class="kpi-card yellow border-slate-100">
-          <div class="label">Accuracy Score</div>
-          <div class="value">94.2%</div>
-          <div class="trend">K-Means</div>
+          <div class="label">Kualitas Model Aktif</div>
+          <div class="value">
+            {% if active_model_meta.get('avg_dbi_after_ga_runs') is not none %}
+              {{ "%.3f"|format(active_model_meta.get('avg_dbi_after_ga_runs')) }}
+            {% elif active_model_meta.get('avg_dbi_after_ga_3_runs') is not none %}
+              {{ "%.3f"|format(active_model_meta.get('avg_dbi_after_ga_3_runs')) }}
+            {% elif active_model_meta.get('dbi_after_ga') is not none %}
+              {{ "%.3f"|format(active_model_meta.get('dbi_after_ga')) }}
+            {% else %}
+              —
+            {% endif %}
+          </div>
+          <div class="trend">
+            {% if active_model_meta.get('training_runs') is not none %}
+              {{ active_model_meta.get('training_runs') }} run
+            {% else %}
+              DBI
+            {% endif %}
+          </div>
           <div class="kpi-icon-wrapper">
             <svg fill="currentColor" viewBox="0 0 24 24">
               <path
@@ -243,10 +311,15 @@
         </div>
       </div>
 
+      <div class="quality-note mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <p>Gunakan DBI, Silhouette, dan model aktif sebagai konteks utama saat membaca rekomendasi. Plot atau ranking turunan bukan pengganti metrik kualitas model.</p>
+        <span class="status-badge neutral">PCA 2D menjelaskan sebagian kecil variasi data</span>
+      </div>
+
       <!-- ── Filter Bar (sticky) ──────────────────────────────────── -->
-      <div id="filter-bar" class="card sticky top-[60px] z-30 flex flex-wrap items-center gap-3 py-2.5 px-4">
+      <div id="filter-bar" class="card card-glass sticky top-[-32px] z-30 flex flex-wrap items-center gap-3 py-2 px-4 shadow-lg mb-6">
         <div class="flex items-center gap-2">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Cluster</span>
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prioritas</span>
           <div class="flex gap-1">
             {% for lbl in ['A','B','C'] %}
             <button type="button" id="globalBtn{{ lbl }}" onclick="setGlobalCluster('{{ lbl }}')"
@@ -299,7 +372,7 @@
       <!-- ── Tab Switcher (pill style) ────────────────────────────── -->
       <div class="tab-bar">
         <button type="button" id="btn-tab-analitik" onclick="switchTab('tab-analitik')" class="tab-btn tab-active">
-          Analitik Cluster
+          Analitik Prioritas
         </button>
         <button type="button" id="btn-tab-unggulan" onclick="switchTab('tab-unggulan')" class="tab-btn">
           Sekolah Unggulan
@@ -309,7 +382,7 @@
         </button>
       </div>
 
-      <!-- ═══ TAB 1 — Analitik Cluster ═══════════════════════════════════ -->
+      <!-- ═══ TAB 1 — Analitik Prioritas ═══════════════════════════════════ -->
       <div id="tab-analitik" class="tab-pane space-y-4">
         {% set algoritmas = [kmeans_data] %}
         {% for algo in algoritmas %}
@@ -318,13 +391,13 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">{{ algo.algoritma }}</p>
-              <h2 class="text-xl font-bold text-slate-900">Analitik Cluster</h2>
+              <h2 class="text-xl font-bold text-slate-900">Analitik Prioritas Akademik</h2>
             </div>
             <div class="flex gap-2">
               {% for lbl in ['A','B','C'] %}
               <button type="button" data-cluster-btn="{{ algo_index }}" data-label="{{ lbl }}"
                 onclick="toggleCluster({{ algo_index }}, '{{ lbl }}')"
-                class="pill text-sm font-bold {% if lbl == 'A' %}pill-active{% endif %}">Cluster {{ lbl }}</button>
+                class="pill text-sm font-bold {% if lbl == 'A' %}pill-active{% endif %}">Prioritas {{ lbl }}</button>
               {% endfor %}
             </div>
           </div>
@@ -333,7 +406,7 @@
             class="{% if label != 'A' %}hidden{% endif %} space-y-4">
             <p class="text-sm text-slate-600"><span class="font-semibold text-emerald-700">Deskripsi:</span> {{
               algo.deskripsi_cluster[label] }}</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div class="card card-flat p-5 border-slate-100">
                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Total Mahasiswa</p>
                 <p class="text-3xl font-extrabold text-slate-900">{{ algo[label].total_mahasiswa }}</p>
@@ -343,12 +416,22 @@
                 <p class="text-3xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_mean) }}</p>
               </div>
               <div class="card card-flat p-5 border-slate-100">
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Kota Terbaik</p>
-                <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].kota_terbaik }}</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Median IPK</p>
+                <p class="text-3xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_median) }}</p>
+              </div>
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Rentang IPK</p>
+                <p class="text-xl font-extrabold text-slate-900">{{ '%.2f'|format(algo[label].ipk_min) }}–{{ '%.2f'|format(algo[label].ipk_max) }}</p>
+              </div>
+              <div class="card card-flat p-5 border-slate-100">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">IPK ≥ {{ '%.2f'|format(algo[label].ipk_tinggi_threshold) }}</p>
+                <p class="text-3xl font-extrabold text-slate-900">{{ '%.1f'|format(algo[label].ipk_tinggi_pct) }}%</p>
+                <p class="text-xs font-semibold text-slate-400">{{ algo[label].ipk_tinggi_count }} mahasiswa</p>
               </div>
               <div class="card card-flat p-5 border-slate-100">
                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sekolah Terbaik</p>
                 <p class="text-lg font-bold text-slate-900 leading-tight">{{ algo[label].sekolah_terbaik }}</p>
+                <p class="text-xs font-semibold text-slate-400">{{ algo[label].kota_terbaik }}</p>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -368,7 +451,7 @@
             </div>
             <div class="card shadow-none border border-slate-100">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <h4 class="text-base font-semibold text-slate-900">Sekolah Rekomendasi — Cluster {{ label }}</h4>
+                <h4 class="text-base font-semibold text-slate-900">Sekolah Rekomendasi — Prioritas {{ label }}</h4>
                 <details class="text-[11px] cursor-pointer">
                   <summary class="font-bold text-sky-700 list-none flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -675,6 +758,8 @@
         {% endif %}
       </div><!-- /tab-sasaran -->
 
+      </div><!-- /main-content-inner -->
+
       <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
         <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div class="flex items-center gap-2.5">
@@ -683,15 +768,16 @@
             </div>
             <div>
               <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
-              <a href="{{ url_for('upload.upload') }}" class="hover:text-emerald-600 transition-colors">Upload</a>
-              <a href="{{ url_for('model.pelatihan_model') }}"
-                class="hover:text-emerald-600 transition-colors">Pelatihan
-                Model</a>
+              <div class="flex items-center gap-3">
+                <a href="{{ url_for('upload.upload') }}" class="text-[11px] text-slate-500 hover:text-emerald-600 transition-colors">Upload</a>
+                <a href="{{ url_for('model.pelatihan_model') }}" class="text-[11px] text-slate-500 hover:text-emerald-600 transition-colors">Pelatihan Model</a>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
           </div>
+          <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
         </div>
       </footer>
+    </main>
 
 
 
@@ -728,7 +814,7 @@
           const body = document.getElementById('modalMahasiswaBody');
           if (!modal || !title || !body) return;
 
-          title.textContent = `Detail Mahasiswa — ${sekolah} — ${prodi} (Cluster ${cluster})`;
+          title.textContent = `Detail Mahasiswa — ${sekolah} — ${prodi} (Prioritas ${cluster})`;
           body.innerHTML = `
         <div class="space-y-3 p-2">
           <div class="skeleton h-4 w-1/3"></div>
@@ -980,15 +1066,25 @@
           const cards = list.querySelectorAll('[data-prodi-card]');
           const countEl = document.getElementById('prodiSasaranCount');
           const emptyEl = document.getElementById('prodiSasaranEmpty');
+          const selectProdi = document.getElementById('selectProdiSasaran');
+          const selectedProdi = (selectProdi?.value || '').toLowerCase().trim();
+
           let visibleCards = 0;
           cards.forEach(card => {
-            // Skip kartu yang sedang di-hide oleh dropdown prodi
-            if (card.style.display === 'none') return;
+            // Cek kecocokan prodi (dari dropdown)
+            const prodiName = (card.dataset.prodiName || '').toLowerCase();
+            const prodiMatch = !selectedProdi || prodiName === selectedProdi;
+
+            if (!prodiMatch) {
+              card.style.display = 'none';
+              return;
+            }
 
             const schoolEls = card.querySelectorAll('.prodi-sekolah-row');
             const limit = parseInt(card.dataset.sekolahLimit || '3', 10);
             let anyVisible = false;
             let shown = 0;
+            
             schoolEls.forEach(se => {
               const name = (se.dataset.schoolName || se.textContent || '').toLowerCase();
               const match = !q || name.includes(q);
@@ -997,14 +1093,13 @@
               const unlimited = Number.isNaN(limit) || limit === 0 || limit === -1;
               const show = match && (unlimited ? true : (shown < limit));
 
-              // IMPORTANT: override class 'hidden' bawaan dari Jinja
               se.classList.toggle('hidden', !show);
               if (show) {
                 anyVisible = true;
                 shown++;
               }
             });
-            // If no matching school inside, hide the whole prodi card
+            // Jika ada sekolah yang cocok DAN prodi cocok, tampilkan kartu
             card.style.display = anyVisible ? '' : 'none';
             if (anyVisible) visibleCards++;
           });

@@ -46,11 +46,19 @@
 
   <!-- Processing Overlay -->
   <div id="processing-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm blur-overlay">
-    <div class="h-full w-full flex flex-col items-center justify-center text-white gap-4 px-4">
+    <div class="h-full w-full flex flex-col items-center justify-center text-white gap-5 px-4">
       <div class="h-10 w-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin"></div>
-      <div class="text-center space-y-1">
-        <p class="text-base font-semibold">Sedang memproses data…</p>
-        <p class="text-sm text-white/60 max-w-xs">Mohon tunggu 1–3 menit. Jangan menutup halaman ini.</p>
+      <div class="text-center space-y-2 w-full max-w-sm">
+        <p id="processing-title" class="text-base font-semibold">Sedang memproses data…</p>
+        <p id="processing-message" class="text-sm text-white/70">Menyiapkan upload...</p>
+        <div class="w-full h-2.5 rounded-full bg-white/15 overflow-hidden">
+          <div id="processing-bar" class="h-full w-[1%] rounded-full bg-emerald-400 transition-all duration-500"></div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-white/75">
+          <span id="processing-percent">1%</span>
+          <span id="processing-run">Training 0/{{ default_training_runs | default(5) }}</span>
+        </div>
+        <p class="text-xs text-white/50 max-w-xs mx-auto">Jangan menutup halaman ini sampai proses selesai.</p>
       </div>
     </div>
   </div>
@@ -117,6 +125,7 @@
 
   <!-- ── Main Content ─────────────────────────────────────────── -->
   <main class="main-content animate-page-in">
+    <div class="main-content-inner">
     <!-- ── Top Bar ────────────────────────────────────────────── -->
     <div class="top-bar">
       <div>
@@ -144,6 +153,65 @@
         </div>
       </div>
     </div>
+
+    <section class="summary-strip has-5-stats mb-6">
+      <div class="summary-main">
+        <p class="summary-kicker">Model Aktif Saat Ini</p>
+        <h2 class="summary-title">{{ active_model or 'Belum ada model aktif' }}</h2>
+        <p class="summary-copy">
+          Upload akan melatih model baru. Sistem hanya mengganti model aktif jika DBI model baru finite dan lebih baik dari model aktif saat ini.
+        </p>
+      </div>
+      <div class="summary-stat">
+        <p class="summary-label">DBI Aktif</p>
+        <p class="summary-value">
+          {% if active_model_meta and active_model_meta.get('dbi_after_ga') is not none %}
+            {{ "%.3f"|format(active_model_meta.get('dbi_after_ga')) }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+        <p class="summary-subvalue">Quality gate utama</p>
+      </div>
+      <div class="summary-stat">
+        <p class="summary-label">Silhouette</p>
+        <p class="summary-value">
+          {% if active_model_meta and active_model_meta.get('silhouette_score') is not none %}
+            {{ "%.3f"|format(active_model_meta.get('silhouette_score')) }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+        <p class="summary-subvalue">Indikator pemisahan cluster</p>
+      </div>
+      <div class="summary-stat">
+        <p class="summary-label">CH Score Aktif</p>
+        <p class="summary-value">
+          {% if active_model_meta and active_model_meta.get('ch_score') is not none %}
+            {{ "%.2f"|format(active_model_meta.get('ch_score')) }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+        <p class="summary-subvalue">Variance Ratio Criterion</p>
+      </div>
+      <div class="summary-stat">
+        <p class="summary-label">Rentang k</p>
+        <p class="summary-value">{{ active_model_meta.get('n_clusters_used', '—') if active_model_meta else '—' }}</p>
+        <p class="summary-subvalue">Disimpan dari model aktif</p>
+      </div>
+      <div class="summary-stat">
+        <p class="summary-label">Verifikasi</p>
+        <p class="summary-value">
+          {% if active_model_meta and active_model_meta.get('training_runs') is not none %}
+            {{ active_model_meta.get('training_runs') }}x
+          {% else %}
+            1x
+          {% endif %}
+        </p>
+        <p class="summary-subvalue">Jumlah run yang tercatat</p>
+      </div>
+    </section>
 
     <!-- Upload Form -->
     <div class="card space-y-5">
@@ -200,6 +268,10 @@
                 class="font-mono font-semibold">nilai_2021.xlsx</span></p>
             <p>Format baru (38 prodi): satu file dengan kolom Program Studi &amp; IPK.</p>
           </div>
+        </div>
+
+        <div class="quality-note">
+          Setelah proses selesai, model hasil upload yang berhasil diproses akan otomatis menjadi model aktif.
         </div>
 
         <!-- Submit -->
@@ -266,6 +338,8 @@
       </div>
     </div>
 
+    </div><!-- /main-content-inner -->
+
     <!-- Footer inside main-content -->
     <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
       <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -288,9 +362,40 @@
     const form = document.getElementById('upload-form');
     const submitBtn = document.getElementById('submit-btn');
     const overlay = document.getElementById('processing-overlay');
+    const processingTitle = document.getElementById('processing-title');
+    const processingMessage = document.getElementById('processing-message');
+    const processingBar = document.getElementById('processing-bar');
+    const processingPercent = document.getElementById('processing-percent');
+    const processingRun = document.getElementById('processing-run');
+    const defaultTrainingRuns = {{ default_training_runs | default(5) }};
+
+    function makeUploadJobId() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function updateProcessing(progress) {
+      const percent = Math.max(0, Math.min(100, Number(progress.percent || 0)));
+      const runCurrent = Number(progress.run_current || 0);
+      const runTotal = Number(progress.run_total || defaultTrainingRuns);
+
+      processingBar.style.width = `${percent}%`;
+      processingPercent.textContent = `${Math.round(percent)}%`;
+      processingRun.textContent = `Training ${runCurrent}/${runTotal}`;
+      processingMessage.textContent = progress.message || 'Memproses data...';
+
+      if (progress.status === 'completed') {
+        processingTitle.textContent = 'Upload selesai';
+      } else if (runCurrent > 0) {
+        processingTitle.textContent = `Training model ${runCurrent}/${runTotal}`;
+      } else {
+        processingTitle.textContent = 'Sedang memproses data...';
+      }
+    }
 
     if (form && submitBtn && overlay) {
-      form.addEventListener('submit', () => {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
         submitBtn.innerHTML = `
@@ -301,6 +406,79 @@
           Memproses...
         `;
         overlay.classList.remove('hidden');
+        processingBar.classList.remove('bg-red-400');
+        processingBar.classList.add('bg-emerald-400');
+        updateProcessing({
+          percent: 1,
+          message: 'Mengirim file ke server...',
+          run_current: 0,
+          run_total: defaultTrainingRuns,
+        });
+
+        const jobId = makeUploadJobId();
+        const formData = new FormData(form);
+        formData.set('upload_job_id', jobId);
+
+        let polling = true;
+        const pollProgress = async () => {
+          while (polling) {
+            try {
+              const response = await fetch(`/upload/progress/${jobId}`, {
+                headers: { 'Accept': 'application/json' },
+              });
+              const data = await response.json();
+              if (data.success) updateProcessing(data);
+              if (data.status === 'completed' || data.status === 'failed') break;
+            } catch (err) {
+              processingMessage.textContent = 'Menunggu pembaruan progres dari server...';
+            }
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        };
+
+        const pollingPromise = pollProgress();
+        try {
+          const response = await fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Upload gagal diproses.');
+          }
+          updateProcessing({
+            percent: 100,
+            message: result.message || 'Upload selesai.',
+            run_current: defaultTrainingRuns,
+            run_total: defaultTrainingRuns,
+            status: 'completed',
+          });
+          polling = false;
+          await pollingPromise;
+          window.location.href = result.redirect_url || "{{ url_for('dashboard.dashboard') }}";
+        } catch (err) {
+          polling = false;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+          submitBtn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Upload &amp; Proses
+          `;
+          processingTitle.textContent = 'Upload gagal';
+          processingMessage.textContent = err.message || 'Terjadi kesalahan saat upload.';
+          processingBar.style.width = '100%';
+          processingBar.classList.remove('bg-emerald-400');
+          processingBar.classList.add('bg-red-400');
+          processingPercent.textContent = 'Gagal';
+          setTimeout(() => overlay.classList.add('hidden'), 3500);
+        }
       });
     }
 

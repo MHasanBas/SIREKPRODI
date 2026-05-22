@@ -126,6 +126,16 @@ a {
 
 .main-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--surface-base);
+  width: 100%;
+  position: relative;
+}
+
+.main-content-inner {
+  flex: 1;
   padding: 32px 40px;
   max-width: 1400px;
   margin: 0 auto;
@@ -415,6 +425,13 @@ a {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.card-glass {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .card-hover:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
@@ -425,6 +442,166 @@ a {
   background: var(--surface-raised);
   border: 1px solid var(--border);
   box-shadow: none;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+  border: 1px solid var(--border-mid);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-strip.has-5-stats {
+  grid-template-columns: minmax(0, 1.5fr) repeat(5, minmax(0, 1fr));
+}
+
+.summary-main {
+  min-width: 0;
+}
+
+.summary-kicker {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-mid);
+}
+
+.summary-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 4px;
+}
+
+.summary-copy {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--ink-mid);
+}
+
+.summary-stat {
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.summary-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+}
+
+.summary-value {
+  margin-top: 6px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.summary-subvalue {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--ink-mid);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-badge.good {
+  background: #ecfdf5;
+  border-color: #d1fae5;
+  color: #047857;
+}
+
+.status-badge.bad {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.status-badge.info {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge.neutral {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+.action-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-btn-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border-mid);
+  background: white;
+  color: var(--ink-mid);
+  box-shadow: var(--shadow-xs);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn-soft:hover {
+  background: var(--surface-raised);
+  border-color: #cbd5e1;
+}
+
+.action-btn-soft.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.action-btn-soft.danger:hover {
+  background: #fef2f2;
+}
+
+.action-btn-soft.success {
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.action-btn-soft.success:hover {
+  background: #ecfdf5;
+}
+
+.quality-note {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  color: #475569;
 }
 
 /* ── Brand Mark ─────────────────────────────────────────────── */
@@ -603,6 +780,24 @@ a {
   color: var(--primary);
   background: var(--surface-card);
   box-shadow: var(--shadow-xs);
+}
+
+@media (max-width: 1180px) {
+  .summary-strip,
+  .summary-strip.has-5-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-main {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .summary-strip,
+  .summary-strip.has-5-stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Tables ──────────────────────────────────────────────────── */

@@ -16,7 +16,7 @@ def proses_upload_data(folder_path):
 
     # 1) Coba baca format baru (satu file dengan PROGRAM STUDI/IPK)
     all_new_format = []
-    print("📁 Daftar file di folder:", os.listdir(folder_path))
+    print("Daftar file di folder:", os.listdir(folder_path))
 
     for file in os.listdir(folder_path):
         if not file.lower().endswith('.xlsx'):
@@ -25,7 +25,7 @@ def proses_upload_data(folder_path):
         try:
             df_raw = pd.read_excel(path_file)
         except Exception as err:
-            print(f"⚠️ Gagal membaca {file}: {err}")
+            print(f"Peringatan: gagal membaca {file}: {err}")
             continue
 
         df_raw = _normalise_columns(df_raw)
@@ -75,13 +75,13 @@ def proses_upload_data(folder_path):
             ]
             df_new = df_new[[c for c in wanted_cols if c in df_new.columns]]
             all_new_format.append(df_new)
-            print(f"✅ Format baru terdeteksi pada {file}, baris: {df_new.shape[0]}")
+            print(f"Format baru terdeteksi pada {file}, baris: {df_new.shape[0]}")
 
     if all_new_format:
         df = pd.concat(all_new_format, ignore_index=True)
-        print("📊 Sebelum pembersihan (format baru):", df.shape)
+        print("Sebelum pembersihan (format baru):", df.shape)
 
-        # ⚙️ Bersihkan placeholder tanpa menghapus data valid
+        # Bersihkan placeholder tanpa menghapus data valid
         df = df.replace({'-': pd.NA, '--': pd.NA})
         required_cols = [c for c in [
             'ASAL SEKOLAH', 'NPSN SEKOLAH', 'KOTA SEKOLAH',
@@ -90,7 +90,7 @@ def proses_upload_data(folder_path):
         if required_cols:
             df = df.dropna(subset=required_cols)
 
-        print("📉 Setelah pembersihan (format baru):", df.shape)
+        print("Setelah pembersihan (format baru):", df.shape)
     else:
         # 2) Fallback: format lama (pasangan data_xxxx & nilai_xxxx)
         all_data = []
@@ -110,9 +110,9 @@ def proses_upload_data(folder_path):
                     biodata = biodata[biodata['NIM'].notna()]
                     nilai = nilai[nilai['NIM'].notna()]
 
-                    print("📁 Membaca:", file_data, "dan", file_nilai)
-                    print("📄 Kolom biodata:", biodata.columns.tolist())
-                    print("📄 Kolom nilai:", nilai.columns.tolist())
+                    print("Membaca:", file_data, "dan", file_nilai)
+                    print("Kolom biodata:", biodata.columns.tolist())
+                    print("Kolom nilai:", nilai.columns.tolist())
 
                     kolom_data = ['NIM', 'ASAL SEKOLAH', 'NPSN SEKOLAH', 'KOTA SEKOLAH', 'PROVINSI SEKOLAH', 'JALUR MASUK', 'STATUS']
                     kolom_nilai = ['NIM', 'NILAI KESELURUHAN']
@@ -126,14 +126,14 @@ def proses_upload_data(folder_path):
                         )
                         all_data.append(gabung)
                     else:
-                        print(f"⚠️ Kolom tidak lengkap untuk tahun {tahun}, dilewati.")
+                        print(f"Peringatan: kolom tidak lengkap untuk tahun {tahun}, dilewati.")
 
         if not all_data:
-            print("❌ Tidak ada data valid yang ditemukan di folder uploads.")
+            print("Tidak ada data valid yang ditemukan di folder uploads.")
             return pd.DataFrame()
 
         df = pd.concat(all_data, ignore_index=True)
-        print("📊 Sebelum pembersihan:", df.shape)
+        print("Sebelum pembersihan:", df.shape)
 
         df['ASAL SEKOLAH'] = df['ASAL SEKOLAH'].astype(str)
         df['STATUS'] = df['STATUS'].astype(str)
@@ -160,7 +160,7 @@ def proses_upload_data(folder_path):
         df = df[~df.apply(lambda row: row.astype(str).str.contains('-').any(), axis=1)]
         df = df[df['NILAI KESELURUHAN'] != 0]
         df = df.dropna()
-        print("📉 Setelah pembersihan:", df.shape)
+        print("Setelah pembersihan:", df.shape)
 
     os.makedirs("outputs", exist_ok=True)
     df.to_excel("outputs/data_gabungan_clean.xlsx", index=False)

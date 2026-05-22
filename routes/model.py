@@ -2,13 +2,91 @@ import os
 import json
 import pickle
 import shutil
+import math
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from clustering.kmeans_module import _build_feature_matrix
 from services.model_service import load_active_model_name
+from utils.helpers import format_datetime_jakarta
 
 model_bp = Blueprint('model', __name__)
+
+
+def _load_model_dbi(model_name):
+    if not model_name:
+        return None
+
+    meta_path = os.path.join("models", model_name, "meta.json")
+    if not os.path.exists(meta_path):
+        return None
+
+    try:
+        with open(meta_path) as f:
+            meta = json.load(f)
+        dbi = meta.get("dbi_after_ga")
+        if dbi is None:
+            return None
+        dbi = float(dbi)
+        return dbi if math.isfinite(dbi) else None
+    except Exception:
+        return None
+
+
+def _build_pca_feature_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    PCA harus tetap bisa jalan meskipun sebagian kolom training tidak lengkap.
+    Coba pakai builder training utama dulu; jika gagal, fallback ke builder yang
+    lebih toleran dengan kolom yang tersedia.
+    """
+    try:
+        return _build_feature_matrix(df)
+    except Exception:
+        fallback_df = df.copy()
+
+        excluded_columns = {
+            "ASAL SEKOLAH", "SEKOLAH", "NAMA SEKOLAH", "SCHOOL NAME",
+            "NPSN", "NPSN SEKOLAH", "CLUSTER", "DBI_SCORE", "SILHOUETTE_SCORE",
+            "Distance_to_Assigned_Centroid",
+        }
+        categorical_candidates = [
+            "JURUSAN SEKOLAH",
+            "PROVINSI SEKOLAH",
+        ]
+        categorical_cols = [col for col in categorical_candidates if col in fallback_df.columns]
+
+        numeric_candidates = ["NILAI KESELURUHAN", "IPK"]
+        numeric_cols = []
+        for col in [c for c in numeric_candidates if c in fallback_df.columns]:
+            col_upper = str(col).upper().strip()
+            if (
+                col in excluded_columns or
+                col_upper in excluded_columns or
+                "NPSN" in col_upper or
+                col_upper.startswith("DISTANCE_TO_") or
+                col_upper.startswith("MEMBERSHIP_")
+            ):
+                continue
+            numeric_cols.append(col)
+
+        numeric_features = fallback_df[numeric_cols].copy()
+        numeric_features = numeric_features.apply(pd.to_numeric, errors="coerce")
+        numeric_features = numeric_features.replace([float("inf"), float("-inf")], pd.NA)
+        if not numeric_features.empty:
+            numeric_features = numeric_features.fillna(numeric_features.median(numeric_only=True)).fillna(0)
+
+        categorical_features = pd.DataFrame(index=fallback_df.index)
+        if categorical_cols:
+            cat_source = fallback_df[categorical_cols].copy().fillna("UNKNOWN").astype(str)
+            cat_source = cat_source.apply(lambda s: s.str.strip().str.upper().replace("", "UNKNOWN"))
+            categorical_features = pd.get_dummies(cat_source, columns=categorical_cols, dtype=float)
+
+        feature_df = pd.concat([numeric_features, categorical_features], axis=1)
+        feature_df = feature_df.apply(pd.to_numeric, errors="coerce").fillna(0)
+        if feature_df.empty:
+            raise ValueError("Tidak ada fitur yang bisa dipakai untuk PCA.")
+        return feature_df
 
 @model_bp.route('/pelatihan_model')
 def pelatihan_model():
@@ -23,6 +101,7 @@ def pelatihan_model():
             meta_path = os.path.join(model_path, "meta.json")
             pkl_path = os.path.join(model_path, "hasil_kmeans_3cluster.pkl")
             uploaded_at = "-"
+            meta = {}
             if os.path.exists(meta_path):
                 with open(meta_path) as f:
                     meta = json.load(f)
@@ -32,14 +111,7 @@ def pelatihan_model():
                 nama_data = "-"
 
             if uploaded_at not in ("-", "", None):
-                # Normalisasi jika tersimpan sebagai ISO string.
-                try:
-                    dt = datetime.fromisoformat(str(uploaded_at))
-                    if dt.tzinfo is None:
-                        dt = dt.replace(tzinfo=ZoneInfo("Asia/Jakarta"))
-                    uploaded_at = dt.astimezone(ZoneInfo("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
-                except Exception:
-                    pass
+                uploaded_at = format_datetime_jakarta(uploaded_at)
 
             if uploaded_at == "-":
                 # Fallback untuk model lama: pakai mtime meta.json lalu pkl.
@@ -49,28 +121,87 @@ def pelatihan_model():
                 elif os.path.exists(pkl_path):
                     ts = os.path.getmtime(pkl_path)
                 if ts is not None:
-                    uploaded_at = datetime.fromtimestamp(ts, ZoneInfo("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
+                    uploaded_at = datetime.fromtimestamp(ts, ZoneInfo("Asia/Jakarta")).strftime("%d/%m/%Y %H:%M:%S WIB")
+
+            # Baca metrik evaluasi dari meta.json
+            silhouette      = meta.get("silhouette_score")
+            dbi             = meta.get("dbi_score")
+            dbi_before_ga   = meta.get("dbi_before_ga")
+            dbi_after_ga    = meta.get("dbi_after_ga")
+            dbi_improvement = meta.get("dbi_improvement_pct")
+            ch_score        = meta.get("ch_score")
+            n_clusters_used = meta.get("n_clusters_used")
+            elbow_data      = meta.get("elbow_data")
+            avg_dbi         = meta.get("avg_dbi_after_ga_runs", meta.get("avg_dbi_after_ga_3_runs"))
+            avg_silhouette  = meta.get("avg_silhouette_runs", meta.get("avg_silhouette_3_runs"))
+            training_runs   = meta.get("training_runs")
+            random_seed     = meta.get("random_seed")
+            population_size = meta.get("population_size")
+            generations     = meta.get("generations")
+            mutation_rate   = meta.get("mutation_rate")
+            is_improved     = (
+                dbi_before_ga is not None and
+                dbi_after_ga is not None and
+                dbi_after_ga < dbi_before_ga
+            )
 
             status = "Aktif" if folder == active_model else ""
             model_list.append({
-                "nama_model": folder,
-                "nama_data": nama_data,
-                "uploaded_at": uploaded_at,
-                "status": status
+                "nama_model":       folder,
+                "nama_data":        nama_data,
+                "uploaded_at":      uploaded_at,
+                "status":           status,
+                "silhouette_score": silhouette,
+                "dbi_score":        dbi,
+                "dbi_before_ga":    dbi_before_ga,
+                "dbi_after_ga":     dbi_after_ga,
+                "dbi_improvement_pct": dbi_improvement,
+                "ch_score":         ch_score,
+                "n_clusters_used":  n_clusters_used,
+                "elbow_data":       elbow_data,
+                "avg_dbi_after_ga_3_runs": avg_dbi,
+                "avg_silhouette_3_runs": avg_silhouette,
+                "avg_dbi_after_ga_runs": avg_dbi,
+                "avg_silhouette_runs": avg_silhouette,
+                "training_runs": training_runs,
+                "random_seed": random_seed,
+                "population_size": population_size,
+                "generations": generations,
+                "mutation_rate": mutation_rate,
+                "is_improved_baseline": is_improved,
             })
 
-    return render_template("pelatihan_model.html", model_list=model_list)
+    model_list.sort(
+        key=lambda item: (
+            item["status"] == "Aktif",
+            item["uploaded_at"] if item["uploaded_at"] not in ("-", None, "") else "",
+        ),
+        reverse=True,
+    )
+
+    return render_template("pelatihan_model.html", model_list=model_list, active_model=active_model)
 
 @model_bp.route('/terapkan_model/<nama_model>')
 def terapkan_model(nama_model):
+    if 'user' not in session:
+        return redirect(url_for('auth.login'))
+
     active_flag_path = "models/active_model.txt"
+    model_path = os.path.join("models", nama_model, "hasil_kmeans_3cluster.pkl")
+    if not os.path.exists(model_path):
+        flash(" Model tidak dapat diterapkan karena file hasil clustering tidak ditemukan.", "error")
+        return redirect(url_for('model.pelatihan_model'))
+
     with open(active_flag_path, "w") as f:
         f.write(nama_model)
-    flash(f" Model {nama_model} sekarang diterapkan sebagai model aktif.")
+    flash(f" Model {nama_model} sekarang diterapkan sebagai model aktif secara manual.")
     return redirect(url_for('model.pelatihan_model'))
 
 @model_bp.route('/hapus_model/<nama_model>')
 def hapus_model(nama_model):
+    if 'user' not in session:
+        return redirect(url_for('auth.login'))
+
     active_flag_path = "models/active_model.txt"
 
     # Cegah penghapusan model aktif
@@ -94,6 +225,9 @@ def hapus_model(nama_model):
 
 @model_bp.route('/preview_model/<nama_model>')
 def preview_model(nama_model):
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
     model_path = os.path.join("models", nama_model)
     data_path = os.path.join(model_path, "data_gabungan_clean.pkl")
     limit_param = request.args.get("limit", "20")
@@ -129,8 +263,176 @@ def preview_model(nama_model):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@model_bp.route('/pca_data/<nama_model>')
+def pca_data(nama_model):
+    """Serve PCA 2D scatter data for cluster visualization, optionally filtered by prodi."""
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    prodi = request.args.get('prodi', 'Global')
+    pkl_path = os.path.join("models", nama_model, "hasil_kmeans_3cluster.pkl")
+
+    if not os.path.exists(pkl_path):
+        return jsonify({"success": False, "error": "File data model tidak ditemukan."}), 404
+
+    try:
+        import numpy as np
+        from sklearn.decomposition import PCA
+        from sklearn.preprocessing import StandardScaler
+
+        with open(pkl_path, 'rb') as f:
+            d = pickle.load(f)
+        df_all = d.get('data') if isinstance(d, dict) else d
+
+        prodi_list = []
+        if 'PROGRAM STUDI' in df_all.columns:
+            prodi_list = sorted(df_all['PROGRAM STUDI'].dropna().unique().astype(str).tolist())
+
+        df = df_all.copy()
+        if prodi != 'Global' and 'PROGRAM STUDI' in df.columns:
+            df = df[df['PROGRAM STUDI'] == prodi]
+        df = df.reset_index(drop=True)
+
+        if len(df) < 2:
+            return jsonify({"success": False, "error": f"Data untuk {prodi} terlalu sedikit (< 2)."})
+
+        feature_df = _build_pca_feature_matrix(df)
+        if feature_df.shape[1] < 2:
+            return jsonify({"success": False, "error": "Fitur tidak mencukupi untuk PCA."})
+
+        n_comp = min(2, feature_df.shape[1])
+        
+        numeric_cols = [col for col in ["NILAI KESELURUHAN", "IPK"] if col in feature_df.columns]
+        categorical_cols = [col for col in feature_df.columns if col not in numeric_cols]
+        
+        scaled_parts = []
+        if numeric_cols:
+            scaled_numeric = StandardScaler().fit_transform(feature_df[numeric_cols])
+            scaled_parts.append(pd.DataFrame(scaled_numeric, index=feature_df.index, columns=numeric_cols))
+        if categorical_cols:
+            weighted_categorical = feature_df[categorical_cols] * 0.1
+            scaled_parts.append(weighted_categorical)
+            
+        if scaled_parts:
+            feature_df_scaled = pd.concat(scaled_parts, axis=1)
+        else:
+            feature_df_scaled = feature_df
+            
+        scaled = feature_df_scaled.to_numpy()
+        scaled = np.nan_to_num(scaled, nan=0.0, posinf=0.0, neginf=0.0)
+
+        pca = PCA(n_components=n_comp, random_state=42)
+        coords = pca.fit_transform(scaled)
+
+        if coords.shape[1] == 1:
+            coords = np.hstack([coords, np.zeros((len(coords), 1))])
+
+        # Ambil sampel titik secara proporsional per cluster agar cluster kecil tetap terlihat.
+        max_points = min(2000, len(df))
+        if 'Cluster' in df.columns and len(df) > max_points:
+            sampled_indices = []
+            grouped = df.groupby('Cluster').indices
+            remaining = max_points
+            cluster_items = sorted(grouped.items(), key=lambda x: len(x[1]), reverse=True)
+            for pos, (_, idxs) in enumerate(cluster_items):
+                clusters_left = len(cluster_items) - pos
+                quota = max(1, int(round(max_points * (len(idxs) / len(df)))))
+                quota = min(quota, len(idxs), remaining - max(0, clusters_left - 1))
+                chosen = np.random.choice(idxs, size=quota, replace=False).tolist()
+                sampled_indices.extend(chosen)
+                remaining = max_points - len(sampled_indices)
+                if remaining <= 0:
+                    break
+            if len(sampled_indices) < max_points:
+                leftover = list(set(df.index.tolist()) - set(sampled_indices))
+                sampled_indices.extend(np.random.choice(leftover, size=min(max_points - len(sampled_indices), len(leftover)), replace=False).tolist())
+        else:
+            sampled_indices = list(range(len(df))) if len(df) <= max_points else np.random.choice(len(df), size=max_points, replace=False).tolist()
+
+        points = []
+        for idx in sampled_indices:
+            row = df.iloc[idx]
+            points.append({
+                "x": float(coords[idx, 0]),
+                "y": float(coords[idx, 1]),
+                "cluster": int(row['Cluster']) if 'Cluster' in df.columns else 0,
+                "prodi": str(row.get('PROGRAM STUDI', '')),
+                "sekolah": str(row.get('ASAL SEKOLAH', '')),
+                "nilai": float(row.get('NILAI KESELURUHAN')) if pd.notnull(row.get('NILAI KESELURUHAN')) else None,
+            })
+
+        variance = pca.explained_variance_ratio_
+        total_variance = float(sum(variance))
+        if total_variance >= 0.5:
+            quality_band = "strong"
+            quality_label = "Representatif"
+        elif total_variance >= 0.2:
+            quality_band = "moderate"
+            quality_label = "Cukup terbatas"
+        else:
+            quality_band = "weak"
+            quality_label = "Sangat terbatas"
+
+        component_names = [f"PC{i + 1}" for i in range(n_comp)]
+        feature_importance = []
+        for comp_idx in range(n_comp):
+            loading_pairs = []
+            for feature_name, loading in zip(feature_df.columns, pca.components_[comp_idx]):
+                loading_pairs.append({
+                    "feature": str(feature_name),
+                    "loading": round(float(loading), 4),
+                    "magnitude": round(float(abs(loading)), 4),
+                    "component": component_names[comp_idx],
+                })
+            feature_importance.extend(
+                sorted(loading_pairs, key=lambda item: item["magnitude"], reverse=True)[:5]
+            )
+
+        return jsonify({
+            "success": True,
+            "prodi_list": prodi_list,
+            "points": points,
+            "variance_ratio": [float(v) for v in variance],
+            "total_variance_explained": total_variance,
+            "n_sample": len(points),
+            "n_total": len(df),
+            "feature_count": int(feature_df.shape[1]),
+            "quality_band": quality_band,
+            "quality_label": quality_label,
+            "top_features": feature_importance,
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Gagal menghitung PCA dinamis: {e}"}), 500
+
+@model_bp.route('/comparison_data/<nama_model>')
+def comparison_data(nama_model):
+    """Serve per-prodi DBI comparison data for the preview modal."""
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+    meta_path = os.path.join("models", nama_model, "meta.json")
+    if not os.path.exists(meta_path):
+        return jsonify({"success": False, "error": "meta.json tidak ditemukan."}), 404
+    try:
+        with open(meta_path) as f:
+            meta = json.load(f)
+        rows = meta.get("dbi_comparison_per_prodi")
+        if not rows:
+            return jsonify({"success": False, "error": "Data perbandingan per-prodi belum tersedia. Upload ulang data untuk menghasilkan perbandingan."}), 404
+        return jsonify({
+            "success": True,
+            "rows": rows,
+            "dbi_before_ga": meta.get("dbi_before_ga"),
+            "dbi_after_ga":  meta.get("dbi_after_ga"),
+            "dbi_improvement_pct": meta.get("dbi_improvement_pct"),
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @model_bp.route('/update_model_meta', methods=['POST'])
 def update_model_meta():
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
     data = request.get_json(silent=True) or {}
     nama_model = data.get("nama_model")
     nama_data_baru = data.get("nama_data")

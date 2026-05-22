@@ -1,0 +1,375 @@
+{
+  "nama_data": "datasettt.xlsx - elbow 5x",
+  "uploaded_at": "2026-05-20T21:28:53+07:00",
+  "silhouette_score": 0.5426,
+  "dbi_score": 0.3101,
+  "dbi_before_ga": 1.5389,
+  "dbi_after_ga": 0.3101,
+  "dbi_improvement_pct": 79.85,
+  "total_inertia": 574118.3544,
+  "n_clusters_used": "2-5",
+  "k_values_used": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "pca_variance_explained": 0.0079,
+  "dbi_comparison_per_prodi": [
+    {
+      "prodi": "Teknik Informatika",
+      "n": 724,
+      "k": 4,
+      "dbi_before": 2.6147,
+      "dbi_after": 0.1932,
+      "improvement_pct": 92.61,
+      "ch_score": 10.71
+    },
+    {
+      "prodi": "Akuntansi",
+      "n": 523,
+      "k": 3,
+      "dbi_before": 2.7112,
+      "dbi_after": 0.2234,
+      "improvement_pct": 91.76,
+      "ch_score": 8.74
+    },
+    {
+      "prodi": "Manajemen Pemasaran",
+      "n": 517,
+      "k": 5,
+      "dbi_before": 2.5311,
+      "dbi_after": 0.2288,
+      "improvement_pct": 90.96,
+      "ch_score": 9.26
+    },
+    {
+      "prodi": "Administrasi Bisnis",
+      "n": 296,
+      "k": 3,
+      "dbi_before": 3.0255,
+      "dbi_after": 0.2829,
+      "improvement_pct": 90.65,
+      "ch_score": 6.83
+    },
+    {
+      "prodi": "Sistem Informasi Bisnis",
+      "n": 464,
+      "k": 4,
+      "dbi_before": 1.9819,
+      "dbi_after": 0.1926,
+      "improvement_pct": 90.28,
+      "ch_score": 12.61
+    },
+    {
+      "prodi": "Akuntansi Manajemen",
+      "n": 694,
+      "k": 3,
+      "dbi_before": 1.5745,
+      "dbi_after": 0.1756,
+      "improvement_pct": 88.85,
+      "ch_score": 13.23
+    },
+    {
+      "prodi": "Teknik Otomotif Elektronik",
+      "n": 304,
+      "k": 5,
+      "dbi_before": 2.6956,
+      "dbi_after": 0.3117,
+      "improvement_pct": 88.44,
+      "ch_score": 6.33
+    },
+    {
+      "prodi": "Sistem Kelistrikan",
+      "n": 342,
+      "k": 3,
+      "dbi_before": 1.9077,
+      "dbi_after": 0.2268,
+      "improvement_pct": 88.11,
+      "ch_score": 11.1
+    },
+    {
+      "prodi": "Manajemen Informatika",
+      "n": 279,
+      "k": 5,
+      "dbi_before": 2.1361,
+      "dbi_after": 0.2679,
+      "improvement_pct": 87.46,
+      "ch_score": 7.23
+    },
+    {
+      "prodi": "Manajemen Rekayasa Konstruksi",
+      "n": 333,
+      "k": 5,
+      "dbi_before": 1.7855,
+      "dbi_after": 0.2366,
+      "improvement_pct": 86.75,
+      "ch_score": 9.31
+    },
+    {
+      "prodi": "Teknik Kimia",
+      "n": 200,
+      "k": 4,
+      "dbi_before": 1.7032,
+      "dbi_after": 0.2417,
+      "improvement_pct": 85.81,
+      "ch_score": 9.83
+    },
+    {
+      "prodi": "Teknik Elektronika",
+      "n": 837,
+      "k": 3,
+      "dbi_before": 1.3188,
+      "dbi_after": 0.2032,
+      "improvement_pct": 84.59,
+      "ch_score": 11.77
+    },
+    {
+      "prodi": "Teknik Mesin",
+      "n": 521,
+      "k": 4,
+      "dbi_before": 1.6444,
+      "dbi_after": 0.261,
+      "improvement_pct": 84.13,
+      "ch_score": 7.98
+    },
+    {
+      "prodi": "Teknologi Rekayasa Konstruksi Jalan dan Jembatan",
+      "n": 124,
+      "k": 3,
+      "dbi_before": 2.1419,
+      "dbi_after": 0.3635,
+      "improvement_pct": 83.03,
+      "ch_score": 5.16
+    },
+    {
+      "prodi": "Jaringan Telekomunikasi Digital",
+      "n": 412,
+      "k": 3,
+      "dbi_before": 1.507,
+      "dbi_after": 0.2571,
+      "improvement_pct": 82.94,
+      "ch_score": 7.57
+    },
+    {
+      "prodi": "Teknik Listrik",
+      "n": 162,
+      "k": 5,
+      "dbi_before": 1.7136,
+      "dbi_after": 0.3106,
+      "improvement_pct": 81.87,
+      "ch_score": 6.92
+    },
+    {
+      "prodi": "Bahasa Inggris untuk Industri Pariwisata",
+      "n": 112,
+      "k": 5,
+      "dbi_before": 1.8513,
+      "dbi_after": 0.3579,
+      "improvement_pct": 80.67,
+      "ch_score": 6.0
+    },
+    {
+      "prodi": "Keuangan",
+      "n": 413,
+      "k": 5,
+      "dbi_before": 1.0262,
+      "dbi_after": 0.2204,
+      "improvement_pct": 78.52,
+      "ch_score": 9.64
+    },
+    {
+      "prodi": "Teknologi Informasi",
+      "n": 79,
+      "k": 5,
+      "dbi_before": 1.7943,
+      "dbi_after": 0.4075,
+      "improvement_pct": 77.29,
+      "ch_score": 4.35
+    },
+    {
+      "prodi": "Teknologi Pertambangan",
+      "n": 111,
+      "k": 4,
+      "dbi_before": 1.4809,
+      "dbi_after": 0.3402,
+      "improvement_pct": 77.03,
+      "ch_score": 6.23
+    },
+    {
+      "prodi": "Teknologi Sipil",
+      "n": 65,
+      "k": 3,
+      "dbi_before": 1.8719,
+      "dbi_after": 0.4439,
+      "improvement_pct": 76.29,
+      "ch_score": 4.72
+    },
+    {
+      "prodi": "Teknologi Rekayasa Otomotif",
+      "n": 50,
+      "k": 4,
+      "dbi_before": 1.9407,
+      "dbi_after": 0.4819,
+      "improvement_pct": 75.17,
+      "ch_score": 3.63
+    },
+    {
+      "prodi": "Pengelolaan Arsip dan Rekaman Informasi",
+      "n": 100,
+      "k": 4,
+      "dbi_before": 1.4419,
+      "dbi_after": 0.405,
+      "improvement_pct": 71.91,
+      "ch_score": 4.03
+    },
+    {
+      "prodi": "Teknologi Konstruksi Jalan, Jembatan, dan Bangunan Air",
+      "n": 101,
+      "k": 3,
+      "dbi_before": 1.2682,
+      "dbi_after": 0.4278,
+      "improvement_pct": 66.27,
+      "ch_score": 4.48
+    },
+    {
+      "prodi": "Usaha Perjalanan Wisata",
+      "n": 129,
+      "k": 4,
+      "dbi_before": 1.1483,
+      "dbi_after": 0.4693,
+      "improvement_pct": 59.13,
+      "ch_score": 3.22
+    },
+    {
+      "prodi": "Teknologi Pemeliharaan Pesawat Udara",
+      "n": 29,
+      "k": 3,
+      "dbi_before": 1.3582,
+      "dbi_after": 0.6008,
+      "improvement_pct": 55.76,
+      "ch_score": 2.53
+    },
+    {
+      "prodi": "Teknik Telekomunikasi",
+      "n": 143,
+      "k": 5,
+      "dbi_before": 0.8537,
+      "dbi_after": 0.3885,
+      "improvement_pct": 54.49,
+      "ch_score": 4.46
+    },
+    {
+      "prodi": "Teknik Sipil",
+      "n": 125,
+      "k": 4,
+      "dbi_before": 0.2928,
+      "dbi_after": 0.2689,
+      "improvement_pct": 8.16,
+      "ch_score": 8.94
+    },
+    {
+      "prodi": "Bahasa Inggris untuk Komunikasi Bisnis dan Profesional",
+      "n": 225,
+      "k": 3,
+      "dbi_before": 0.3054,
+      "dbi_after": 0.2864,
+      "improvement_pct": 6.22,
+      "ch_score": 7.47
+    },
+    {
+      "prodi": "Pengembangan Perangkat (Piranti) Lunak Situs",
+      "n": 10,
+      "k": 4,
+      "dbi_before": 0.3117,
+      "dbi_after": 0.3117,
+      "improvement_pct": 0.0,
+      "ch_score": 13.84
+    },
+    {
+      "prodi": "Rekayasa Teknologi Informasi",
+      "n": 4,
+      "k": 2,
+      "dbi_before": 0.458,
+      "dbi_after": 0.458,
+      "improvement_pct": 0.0,
+      "ch_score": 2.37
+    },
+    {
+      "prodi": "Teknik Mesin Produksi Dan Perawatan",
+      "n": 610,
+      "k": 3,
+      "dbi_before": 0.2052,
+      "dbi_after": 0.2052,
+      "improvement_pct": 0.0,
+      "ch_score": 12.55
+    },
+    {
+      "prodi": "Teknologi Kimia Industri",
+      "n": 357,
+      "k": 3,
+      "dbi_before": 0.183,
+      "dbi_after": 0.183,
+      "improvement_pct": 0.0,
+      "ch_score": 13.68
+    }
+  ],
+  "feature_policy": "NILAI KESELURUHAN/IPK + JURUSAN SEKOLAH + PROVINSI SEKOLAH; STATUS hanya untuk cleaning; PROGRAM STUDI hanya untuk grouping per prodi",
+  "training_numeric_features": [
+    "NILAI KESELURUHAN",
+    "IPK"
+  ],
+  "training_categorical_features": [
+    "JURUSAN SEKOLAH",
+    "PROVINSI SEKOLAH"
+  ],
+  "elbow_data": {
+    "k_values": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "inertias": [
+      16946.8336,
+      16697.7338,
+      16307.6426,
+      15946.6715,
+      15656.79
+    ],
+    "optimal_k": 3
+  },
+  "random_seed": 42,
+  "best_run_seed": 42,
+  "population_size": 60,
+  "generations": 100,
+  "mutation_rate": 0.05,
+  "mutation_strategy": "adaptive_early_high_mutation",
+  "mutation_schedule": {
+    "early_phase": {
+      "mutation_rate_min": 0.28,
+      "noise_std": 0.9
+    },
+    "mid_phase": {
+      "mutation_rate_min": 0.14,
+      "noise_std": 0.6
+    },
+    "late_phase": {
+      "mutation_rate_base": 0.05,
+      "noise_std": 0.35
+    }
+  },
+  "training_runs": 5,
+  "run_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "avg_dbi_after_ga_runs": 0.3101,
+  "avg_silhouette_runs": 0.5426,
+  "avg_dbi_after_ga_3_runs": 0.3101,
+  "avg_silhouette_3_runs": 0.5426
+}

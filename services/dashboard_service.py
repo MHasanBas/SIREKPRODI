@@ -1,6 +1,50 @@
 import pandas as pd
 from utils.helpers import _norm_series, _norm_in_group
 
+IPK_TINGGI_THRESHOLD = 3.50
+
+
+def build_cluster_academic_summary(df, threshold=IPK_TINGGI_THRESHOLD):
+    if 'Cluster' not in df.columns or 'NILAI KESELURUHAN' not in df.columns:
+        return pd.DataFrame()
+
+    summary = df.groupby('Cluster').agg(
+        total_mahasiswa=('NILAI KESELURUHAN', 'count'),
+        ipk_rata2=('NILAI KESELURUHAN', 'mean'),
+        ipk_median=('NILAI KESELURUHAN', 'median'),
+        ipk_min=('NILAI KESELURUHAN', 'min'),
+        ipk_max=('NILAI KESELURUHAN', 'max'),
+        deviasi=('NILAI KESELURUHAN', 'std')
+    ).fillna(0).reset_index()
+
+    high_counts = df.assign(
+        ipk_tinggi=df['NILAI KESELURUHAN'] >= threshold
+    ).groupby('Cluster')['ipk_tinggi'].sum()
+    summary['ipk_tinggi_count'] = summary['Cluster'].map(high_counts).fillna(0).astype(int)
+    summary['ipk_tinggi_pct'] = (
+        summary['ipk_tinggi_count'] / summary['total_mahasiswa'].where(summary['total_mahasiswa'] != 0, 1) * 100
+    )
+
+    summary['academic_score'] = (
+        0.30 * _norm_series(summary['ipk_rata2']) +
+        0.30 * _norm_series(summary['ipk_median']) +
+        0.25 * _norm_series(summary['ipk_tinggi_pct']) +
+        0.10 * _norm_series(summary['ipk_min']) +
+        0.05 * _norm_series(summary['ipk_max'])
+    )
+    return summary
+
+
+def ordered_academic_clusters(df, threshold=IPK_TINGGI_THRESHOLD):
+    summary = build_cluster_academic_summary(df, threshold)
+    if summary.empty:
+        return []
+    return summary.sort_values(
+        ['academic_score', 'ipk_tinggi_pct', 'ipk_median', 'ipk_rata2', 'total_mahasiswa'],
+        ascending=[False, False, False, False, False]
+    )['Cluster'].tolist()
+
+
 def combine_t(x):
     strs = []
     for v in x:
@@ -9,7 +53,7 @@ def combine_t(x):
                 s = s.strip()
                 if s and s not in strs:
                     strs.append(s)
-    res = " • ".join(strs)
+    res = " - ".join(strs)
     return res[:400] + ("..." if len(res) > 400 else "") or "-"
 
 def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
@@ -17,22 +61,7 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
     rekom_sekolah_per_prodi = []
 
     if 'Cluster' in df_kmeans.columns:
-        c_sum = df_kmeans.groupby('Cluster').agg(
-            total_mhs=('NILAI KESELURUHAN', 'count'),
-            ipk_mean=('NILAI KESELURUHAN', 'mean'),
-            dev=('NILAI KESELURUHAN', 'std')
-        ).fillna(0).reset_index()
-
-        def _safe_norm(s):
-            denom = s.max() - s.min()
-            return s * 0 if denom == 0 else (s - s.min()) / denom
-
-        c_sum['ranking'] = (
-            0.4 * _safe_norm(c_sum['total_mhs']) +
-            0.3 * _safe_norm(c_sum['ipk_mean']) +
-            0.3 * (1 - _safe_norm(c_sum['dev']))
-        )
-        ordered_clusters = c_sum.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+        ordered_clusters = ordered_academic_clusters(df_kmeans)
         superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
         df_kmeans['is_superior'] = df_kmeans['Cluster'].isin(superior_clusters)
     else:
@@ -61,10 +90,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
 
         sekolah_unggulan = sekolah_stats.sort_values('skor', ascending=False)
         
-        school_superior_ratio = df_kmeans.groupby('ASAL SEKOLAH')['is_superior'].mean()
-        valid_schools = school_superior_ratio[school_superior_ratio >= 0.50].index
-        sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['ASAL SEKOLAH'].isin(valid_schools)]
-        
         sekolah_unggulan = sekolah_unggulan[sekolah_unggulan['mahasiswa'] >= 3]
 
         prodi_agg = df_kmeans.groupby(['ASAL SEKOLAH', prodi_column], as_index=False).agg(
@@ -75,8 +100,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             poin_non_akademik=('POIN_NON_AKADEMIK', 'sum')
         ).fillna(0).rename(columns={prodi_column: 'prodi'})
         
-        prodi_agg = prodi_agg[prodi_agg['mahasiswa'] >= 3]
-
         prodi_agg['mhs_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'mahasiswa')
         prodi_agg['ipk_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'ipk')
         prodi_agg['dev_norm'] = _norm_in_group(prodi_agg, 'ASAL SEKOLAH', 'deviasi')
@@ -129,11 +152,6 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             kota=('KOTA SEKOLAH', lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0]),
             provinsi=('PROVINSI SEKOLAH', lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
         ).fillna(0).rename(columns={prodi_column: 'prodi', 'ASAL SEKOLAH': 'sekolah'})
-
-        prodi_school_sup_ratio = df_kmeans.groupby([prodi_column, 'ASAL SEKOLAH'])['is_superior'].mean().reset_index(name='sup_ratio')
-        valid_prodi_school = prodi_school_sup_ratio[prodi_school_sup_ratio['sup_ratio'] >= 0.50]
-        sekolah_prodi_agg = pd.merge(sekolah_prodi_agg, valid_prodi_school[[prodi_column, 'ASAL SEKOLAH']], 
-                                     left_on=['prodi', 'sekolah'], right_on=[prodi_column, 'ASAL SEKOLAH'], how='inner')
 
         sekolah_prodi_agg = sekolah_prodi_agg[sekolah_prodi_agg['mahasiswa'] >= 3]
 
@@ -213,22 +231,8 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             teks_non_akademik=('TEKS_NON_AKADEMIK', combine_t)
         ).reset_index()
 
-        cluster_summary = df.groupby('Cluster').agg(
-            total_mahasiswa=('NILAI KESELURUHAN', 'count'),
-            ipk_rata2=('NILAI KESELURUHAN', 'mean'),
-            deviasi=('NILAI KESELURUHAN', 'std')
-        ).reset_index()
-
-        cluster_summary['mahasiswa_norm'] = (cluster_summary['total_mahasiswa'] - cluster_summary['total_mahasiswa'].min()) / (cluster_summary['total_mahasiswa'].max() - cluster_summary['total_mahasiswa'].min())
-        cluster_summary['ipk_norm'] = (cluster_summary['ipk_rata2'] - cluster_summary['ipk_rata2'].min()) / (cluster_summary['ipk_rata2'].max() - cluster_summary['ipk_rata2'].min())
-        cluster_summary['deviasi_norm'] = (cluster_summary['deviasi'] - cluster_summary['deviasi'].min()) / (cluster_summary['deviasi'].max() - cluster_summary['deviasi'].min())
-        cluster_summary['ranking'] = (
-            0.4 * cluster_summary['mahasiswa_norm'] +
-            0.3 * cluster_summary['ipk_norm'] +
-            0.3 * (1 - cluster_summary['deviasi_norm'])
-        )
-
-        ordered_clusters = cluster_summary.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+        cluster_summary = build_cluster_academic_summary(df)
+        ordered_clusters = ordered_academic_clusters(df)
         label_cluster = ['A', 'B', 'C']
         if ordered_clusters:
             ordered_clusters = ordered_clusters + [ordered_clusters[-1]] * (len(label_cluster) - len(ordered_clusters))
@@ -240,6 +244,8 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             cluster_data = cluster_summary[cluster_summary['Cluster'] == cluster_id].iloc[0]
             summary_dict[label] = {
                 'ipk': cluster_data['ipk_rata2'],
+                'median': cluster_data['ipk_median'],
+                'proporsi_tinggi': cluster_data['ipk_tinggi_pct'],
                 'mahasiswa': cluster_data['total_mahasiswa'],
                 'deviasi': cluster_data['deviasi']
             }
@@ -249,30 +255,28 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
 
         deskripsi_cluster = {}
         deskripsi_cluster['A'] = (
-            f"Jumlah mahasiswa dari tiap sekolah dengan tingkat keberlanjutan studi di Polinema {bandingkan(summary_dict['A'], summary_dict['B'], 'mahasiswa')} dari cluster B "
-            f"dan {bandingkan(summary_dict['A'], summary_dict['C'], 'mahasiswa')} dari cluster C. "
-            f"IPK rata-rata {bandingkan(summary_dict['A'], summary_dict['B'], 'ipk')} dari cluster B "
-            f"dan {bandingkan(summary_dict['A'], summary_dict['C'], 'ipk')} dari cluster C. "
-            f"Standar deviasi {bandingkan(summary_dict['A'], summary_dict['B'], 'deviasi')} dari cluster B "
-            f"dan {bandingkan(summary_dict['A'], summary_dict['C'], 'deviasi')} dari cluster C."
+            f"Prioritas ini menempati peringkat akademik tertinggi berdasarkan rata-rata IPK, median IPK, rentang IPK, "
+            f"dan proporsi mahasiswa dengan IPK >= {IPK_TINGGI_THRESHOLD:.2f}. "
+            f"IPK rata-rata {bandingkan(summary_dict['A'], summary_dict['B'], 'ipk')} dari prioritas B "
+            f"dan {bandingkan(summary_dict['A'], summary_dict['C'], 'ipk')} dari prioritas C; "
+            f"proporsi IPK tinggi {bandingkan(summary_dict['A'], summary_dict['B'], 'proporsi_tinggi')} dari prioritas B "
+            f"dan {bandingkan(summary_dict['A'], summary_dict['C'], 'proporsi_tinggi')} dari prioritas C."
         )
 
         deskripsi_cluster['B'] = (
-            f"Jumlah mahasiswa dari tiap sekolah dengan tingkat keberlanjutan studi di Polinema {bandingkan(summary_dict['B'], summary_dict['A'], 'mahasiswa')} dari cluster A "
-            f"dan {bandingkan(summary_dict['B'], summary_dict['C'], 'mahasiswa')} dari cluster C. "
-            f"IPK rata-rata {bandingkan(summary_dict['B'], summary_dict['A'], 'ipk')} dari cluster A "
-            f"dan {bandingkan(summary_dict['B'], summary_dict['C'], 'ipk')} dari cluster C. "
-            f"Standar deviasi {bandingkan(summary_dict['B'], summary_dict['A'], 'deviasi')} dari cluster A "
-            f"dan {bandingkan(summary_dict['B'], summary_dict['C'], 'deviasi')} dari cluster C."
+            f"Prioritas ini berada pada peringkat akademik kedua. "
+            f"IPK rata-rata {bandingkan(summary_dict['B'], summary_dict['A'], 'ipk')} dari prioritas A "
+            f"dan {bandingkan(summary_dict['B'], summary_dict['C'], 'ipk')} dari prioritas C; "
+            f"median IPK {bandingkan(summary_dict['B'], summary_dict['A'], 'median')} dari prioritas A "
+            f"dan {bandingkan(summary_dict['B'], summary_dict['C'], 'median')} dari prioritas C."
         )
 
         deskripsi_cluster['C'] = (
-            f"Jumlah mahasiswa dari tiap sekolah dengan tingkat keberlanjutan studi di Polinema {bandingkan(summary_dict['C'], summary_dict['A'], 'mahasiswa')} dari cluster A "
-            f"dan {bandingkan(summary_dict['C'], summary_dict['B'], 'mahasiswa')} dari cluster B. "
-            f"IPK rata-rata {bandingkan(summary_dict['C'], summary_dict['A'], 'ipk')} dari cluster A "
-            f"dan {bandingkan(summary_dict['C'], summary_dict['B'], 'ipk')} dari cluster B. "
-            f"Standar deviasi {bandingkan(summary_dict['C'], summary_dict['A'], 'deviasi')} dari cluster A "
-            f"dan {bandingkan(summary_dict['C'], summary_dict['B'], 'deviasi')} dari cluster B."
+            f"Prioritas ini berada pada peringkat akademik ketiga dari label utama yang ditampilkan. "
+            f"IPK rata-rata {bandingkan(summary_dict['C'], summary_dict['A'], 'ipk')} dari prioritas A "
+            f"dan {bandingkan(summary_dict['C'], summary_dict['B'], 'ipk')} dari prioritas B; "
+            f"proporsi IPK tinggi {bandingkan(summary_dict['C'], summary_dict['A'], 'proporsi_tinggi')} dari prioritas A "
+            f"dan {bandingkan(summary_dict['C'], summary_dict['B'], 'proporsi_tinggi')} dari prioritas B."
         )
 
         result['deskripsi_cluster'] = deskripsi_cluster
@@ -325,6 +329,12 @@ def process_dashboard_data(df_kmeans, prodi_column, tampilkan='top10'):
             result[label] = {
                 'total_mahasiswa': int(df_final.shape[0]),
                 'ipk_mean': round(df_final['NILAI KESELURUHAN'].mean(), 2),
+                'ipk_median': round(df_final['NILAI KESELURUHAN'].median(), 2),
+                'ipk_min': round(df_final['NILAI KESELURUHAN'].min(), 2),
+                'ipk_max': round(df_final['NILAI KESELURUHAN'].max(), 2),
+                'ipk_tinggi_count': int((df_final['NILAI KESELURUHAN'] >= IPK_TINGGI_THRESHOLD).sum()),
+                'ipk_tinggi_pct': round(float((df_final['NILAI KESELURUHAN'] >= IPK_TINGGI_THRESHOLD).mean() * 100), 2),
+                'ipk_tinggi_threshold': IPK_TINGGI_THRESHOLD,
                 'kota_terbaik': top_row['KOTA SEKOLAH'],
                 'sekolah_terbaik': top_row['ASAL SEKOLAH'],
                 'tabel_rekomendasi': tabel_rekomendasi,
@@ -346,22 +356,7 @@ def get_crosscheck_data(df_kmeans):
     df_cross = df_kmeans.copy()
 
     if 'Cluster' in df_cross.columns:
-        c_sum = df_cross.groupby('Cluster').agg(
-            total_mhs=('NILAI KESELURUHAN', 'count'),
-            ipk_mean=('NILAI KESELURUHAN', 'mean'),
-            dev=('NILAI KESELURUHAN', 'std')
-        ).fillna(0).reset_index()
-
-        def _safe_norm(s):
-            denom = s.max() - s.min()
-            return s * 0 if denom == 0 else (s - s.min()) / denom
-
-        c_sum['ranking'] = (
-            0.4 * _safe_norm(c_sum['total_mhs']) +
-            0.3 * _safe_norm(c_sum['ipk_mean']) +
-            0.3 * (1 - _safe_norm(c_sum['dev']))
-        )
-        ordered_clusters = c_sum.sort_values(by='ranking', ascending=False)['Cluster'].tolist()
+        ordered_clusters = ordered_academic_clusters(df_cross)
         superior_clusters = ordered_clusters[:2] if len(ordered_clusters) >= 2 else ordered_clusters
         df_cross['is_superior'] = df_cross['Cluster'].isin(superior_clusters)
     else:
