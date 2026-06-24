@@ -11,13 +11,20 @@ import json
 import math
 
 DEFAULT_RANDOM_SEED = 42
-DEFAULT_GA_POP_SIZE = 20
-DEFAULT_GA_GENERATIONS = 25
-DEFAULT_GA_MUTATION_RATE = 0.05
+DEFAULT_GA_POP_SIZE = 10
+DEFAULT_GA_GENERATIONS = 10
+DEFAULT_GA_MUTATION_RATE = 0.01
+DEFAULT_GA_EARLY_MUTATION_RATE = 0.28
+DEFAULT_GA_MID_MUTATION_RATE = 0.14
+DEFAULT_GA_LATE_MUTATION_RATE = DEFAULT_GA_MUTATION_RATE
+DEFAULT_GA_EARLY_MUTATION_NOISE = 0.9
+DEFAULT_GA_MID_MUTATION_NOISE = 0.6
+DEFAULT_GA_LATE_MUTATION_NOISE = 0.35
 DEFAULT_GA_MAX_STAGNANT = 8
-DEFAULT_TRAINING_RUNS = 1
-DEFAULT_GA_MUTATION_STRATEGY = "adaptive_early_high_mutation"
+DEFAULT_TRAINING_RUNS = 5
+DEFAULT_GA_MUTATION_STRATEGY = "adaptive_early_mid_late_mutation"
 DEFAULT_GA_FULL_EVAL_TOP_N = 2
+DEFAULT_GA_HYPERPARAM_SOURCE = "grid_search_20260526_110948_rank_1"
 
 
 
@@ -232,6 +239,9 @@ def genetic_algorithm_kmeans(
     mutation_rate=DEFAULT_GA_MUTATION_RATE,
     generations=DEFAULT_GA_GENERATIONS,
     max_stagnant=DEFAULT_GA_MAX_STAGNANT,
+    early_mutation_rate=None,
+    mid_mutation_rate=None,
+    late_mutation_rate=None,
 ):
     """
     Genetic Algorithm untuk optimasi centroid KMeans.
@@ -241,6 +251,9 @@ def genetic_algorithm_kmeans(
     best_centroids = None
     best_score = float('-inf')  # Fitness: semakin besar semakin baik
     stagnant = 0
+    early_mutation_rate = DEFAULT_GA_EARLY_MUTATION_RATE if early_mutation_rate is None else early_mutation_rate
+    mid_mutation_rate = DEFAULT_GA_MID_MUTATION_RATE if mid_mutation_rate is None else mid_mutation_rate
+    late_mutation_rate = mutation_rate if late_mutation_rate is None else late_mutation_rate
 
     for generation in range(generations):
         quick_scores = [evaluate_scores_kmeans(data, ind, n_clusters, use_silhouette=False) for ind in population]
@@ -275,17 +288,17 @@ def genetic_algorithm_kmeans(
             children += [c1, c2]
         population = np.array(children)
 
-        # Mutasi lebih agresif di awal agar GA lebih mudah keluar dari local optima.
+        # Jadwal mutasi eksplisit agar setiap fase bisa dituning secara independen.
         progress_ratio = generation / max(generations - 1, 1)
         if progress_ratio < 0.33:
-            current_mutation_rate = max(mutation_rate, 0.28)
-            mutation_noise = 0.9
+            current_mutation_rate = early_mutation_rate
+            mutation_noise = DEFAULT_GA_EARLY_MUTATION_NOISE
         elif progress_ratio < 0.66:
-            current_mutation_rate = max(mutation_rate, 0.14)
-            mutation_noise = 0.6
+            current_mutation_rate = mid_mutation_rate
+            mutation_noise = DEFAULT_GA_MID_MUTATION_NOISE
         else:
-            current_mutation_rate = mutation_rate
-            mutation_noise = 0.35
+            current_mutation_rate = late_mutation_rate
+            mutation_noise = DEFAULT_GA_LATE_MUTATION_NOISE
 
         for i in range(pop_size):
             if random.random() < current_mutation_rate:
@@ -301,6 +314,9 @@ def _safe_ga_kmeans(
     mutation_rate=DEFAULT_GA_MUTATION_RATE,
     generations=DEFAULT_GA_GENERATIONS,
     max_stagnant=DEFAULT_GA_MAX_STAGNANT,
+    early_mutation_rate=None,
+    mid_mutation_rate=None,
+    late_mutation_rate=None,
 ):
     """
     Wrapper GA yang aman - jika GA menghasilkan centroids=None
@@ -310,7 +326,10 @@ def _safe_ga_kmeans(
     best_centroids, best_score = genetic_algorithm_kmeans(
         data, n_clusters=n_clusters,
         pop_size=pop_size, mutation_rate=mutation_rate, generations=generations,
-        max_stagnant=max_stagnant
+        max_stagnant=max_stagnant,
+        early_mutation_rate=early_mutation_rate,
+        mid_mutation_rate=mid_mutation_rate,
+        late_mutation_rate=late_mutation_rate,
     )
     if best_centroids is None or not math.isfinite(best_score):
         print("  Peringatan: GA tidak menemukan solusi valid, fallback ke k-means++")
@@ -379,6 +398,9 @@ def _run_kmeans_single(
     ga_generations=DEFAULT_GA_GENERATIONS,
     ga_mutation_rate=DEFAULT_GA_MUTATION_RATE,
     ga_max_stagnant=DEFAULT_GA_MAX_STAGNANT,
+    ga_early_mutation_rate=DEFAULT_GA_EARLY_MUTATION_RATE,
+    ga_mid_mutation_rate=DEFAULT_GA_MID_MUTATION_RATE,
+    ga_late_mutation_rate=DEFAULT_GA_LATE_MUTATION_RATE,
 ):
     _set_random_seed(random_seed)
     df = df.copy()
@@ -426,6 +448,9 @@ def _run_kmeans_single(
             generations=ga_generations,
             mutation_rate=ga_mutation_rate,
             max_stagnant=ga_max_stagnant,
+            early_mutation_rate=ga_early_mutation_rate,
+            mid_mutation_rate=ga_mid_mutation_rate,
+            late_mutation_rate=ga_late_mutation_rate,
         )
         kmeans = KMeans(n_clusters=active_k, init=best_centroids, n_init=1, random_state=DEFAULT_RANDOM_SEED).fit(df_scaled)
         total_inertia = float(kmeans.inertia_)
@@ -486,6 +511,9 @@ def _run_kmeans_single(
                 generations=ga_generations,
                 mutation_rate=ga_mutation_rate,
                 max_stagnant=ga_max_stagnant,
+                early_mutation_rate=ga_early_mutation_rate,
+                mid_mutation_rate=ga_mid_mutation_rate,
+                late_mutation_rate=ga_late_mutation_rate,
             )
 
             kmeans = KMeans(n_clusters=local_k, init=best_centroids, n_init=1, random_state=DEFAULT_RANDOM_SEED).fit(df_scaled)
@@ -599,7 +627,19 @@ def _run_kmeans_single(
     }
 
 
-def jalankan_kmeans(df, n_clusters=3, save_path="models/model_utama/", progress_callback=None):
+def jalankan_kmeans(
+    df,
+    n_clusters=3,
+    save_path="models/model_utama/",
+    progress_callback=None,
+    ga_pop_size=DEFAULT_GA_POP_SIZE,
+    ga_generations=DEFAULT_GA_GENERATIONS,
+    ga_early_mutation_rate=DEFAULT_GA_EARLY_MUTATION_RATE,
+    ga_mid_mutation_rate=DEFAULT_GA_MID_MUTATION_RATE,
+    ga_late_mutation_rate=DEFAULT_GA_LATE_MUTATION_RATE,
+    ga_max_stagnant=DEFAULT_GA_MAX_STAGNANT,
+    ga_hyperparam_source=DEFAULT_GA_HYPERPARAM_SOURCE,
+):
     """
     Menjalankan pipeline KMeans + Genetic Algorithm.
     Default memakai K=3. Jika n_clusters=None, k optimal ditentukan otomatis via Elbow Method.
@@ -607,10 +647,14 @@ def jalankan_kmeans(df, n_clusters=3, save_path="models/model_utama/", progress_
     os.makedirs(save_path, exist_ok=True)
     ga_params = {
         "random_seed": DEFAULT_RANDOM_SEED,
-        "population_size": DEFAULT_GA_POP_SIZE,
-        "generations": DEFAULT_GA_GENERATIONS,
-        "mutation_rate": DEFAULT_GA_MUTATION_RATE,
-        "max_stagnant": DEFAULT_GA_MAX_STAGNANT,
+        "population_size": ga_pop_size,
+        "generations": ga_generations,
+        "mutation_rate": ga_late_mutation_rate,
+        "early_mutation_rate": ga_early_mutation_rate,
+        "mid_mutation_rate": ga_mid_mutation_rate,
+        "late_mutation_rate": ga_late_mutation_rate,
+        "max_stagnant": ga_max_stagnant,
+        "hyperparameter_source": ga_hyperparam_source,
     }
     run_results = []
     for run_idx in range(DEFAULT_TRAINING_RUNS):
@@ -622,10 +666,13 @@ def jalankan_kmeans(df, n_clusters=3, save_path="models/model_utama/", progress_
             df,
             n_clusters=n_clusters,
             random_seed=run_seed,
-            ga_pop_size=DEFAULT_GA_POP_SIZE,
-            ga_generations=DEFAULT_GA_GENERATIONS,
-            ga_mutation_rate=DEFAULT_GA_MUTATION_RATE,
-            ga_max_stagnant=DEFAULT_GA_MAX_STAGNANT,
+            ga_pop_size=ga_pop_size,
+            ga_generations=ga_generations,
+            ga_mutation_rate=ga_late_mutation_rate,
+            ga_max_stagnant=ga_max_stagnant,
+            ga_early_mutation_rate=ga_early_mutation_rate,
+            ga_mid_mutation_rate=ga_mid_mutation_rate,
+            ga_late_mutation_rate=ga_late_mutation_rate,
         ))
         if progress_callback:
             progress_callback(run_idx + 1, DEFAULT_TRAINING_RUNS, "completed")
@@ -687,11 +734,16 @@ def jalankan_kmeans(df, n_clusters=3, save_path="models/model_utama/", progress_
     meta["population_size"] = ga_params["population_size"]
     meta["generations"] = ga_params["generations"]
     meta["mutation_rate"] = ga_params["mutation_rate"]
+    meta["early_mutation_rate"] = ga_params["early_mutation_rate"]
+    meta["mid_mutation_rate"] = ga_params["mid_mutation_rate"]
+    meta["late_mutation_rate"] = ga_params["late_mutation_rate"]
+    meta["max_stagnant"] = ga_params["max_stagnant"]
+    meta["hyperparameter_source"] = ga_params["hyperparameter_source"]
     meta["mutation_strategy"] = DEFAULT_GA_MUTATION_STRATEGY
     meta["mutation_schedule"] = {
-        "early_phase": {"mutation_rate_min": max(DEFAULT_GA_MUTATION_RATE, 0.28), "noise_std": 0.9},
-        "mid_phase": {"mutation_rate_min": max(DEFAULT_GA_MUTATION_RATE, 0.14), "noise_std": 0.6},
-        "late_phase": {"mutation_rate_base": DEFAULT_GA_MUTATION_RATE, "noise_std": 0.35},
+        "early_phase": {"mutation_rate": ga_params["early_mutation_rate"], "noise_std": DEFAULT_GA_EARLY_MUTATION_NOISE},
+        "mid_phase": {"mutation_rate": ga_params["mid_mutation_rate"], "noise_std": DEFAULT_GA_MID_MUTATION_NOISE},
+        "late_phase": {"mutation_rate": ga_params["late_mutation_rate"], "noise_std": DEFAULT_GA_LATE_MUTATION_NOISE},
     }
     meta["training_runs"] = DEFAULT_TRAINING_RUNS
     meta["run_seeds"] = [DEFAULT_RANDOM_SEED + i for i in range(DEFAULT_TRAINING_RUNS)]

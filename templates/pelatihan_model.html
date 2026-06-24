@@ -214,6 +214,82 @@
         </div>
       </div>
 
+      <section class="card p-5 border border-emerald-100 bg-emerald-50/30">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="space-y-1">
+            <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Hyperparameter Tuning GA</p>
+            <h2 class="text-lg font-extrabold text-slate-900">Jalankan tuning 405 eksperimen dari model aktif</h2>
+            <p class="text-sm text-slate-600">
+              Grid: pop 10/20/30, generasi 10/25/50, mutation 0.01/0.05/0.1, stagnant 5/8/12, seed 42-46.
+            </p>
+            {% if latest_tuning %}
+            <p class="text-xs text-slate-500">
+              Hasil terakhir: <span class="font-mono">{{ latest_tuning.run_dir }}</span>
+              {% if latest_tuning.best %}
+                · best DBI {{ "%.4f"|format(latest_tuning.best.mean_dbi_after_ga) }}
+                · silhouette {{ "%.4f"|format(latest_tuning.best.mean_silhouette) }}
+              {% endif %}
+            </p>
+            {% endif %}
+          </div>
+          <div class="flex flex-col gap-2 min-w-[260px]">
+            <button id="start-tuning-btn" type="button" class="btn-primary justify-center text-sm">
+              Jalankan Tuning 405
+            </button>
+            <button id="apply-best-tuning-btn" type="button" class="btn-ghost justify-center text-sm border border-slate-200">
+              Terapkan Hasil Tuning Terbaik
+            </button>
+            <div id="tuning-status" class="hidden rounded-xl border border-emerald-100 bg-white p-3">
+              <div class="flex items-center justify-between gap-3 text-xs font-bold text-slate-700">
+                <span id="tuning-message">Menunggu...</span>
+                <span id="tuning-percent">0%</span>
+              </div>
+              <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div id="tuning-bar" class="h-full w-0 rounded-full bg-emerald-500 transition-all"></div>
+              </div>
+              <p id="tuning-detail" class="mt-2 text-[11px] text-slate-500">0/405 eksperimen</p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Default Training Aktif</p>
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-700">
+              <div>Population: <span id="active-config-pop" class="font-bold">{{ active_training_config.population_size }}</span></div>
+              <div>Generations: <span id="active-config-gen" class="font-bold">{{ active_training_config.generations }}</span></div>
+              <div>Early Mutation: <span id="active-config-early" class="font-bold">{{ "%.2f"|format(active_training_config.early_mutation_rate) }}</span></div>
+              <div>Mid Mutation: <span id="active-config-mid" class="font-bold">{{ "%.2f"|format(active_training_config.mid_mutation_rate) }}</span></div>
+              <div>Late Mutation: <span id="active-config-late" class="font-bold">{{ "%.2f"|format(active_training_config.late_mutation_rate) }}</span></div>
+              <div>Max Stagnant: <span id="active-config-stagnant" class="font-bold">{{ active_training_config.max_stagnant }}</span></div>
+            </div>
+            <p class="mt-3 text-[11px] text-slate-500">
+              Source:
+              <span id="active-config-source" class="font-mono">{{ active_training_config.hyperparameter_source }}</span>
+            </p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kandidat Best Tuning</p>
+            {% if latest_tuning_best_config %}
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-700">
+              <div>Population: <span class="font-bold">{{ latest_tuning_best_config.population_size }}</span></div>
+              <div>Generations: <span class="font-bold">{{ latest_tuning_best_config.generations }}</span></div>
+              <div>Early Mutation: <span class="font-bold">{{ "%.2f"|format(latest_tuning_best_config.early_mutation_rate) }}</span></div>
+              <div>Mid Mutation: <span class="font-bold">{{ "%.2f"|format(latest_tuning_best_config.mid_mutation_rate) }}</span></div>
+              <div>Late Mutation: <span class="font-bold">{{ "%.2f"|format(latest_tuning_best_config.late_mutation_rate) }}</span></div>
+              <div>Max Stagnant: <span class="font-bold">{{ latest_tuning_best_config.max_stagnant }}</span></div>
+            </div>
+            <p class="mt-3 text-[11px] text-slate-500">
+              Source:
+              <span class="font-mono">{{ latest_tuning_best_config.hyperparameter_source }}</span>
+            </p>
+            {% else %}
+            <p class="mt-2 text-sm text-slate-500">Belum ada hasil tuning yang bisa diterapkan.</p>
+            {% endif %}
+            <p id="apply-best-status" class="mt-3 text-[11px] text-slate-500"></p>
+          </div>
+        </div>
+      </section>
+
       <!-- Tabel -->
       <div class="max-h-[720px] overflow-auto rounded-2xl shadow-2xl border border-emerald-50 bg-white">
         <table class="min-w-full table-fixed">
@@ -695,6 +771,120 @@
   </div>
 
   <script>
+    // Hyperparameter tuning job
+    const startTuningBtn = document.getElementById('start-tuning-btn');
+    const applyBestTuningBtn = document.getElementById('apply-best-tuning-btn');
+    const tuningStatus = document.getElementById('tuning-status');
+    const tuningMessage = document.getElementById('tuning-message');
+    const tuningPercent = document.getElementById('tuning-percent');
+    const tuningBar = document.getElementById('tuning-bar');
+    const tuningDetail = document.getElementById('tuning-detail');
+    const applyBestStatus = document.getElementById('apply-best-status');
+    let tuningPollTimer = null;
+
+    function updateActiveTrainingConfig(config) {
+      if (!config) return;
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+      setText('active-config-pop', config.population_size);
+      setText('active-config-gen', config.generations);
+      setText('active-config-early', Number(config.early_mutation_rate).toFixed(2));
+      setText('active-config-mid', Number(config.mid_mutation_rate).toFixed(2));
+      setText('active-config-late', Number(config.late_mutation_rate).toFixed(2));
+      setText('active-config-stagnant', config.max_stagnant);
+      setText('active-config-source', config.hyperparameter_source);
+    }
+
+    function updateTuningStatus(data) {
+      tuningStatus?.classList.remove('hidden');
+      const percent = Math.max(0, Math.min(100, Number(data.percent || 0)));
+      if (tuningBar) tuningBar.style.width = `${percent}%`;
+      if (tuningPercent) tuningPercent.textContent = `${percent}%`;
+      if (tuningMessage) tuningMessage.textContent = data.message || 'Menjalankan tuning...';
+      const completed = data.completed_runs || 0;
+      const total = data.total_runs || 405;
+      if (tuningDetail) {
+        const output = data.output_dir ? ` · ${data.output_dir}` : '';
+        tuningDetail.textContent = `${completed}/${total} eksperimen${output}`;
+      }
+      if (data.status === 'completed' || data.status === 'failed') {
+        if (startTuningBtn) startTuningBtn.disabled = false;
+        if (data.status === 'completed' && tuningMessage) {
+          const best = data.best || {};
+          tuningMessage.textContent = `Tuning selesai. Best DBI=${best.mean_dbi_after_ga ?? '-'}, Silhouette=${best.mean_silhouette ?? '-'}`;
+        }
+        if (tuningPollTimer) clearInterval(tuningPollTimer);
+      }
+    }
+
+    applyBestTuningBtn?.addEventListener('click', async () => {
+      if (!confirm('Terapkan konfigurasi best tuning terbaru sebagai default training untuk upload berikutnya?')) return;
+      applyBestTuningBtn.disabled = true;
+      if (applyBestStatus) applyBestStatus.textContent = 'Menerapkan konfigurasi best tuning...';
+      try {
+        const response = await fetch('{{ url_for("model.apply_best_tuning") }}', {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Gagal menerapkan konfigurasi tuning.');
+        updateActiveTrainingConfig(data.config);
+        if (applyBestStatus) {
+          applyBestStatus.textContent = `Default training aktif diperbarui dari ${data.tuning_run_dir || 'hasil tuning terbaru'}.`;
+        }
+      } catch (err) {
+        if (applyBestStatus) applyBestStatus.textContent = err.message;
+      } finally {
+        applyBestTuningBtn.disabled = false;
+      }
+    });
+
+    async function pollTuning(jobId) {
+      try {
+        const response = await fetch(`/tuning/progress/${jobId}`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Gagal membaca progres tuning.');
+        updateTuningStatus(data);
+      } catch (err) {
+        if (tuningMessage) tuningMessage.textContent = err.message;
+        if (tuningPollTimer) clearInterval(tuningPollTimer);
+        if (startTuningBtn) startTuningBtn.disabled = false;
+      }
+    }
+
+    startTuningBtn?.addEventListener('click', async () => {
+      if (!confirm('Jalankan tuning 405 eksperimen dari data model aktif? Proses dapat memakan waktu lama.')) return;
+      startTuningBtn.disabled = true;
+      tuningStatus?.classList.remove('hidden');
+      if (tuningMessage) tuningMessage.textContent = 'Mengirim job tuning...';
+      try {
+        const response = await fetch('{{ url_for("model.start_tuning") }}', {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Gagal memulai tuning.');
+        updateTuningStatus(data);
+        if (tuningPollTimer) clearInterval(tuningPollTimer);
+        tuningPollTimer = setInterval(() => pollTuning(data.job_id), 3000);
+        pollTuning(data.job_id);
+      } catch (err) {
+        if (tuningMessage) tuningMessage.textContent = err.message;
+        startTuningBtn.disabled = false;
+      }
+    });
+
+    {% if current_tuning %}
+    tuningStatus?.classList.remove('hidden');
+    if (startTuningBtn) startTuningBtn.disabled = true;
+    tuningPollTimer = setInterval(() => pollTuning('{{ current_tuning.job_id }}'), 3000);
+    pollTuning('{{ current_tuning.job_id }}');
+    {% endif %}
+
     // Preview data
     const previewModal = document.getElementById('preview-modal');
     const previewClose = document.getElementById('preview-close');

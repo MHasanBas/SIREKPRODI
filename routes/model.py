@@ -1,17 +1,113 @@
 import os
 import json
 import pickle
+import subprocess
 import shutil
 import math
+import uuid
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from clustering.kmeans_module import _build_feature_matrix
 from services.model_service import load_active_model_name
+from services.training_config_service import load_active_training_config, save_active_training_config
 from utils.helpers import format_datetime_jakarta
+from tune_ga_ui_worker import JOB_STATE_DIR, job_state_path
 
 model_bp = Blueprint('model', __name__)
+
+
+def _latest_tuning_result():
+    base = "outputs/ga_tuning"
+    if not os.path.isdir(base):
+        return None
+    run_dirs = sorted(
+        os.path.join(base, name)
+        for name in os.listdir(base)
+        if name.startswith("run_") and os.path.isdir(os.path.join(base, name))
+    )
+    for run_dir in reversed(run_dirs):
+        summary_path = os.path.join(run_dir, "ga_tuning_summary.csv")
+        manifest_path = os.path.join(run_dir, "ga_tuning_manifest.json")
+        if not os.path.exists(summary_path):
+            continue
+        try:
+            summary = pd.read_csv(summary_path)
+            best = summary.iloc[0].to_dict() if not summary.empty else {}
+            manifest = {}
+            if os.path.exists(manifest_path):
+                with open(manifest_path) as f:
+                    manifest = json.load(f)
+            return {
+                "run_dir": run_dir,
+                "summary_path": summary_path,
+                "manifest_path": manifest_path,
+                "n_executions": manifest.get("n_executions"),
+                "created_at": manifest.get("created_at"),
+                "best": best,
+            }
+        except Exception:
+            continue
+    return None
+
+
+def _latest_tuning_best_config():
+    latest = _latest_tuning_result()
+    if not latest or not latest.get("best"):
+        return None
+    best = latest["best"]
+    try:
+        mutation_rate = best.get("mutation_rate")
+        return {
+            "population_size": int(best["population_size"]),
+            "generations": int(best["generations"]),
+            "mutation_rate": float(mutation_rate) if mutation_rate is not None else float(best["late_mutation_rate"]),
+            "early_mutation_rate": float(best["early_mutation_rate"]),
+            "mid_mutation_rate": float(best["mid_mutation_rate"]),
+            "late_mutation_rate": float(best["late_mutation_rate"]),
+            "max_stagnant": int(best["max_stagnant"]),
+            "hyperparameter_source": f'{os.path.basename(latest["run_dir"])}_rank_{int(best["rank"])}',
+            "tuning_run_dir": latest["run_dir"],
+            "tuning_created_at": latest.get("created_at"),
+        }
+    except Exception:
+        return None
+
+
+def _read_tuning_job(job_id):
+    path = job_state_path(job_id)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _running_tuning_job():
+    if not os.path.isdir(JOB_STATE_DIR):
+        return None
+    for name in sorted(os.listdir(JOB_STATE_DIR), reverse=True):
+        if not name.endswith(".json"):
+            continue
+        job_id = name[:-5]
+        job = _read_tuning_job(job_id)
+        if not job:
+            continue
+        if job.get("status") == "running":
+            pid = job.get("pid")
+            try:
+                if pid:
+                    os.kill(int(pid), 0)
+                return job_id, job
+            except Exception:
+                job["status"] = "failed"
+                job["message"] = job.get("message") or "Proses tuning terhenti."
+                with open(job_state_path(job_id), "w", encoding="utf-8") as f:
+                    json.dump(job, f, indent=2)
+    return None
 
 
 def _load_model_dbi(model_name):
@@ -92,6 +188,13 @@ def _build_pca_feature_matrix(df: pd.DataFrame) -> pd.DataFrame:
 def pelatihan_model():
     model_list = []
     active_model = load_active_model_name()
+    latest_tuning = _latest_tuning_result()
+    active_training_config = load_active_training_config()
+    latest_tuning_best_config = _latest_tuning_best_config()
+    current_tuning = None
+    running_job = _running_tuning_job()
+    if running_job:
+        current_tuning = {"job_id": running_job[0], **running_job[1]}
 
     for folder in os.listdir("models"):
         if folder.startswith("model_"):
@@ -139,6 +242,11 @@ def pelatihan_model():
             population_size = meta.get("population_size")
             generations     = meta.get("generations")
             mutation_rate   = meta.get("mutation_rate")
+            early_mutation_rate = meta.get("early_mutation_rate")
+            mid_mutation_rate   = meta.get("mid_mutation_rate")
+            late_mutation_rate  = meta.get("late_mutation_rate")
+            max_stagnant        = meta.get("max_stagnant")
+            hyperparameter_source = meta.get("hyperparameter_source")
             is_improved     = (
                 dbi_before_ga is not None and
                 dbi_after_ga is not None and
@@ -168,6 +276,11 @@ def pelatihan_model():
                 "population_size": population_size,
                 "generations": generations,
                 "mutation_rate": mutation_rate,
+                "early_mutation_rate": early_mutation_rate,
+                "mid_mutation_rate": mid_mutation_rate,
+                "late_mutation_rate": late_mutation_rate,
+                "max_stagnant": max_stagnant,
+                "hyperparameter_source": hyperparameter_source,
                 "is_improved_baseline": is_improved,
             })
 
@@ -179,7 +292,92 @@ def pelatihan_model():
         reverse=True,
     )
 
-    return render_template("pelatihan_model.html", model_list=model_list, active_model=active_model)
+    return render_template(
+        "pelatihan_model.html",
+        model_list=model_list,
+        active_model=active_model,
+        latest_tuning=latest_tuning,
+        latest_tuning_best_config=latest_tuning_best_config,
+        active_training_config=active_training_config,
+        current_tuning=current_tuning,
+    )
+
+
+@model_bp.route('/tuning/start', methods=['POST'])
+def start_tuning():
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    running_job = _running_tuning_job()
+    if running_job:
+        existing_id, job = running_job
+        return jsonify({
+            "success": True,
+            "job_id": existing_id,
+            "message": "Tuning sedang berjalan.",
+            **job,
+        })
+
+    active_model = load_active_model_name()
+    data_path = os.path.join("models", active_model or "", "data_gabungan_clean.pkl")
+    if not active_model or not os.path.exists(data_path):
+        return jsonify({"success": False, "error": "Data model aktif tidak ditemukan."}), 400
+
+    job_id = uuid.uuid4().hex
+    os.makedirs(JOB_STATE_DIR, exist_ok=True)
+    initial_state = {
+        "job_id": job_id,
+        "status": "pending",
+        "percent": 0,
+        "message": "Menyiapkan tuning hyperparameter...",
+        "completed_runs": 0,
+        "total_runs": 405,
+    }
+    with open(job_state_path(job_id), "w", encoding="utf-8") as f:
+        json.dump(initial_state, f, indent=2)
+
+    log_path = os.path.join(JOB_STATE_DIR, f"{job_id}.log")
+    with open(log_path, "ab") as log_file:
+        subprocess.Popen(
+            ["python3", "tune_ga_ui_worker.py", "--job-id", job_id],
+            cwd=os.getcwd(),
+            stdout=log_file,
+            stderr=log_file,
+            start_new_session=True,
+        )
+    return jsonify({"success": True, "job_id": job_id, "message": "Tuning dimulai."})
+
+
+@model_bp.route('/tuning/progress/<job_id>')
+def tuning_progress(job_id):
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+    job = _read_tuning_job(job_id)
+    if not job:
+        return jsonify({"success": False, "error": "Job tuning tidak ditemukan."}), 404
+    return jsonify({"success": True, "job_id": job_id, **job})
+
+
+@model_bp.route('/tuning/apply-best', methods=['POST'])
+def apply_best_tuning():
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    running_job = _running_tuning_job()
+    if running_job:
+        return jsonify({"success": False, "error": "Tuning masih berjalan. Terapkan setelah job selesai."}), 400
+
+    best_config = _latest_tuning_best_config()
+    if not best_config:
+        return jsonify({"success": False, "error": "Hasil tuning terbaik belum tersedia."}), 400
+
+    saved_config = save_active_training_config(best_config)
+    return jsonify({
+        "success": True,
+        "message": "Konfigurasi tuning terbaik berhasil diterapkan sebagai default training.",
+        "config": saved_config,
+        "tuning_run_dir": best_config.get("tuning_run_dir"),
+    })
 
 @model_bp.route('/terapkan_model/<nama_model>')
 def terapkan_model(nama_model):

@@ -12,6 +12,7 @@ import pandas as pd
 from clustering.preprocessing import proses_upload_data
 from clustering.kmeans_module import DEFAULT_TRAINING_RUNS, jalankan_kmeans
 from services.model_service import get_next_model_folder, load_active_model_name
+from services.training_config_service import load_active_training_config
 from utils.helpers import format_datetime_jakarta
 
 upload_bp = Blueprint('upload', __name__)
@@ -186,8 +187,21 @@ def upload():
                 message = f"Training run {run_current}/{run_total} selesai."
             _set_upload_progress(job_id, percent, message, run_current, run_total)
 
-        _set_upload_progress(job_id, 20, "Memulai training model...", 0, DEFAULT_TRAINING_RUNS)
-        jalankan_kmeans(df_baru, n_clusters=3, save_path=model_folder, progress_callback=training_progress)
+        active_training_config = load_active_training_config()
+        _set_upload_progress(job_id, 20, "Memulai training model dengan konfigurasi aktif...", 0, DEFAULT_TRAINING_RUNS)
+        jalankan_kmeans(
+            df_baru,
+            n_clusters=3,
+            save_path=model_folder,
+            progress_callback=training_progress,
+            ga_pop_size=active_training_config["population_size"],
+            ga_generations=active_training_config["generations"],
+            ga_early_mutation_rate=active_training_config["early_mutation_rate"],
+            ga_mid_mutation_rate=active_training_config["mid_mutation_rate"],
+            ga_late_mutation_rate=active_training_config["late_mutation_rate"],
+            ga_max_stagnant=active_training_config["max_stagnant"],
+            ga_hyperparam_source=active_training_config["hyperparameter_source"],
+        )
 
         _set_upload_progress(job_id, 92, "Menyimpan data bersih dan hasil model...", DEFAULT_TRAINING_RUNS, DEFAULT_TRAINING_RUNS)
         with open(os.path.join(model_folder, "data_gabungan_clean.pkl"), "wb") as f:
@@ -219,9 +233,11 @@ def upload():
         return redirect(url_for('dashboard.dashboard'))
 
     active_model = load_active_model_name()
+    default_ga_params = load_active_training_config()
     return render_template(
         'upload.html',
         active_model=active_model,
         active_model_meta=_load_model_meta(active_model),
         default_training_runs=DEFAULT_TRAINING_RUNS,
+        default_ga_params=default_ga_params,
     )

@@ -272,6 +272,11 @@
 
         <div class="quality-note">
           Setelah proses selesai, model hasil upload yang berhasil diproses akan otomatis menjadi model aktif.
+          Training memakai hyperparameter hasil tuning:
+          pop={{ default_ga_params.population_size }},
+          gen={{ default_ga_params.generations }},
+          mut=({{ default_ga_params.early_mutation_rate }}/{{ default_ga_params.mid_mutation_rate }}/{{ default_ga_params.late_mutation_rate }}),
+          stagnant={{ default_ga_params.max_stagnant }}.
         </div>
 
         <!-- Submit -->

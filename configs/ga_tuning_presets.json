@@ -1,0 +1,35 @@
+{
+  "quick": {
+    "description": "Cek cepat untuk memastikan pipeline tuning berjalan.",
+    "seeds": [42, 43],
+    "population_size": [10, 20],
+    "generations": [10],
+    "early_mutation_rate": [0.2, 0.28],
+    "mid_mutation_rate": [0.1, 0.14],
+    "late_mutation_rate": [0.01, 0.05],
+    "max_stagnant": [8],
+    "total_executions": 32
+  },
+  "balanced": {
+    "description": "Grid utama yang disarankan untuk eksperimen skripsi awal.",
+    "seeds": [42, 43, 44],
+    "population_size": [10, 20],
+    "generations": [10, 25],
+    "early_mutation_rate": [0.2, 0.28],
+    "mid_mutation_rate": [0.1, 0.14],
+    "late_mutation_rate": [0.01, 0.05],
+    "max_stagnant": [8],
+    "total_executions": 96
+  },
+  "full": {
+    "description": "Grid luas; jalankan hanya jika waktu komputasi cukup.",
+    "seeds": [42, 43, 44, 45, 46],
+    "population_size": [10, 20, 30],
+    "generations": [10, 25, 50],
+    "early_mutation_rate": [0.2, 0.28, 0.35],
+    "mid_mutation_rate": [0.1, 0.14, 0.2],
+    "late_mutation_rate": [0.01, 0.05, 0.1],
+    "max_stagnant": [5, 8, 12],
+    "total_executions": 3645
+  }
+}

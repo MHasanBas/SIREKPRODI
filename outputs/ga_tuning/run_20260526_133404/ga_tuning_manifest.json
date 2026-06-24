@@ -1,0 +1,82 @@
+{
+  "created_at": "2026-05-26T15:49:29+07:00",
+  "data_path": "models/model_35/data_gabungan_clean.pkl",
+  "n_data_rows": 9398,
+  "n_executions": 405,
+  "n_clusters": 3,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "pop_sizes": [
+    10,
+    20,
+    30
+  ],
+  "generations": [
+    10,
+    25,
+    50
+  ],
+  "early_mutation_rates": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "mid_mutation_rates": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "late_mutation_rates": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "mutation_mode": "single_rate_all_phases",
+  "max_stagnants": [
+    5,
+    8,
+    12
+  ],
+  "output_dir": "outputs/ga_tuning/run_20260526_133404",
+  "notes": [
+    "Pipeline tuning memakai _run_kmeans_single dari clustering.kmeans_module.",
+    "Adaptive mutation schedule dituning eksplisit per fase: early, mid, dan late mutation rate.",
+    "Baseline KMeans di pipeline memakai random_state tetap 42, bukan seed tuning per run."
+  ],
+  "best_config": {
+    "rank": 1.0,
+    "population_size": 30.0,
+    "generations": 10.0,
+    "early_mutation_rate": 0.1,
+    "mid_mutation_rate": 0.1,
+    "late_mutation_rate": 0.1,
+    "mutation_rate": 0.1,
+    "max_stagnant": 8.0,
+    "n_runs": 5.0,
+    "mean_runtime_seconds": 18.1745,
+    "std_runtime_seconds": 0.1022,
+    "mean_dbi_before_ga": 0.5599,
+    "std_dbi_before_ga": 0.0,
+    "mean_dbi_after_ga": 0.5419,
+    "std_dbi_after_ga": 0.0,
+    "mean_dbi_improvement_pct": 3.214,
+    "std_dbi_improvement_pct": 0.008,
+    "mean_silhouette": 0.5228,
+    "std_silhouette": 0.0,
+    "mean_ch_score": 577.9765,
+    "std_ch_score": 0.032,
+    "best_single_run_dbi": 0.5418,
+    "best_single_run_silhouette": 0.5228
+  },
+  "files": {
+    "per_run_csv": "outputs/ga_tuning/run_20260526_133404/ga_tuning_per_run.csv",
+    "summary_csv": "outputs/ga_tuning/run_20260526_133404/ga_tuning_summary.csv",
+    "summary_xlsx": "outputs/ga_tuning/run_20260526_133404/ga_tuning_results.xlsx",
+    "manifest_json": "outputs/ga_tuning/run_20260526_133404/ga_tuning_manifest.json"
+  }
+}
