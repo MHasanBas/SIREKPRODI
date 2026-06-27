@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import json
 import os
 from argparse import Namespace
@@ -7,7 +8,10 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from tune_ga_hyperparams import apply_preset, build_manifest, load_dataframe, make_output_dir, run_tuning
+from tune_ga_hyperparams import (
+    apply_preset, build_manifest, load_dataframe, make_output_dir,
+    parse_float_list, parse_int_list, run_tuning, export_thesis_excel,
+)
 
 
 JOB_STATE_DIR = os.path.join("outputs", "ga_tuning", "jobs")
@@ -28,20 +32,46 @@ def write_state(job_id, payload):
         json.dump(payload, f, indent=2)
 
 
+# ── Konfigurasi Grid Tuning (ubah di sini untuk mengubah tombol UI) ──────────
+UI_TUNING_CONFIG = {
+    "seeds":               "42,43,44",
+    "pop_sizes":           "10,20,30",
+    "generations":         "10,25",
+    "early_mutation_rates": "0.2,0.28",
+    "mid_mutation_rates":   "0.1,0.14",
+    "late_mutation_rates":  "0.01,0.05",
+    "max_stagnants":        "5,8",
+}
+
+
+def compute_total_runs(config):
+    """Hitung total run dari konfigurasi grid secara dinamis."""
+    seeds       = parse_int_list(config["seeds"])
+    pop_sizes   = parse_int_list(config["pop_sizes"])
+    generations = parse_int_list(config["generations"])
+    e_muts      = parse_float_list(config["early_mutation_rates"])
+    m_muts      = parse_float_list(config["mid_mutation_rates"])
+    l_muts      = parse_float_list(config["late_mutation_rates"])
+    stagnants   = parse_int_list(config["max_stagnants"])
+    combos = list(itertools.product(pop_sizes, generations, e_muts, m_muts, l_muts, stagnants))
+    return len(combos) * len(seeds)
+
+
 def build_args():
+    cfg = UI_TUNING_CONFIG
     return apply_preset(Namespace(
         data_pkl=None,
         active_model_file="models/active_model.txt",
         n_clusters=3,
         preset="balanced",
-        seeds="42,43,44,45,46",
-        pop_sizes="10,20,30",
-        generations="10,25,50",
-        early_mutation_rates=None,
-        mid_mutation_rates=None,
-        late_mutation_rates=None,
-        mutation_rates="0.01,0.05,0.1",
-        max_stagnants="5,8,12",
+        seeds=cfg["seeds"],
+        pop_sizes=cfg["pop_sizes"],
+        generations=cfg["generations"],
+        early_mutation_rates=cfg["early_mutation_rates"],
+        mid_mutation_rates=cfg["mid_mutation_rates"],
+        late_mutation_rates=cfg["late_mutation_rates"],
+        mutation_rates=None,
+        max_stagnants=cfg["max_stagnants"],
         output_root="outputs/ga_tuning",
         verbose=False,
     ))
@@ -57,6 +87,7 @@ def main():
         args = build_args()
         df, data_path = load_dataframe(args)
         output_dir = make_output_dir(args.output_root)
+        total_runs_estimate = compute_total_runs(UI_TUNING_CONFIG)
         write_state(job_id, {
             "job_id": job_id,
             "status": "running",
@@ -65,7 +96,7 @@ def main():
             "output_dir": output_dir,
             "data_path": data_path,
             "completed_runs": 0,
-            "total_runs": 405,
+            "total_runs": total_runs_estimate,
             "pid": os.getpid(),
         })
 
@@ -96,9 +127,7 @@ def main():
 
         per_run_df.to_csv(per_run_csv, index=False)
         summary_df.to_csv(summary_csv, index=False)
-        with pd.ExcelWriter(summary_xlsx) as writer:
-            summary_df.to_excel(writer, sheet_name="summary", index=False)
-            per_run_df.to_excel(writer, sheet_name="per_run", index=False)
+        export_thesis_excel(summary_df, per_run_df, summary_xlsx, args, data_path, len(df))
 
         manifest = build_manifest(args, data_path, output_dir, len(df), per_run_df, summary_df)
         with open(manifest_json, "w", encoding="utf-8") as f:

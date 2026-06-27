@@ -1,0 +1,487 @@
+Dataset: 9398 baris
+Mode mutation rate: phase_schedule
+Kombinasi hyperparameter: 96
+Jumlah seed per kombinasi: 3
+Total eksekusi: 288
+Output directory: outputs/ga_tuning/run_20260626_020633
+
+[1/96] Menjalankan pop=10, gen=10, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (1/288) | DBI=0.5419 | Silhouette=0.5227 | 8.16s
+  Seed 43 selesai (2/288) | DBI=0.5421 | Silhouette=0.5228 | 8.34s
+  Seed 44 selesai (3/288) | DBI=0.5421 | Silhouette=0.5228 | 7.73s
+
+[2/96] Menjalankan pop=10, gen=10, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (4/288) | DBI=0.5421 | Silhouette=0.5227 | 10.47s
+  Seed 43 selesai (5/288) | DBI=0.5421 | Silhouette=0.5227 | 10.72s
+  Seed 44 selesai (6/288) | DBI=0.5421 | Silhouette=0.5228 | 10.60s
+
+[3/96] Menjalankan pop=10, gen=10, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (7/288) | DBI=0.5421 | Silhouette=0.5227 | 7.78s
+  Seed 43 selesai (8/288) | DBI=0.5421 | Silhouette=0.5227 | 8.21s
+  Seed 44 selesai (9/288) | DBI=0.5421 | Silhouette=0.5228 | 7.84s
+
+[4/96] Menjalankan pop=10, gen=10, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (10/288) | DBI=0.5419 | Silhouette=0.5228 | 10.55s
+  Seed 43 selesai (11/288) | DBI=0.5419 | Silhouette=0.5227 | 10.79s
+  Seed 44 selesai (12/288) | DBI=0.5421 | Silhouette=0.5228 | 10.43s
+
+[5/96] Menjalankan pop=10, gen=10, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (13/288) | DBI=0.5419 | Silhouette=0.5228 | 8.05s
+  Seed 43 selesai (14/288) | DBI=0.5419 | Silhouette=0.5228 | 7.78s
+  Seed 44 selesai (15/288) | DBI=0.5421 | Silhouette=0.5228 | 7.90s
+
+[6/96] Menjalankan pop=10, gen=10, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (16/288) | DBI=0.542 | Silhouette=0.5227 | 10.53s
+  Seed 43 selesai (17/288) | DBI=0.5419 | Silhouette=0.5228 | 10.47s
+  Seed 44 selesai (18/288) | DBI=0.5421 | Silhouette=0.5228 | 10.38s
+
+[7/96] Menjalankan pop=10, gen=10, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (19/288) | DBI=0.5421 | Silhouette=0.5228 | 8.17s
+  Seed 43 selesai (20/288) | DBI=0.5419 | Silhouette=0.5228 | 7.88s
+  Seed 44 selesai (21/288) | DBI=0.5419 | Silhouette=0.5228 | 8.07s
+
+[8/96] Menjalankan pop=10, gen=10, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (22/288) | DBI=0.5419 | Silhouette=0.5228 | 10.52s
+  Seed 43 selesai (23/288) | DBI=0.5421 | Silhouette=0.5227 | 10.56s
+  Seed 44 selesai (24/288) | DBI=0.5419 | Silhouette=0.5228 | 10.56s
+
+[9/96] Menjalankan pop=10, gen=10, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (25/288) | DBI=0.5422 | Silhouette=0.5227 | 7.88s
+  Seed 43 selesai (26/288) | DBI=0.5421 | Silhouette=0.5228 | 8.07s
+  Seed 44 selesai (27/288) | DBI=0.5421 | Silhouette=0.5227 | 7.89s
+
+[10/96] Menjalankan pop=10, gen=10, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (28/288) | DBI=0.5421 | Silhouette=0.5228 | 10.85s
+  Seed 43 selesai (29/288) | DBI=0.5419 | Silhouette=0.5228 | 10.60s
+  Seed 44 selesai (30/288) | DBI=0.542 | Silhouette=0.5226 | 10.69s
+
+[11/96] Menjalankan pop=10, gen=10, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (31/288) | DBI=0.5422 | Silhouette=0.5227 | 7.98s
+  Seed 43 selesai (32/288) | DBI=0.5421 | Silhouette=0.5228 | 7.84s
+  Seed 44 selesai (33/288) | DBI=0.5421 | Silhouette=0.5227 | 7.56s
+
+[12/96] Menjalankan pop=10, gen=10, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (34/288) | DBI=0.5419 | Silhouette=0.5228 | 9.99s
+  Seed 43 selesai (35/288) | DBI=0.5421 | Silhouette=0.5228 | 9.79s
+  Seed 44 selesai (36/288) | DBI=0.5419 | Silhouette=0.5228 | 9.87s
+
+[13/96] Menjalankan pop=10, gen=10, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (37/288) | DBI=0.5419 | Silhouette=0.5227 | 7.54s
+  Seed 43 selesai (38/288) | DBI=0.5419 | Silhouette=0.5228 | 7.41s
+  Seed 44 selesai (39/288) | DBI=0.5421 | Silhouette=0.5226 | 7.50s
+
+[14/96] Menjalankan pop=10, gen=10, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (40/288) | DBI=0.5419 | Silhouette=0.5228 | 10.10s
+  Seed 43 selesai (41/288) | DBI=0.5419 | Silhouette=0.5228 | 10.29s
+  Seed 44 selesai (42/288) | DBI=0.5418 | Silhouette=0.5227 | 10.15s
+
+[15/96] Menjalankan pop=10, gen=10, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (43/288) | DBI=0.5419 | Silhouette=0.5227 | 7.60s
+  Seed 43 selesai (44/288) | DBI=0.5419 | Silhouette=0.5228 | 7.62s
+  Seed 44 selesai (45/288) | DBI=0.5421 | Silhouette=0.5226 | 7.64s
+
+[16/96] Menjalankan pop=10, gen=10, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (46/288) | DBI=0.5419 | Silhouette=0.5228 | 10.02s
+  Seed 43 selesai (47/288) | DBI=0.5419 | Silhouette=0.5227 | 10.05s
+  Seed 44 selesai (48/288) | DBI=0.5419 | Silhouette=0.5228 | 10.09s
+
+[17/96] Menjalankan pop=10, gen=25, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (49/288) | DBI=0.5421 | Silhouette=0.5226 | 7.72s
+  Seed 43 selesai (50/288) | DBI=0.5421 | Silhouette=0.5227 | 7.76s
+  Seed 44 selesai (51/288) | DBI=0.5421 | Silhouette=0.5227 | 7.60s
+
+[18/96] Menjalankan pop=10, gen=25, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (52/288) | DBI=0.5419 | Silhouette=0.5228 | 10.56s
+  Seed 43 selesai (53/288) | DBI=0.5419 | Silhouette=0.5228 | 10.30s
+  Seed 44 selesai (54/288) | DBI=0.5419 | Silhouette=0.5228 | 10.45s
+
+[19/96] Menjalankan pop=10, gen=25, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (55/288) | DBI=0.5421 | Silhouette=0.5226 | 8.29s
+  Seed 43 selesai (56/288) | DBI=0.5421 | Silhouette=0.5227 | 8.68s
+  Seed 44 selesai (57/288) | DBI=0.5421 | Silhouette=0.5227 | 8.43s
+
+[20/96] Menjalankan pop=10, gen=25, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (58/288) | DBI=0.5419 | Silhouette=0.5228 | 10.84s
+  Seed 43 selesai (59/288) | DBI=0.5419 | Silhouette=0.5228 | 10.34s
+  Seed 44 selesai (60/288) | DBI=0.5419 | Silhouette=0.5228 | 10.36s
+
+[21/96] Menjalankan pop=10, gen=25, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (61/288) | DBI=0.5421 | Silhouette=0.5226 | 7.72s
+  Seed 43 selesai (62/288) | DBI=0.5421 | Silhouette=0.5227 | 7.86s
+  Seed 44 selesai (63/288) | DBI=0.5421 | Silhouette=0.5227 | 7.68s
+
+[22/96] Menjalankan pop=10, gen=25, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (64/288) | DBI=0.5421 | Silhouette=0.5228 | 10.64s
+  Seed 43 selesai (65/288) | DBI=0.5419 | Silhouette=0.5228 | 10.36s
+  Seed 44 selesai (66/288) | DBI=0.5421 | Silhouette=0.5228 | 10.47s
+
+[23/96] Menjalankan pop=10, gen=25, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (67/288) | DBI=0.5421 | Silhouette=0.5226 | 7.76s
+  Seed 43 selesai (68/288) | DBI=0.5421 | Silhouette=0.5227 | 7.85s
+  Seed 44 selesai (69/288) | DBI=0.5421 | Silhouette=0.5227 | 7.64s
+
+[24/96] Menjalankan pop=10, gen=25, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (70/288) | DBI=0.5419 | Silhouette=0.5228 | 11.00s
+  Seed 43 selesai (71/288) | DBI=0.5419 | Silhouette=0.5228 | 10.41s
+  Seed 44 selesai (72/288) | DBI=0.5421 | Silhouette=0.5228 | 10.35s
+
+[25/96] Menjalankan pop=10, gen=25, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (73/288) | DBI=0.5421 | Silhouette=0.5227 | 7.65s
+  Seed 43 selesai (74/288) | DBI=0.5419 | Silhouette=0.5226 | 7.51s
+  Seed 44 selesai (75/288) | DBI=0.5419 | Silhouette=0.5228 | 8.17s
+
+[26/96] Menjalankan pop=10, gen=25, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (76/288) | DBI=0.5419 | Silhouette=0.5227 | 10.14s
+  Seed 43 selesai (77/288) | DBI=0.5421 | Silhouette=0.5227 | 10.17s
+  Seed 44 selesai (78/288) | DBI=0.5419 | Silhouette=0.5228 | 10.49s
+
+[27/96] Menjalankan pop=10, gen=25, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (79/288) | DBI=0.5421 | Silhouette=0.5227 | 7.68s
+  Seed 43 selesai (80/288) | DBI=0.5419 | Silhouette=0.5226 | 7.73s
+  Seed 44 selesai (81/288) | DBI=0.5419 | Silhouette=0.5228 | 8.23s
+
+[28/96] Menjalankan pop=10, gen=25, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (82/288) | DBI=0.5419 | Silhouette=0.5227 | 10.42s
+  Seed 43 selesai (83/288) | DBI=0.5421 | Silhouette=0.5227 | 10.21s
+  Seed 44 selesai (84/288) | DBI=0.5419 | Silhouette=0.5228 | 10.49s
+
+[29/96] Menjalankan pop=10, gen=25, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (85/288) | DBI=0.5421 | Silhouette=0.5227 | 7.68s
+  Seed 43 selesai (86/288) | DBI=0.5419 | Silhouette=0.5226 | 7.57s
+  Seed 44 selesai (87/288) | DBI=0.5419 | Silhouette=0.5227 | 8.03s
+
+[30/96] Menjalankan pop=10, gen=25, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (88/288) | DBI=0.5421 | Silhouette=0.5227 | 10.17s
+  Seed 43 selesai (89/288) | DBI=0.5419 | Silhouette=0.5228 | 10.69s
+  Seed 44 selesai (90/288) | DBI=0.5421 | Silhouette=0.5228 | 10.73s
+
+[31/96] Menjalankan pop=10, gen=25, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (91/288) | DBI=0.5421 | Silhouette=0.5227 | 7.96s
+  Seed 43 selesai (92/288) | DBI=0.5419 | Silhouette=0.5226 | 7.86s
+  Seed 44 selesai (93/288) | DBI=0.5419 | Silhouette=0.5227 | 8.39s
+
+[32/96] Menjalankan pop=10, gen=25, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (94/288) | DBI=0.5421 | Silhouette=0.5227 | 10.65s
+  Seed 43 selesai (95/288) | DBI=0.5419 | Silhouette=0.5228 | 10.76s
+  Seed 44 selesai (96/288) | DBI=0.5421 | Silhouette=0.5228 | 10.85s
+
+[33/96] Menjalankan pop=20, gen=10, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (97/288) | DBI=0.5419 | Silhouette=0.5228 | 11.68s
+  Seed 43 selesai (98/288) | DBI=0.5419 | Silhouette=0.5228 | 11.86s
+  Seed 44 selesai (99/288) | DBI=0.5419 | Silhouette=0.5228 | 11.44s
+
+[34/96] Menjalankan pop=20, gen=10, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (100/288) | DBI=0.5419 | Silhouette=0.5228 | 15.97s
+  Seed 43 selesai (101/288) | DBI=0.5421 | Silhouette=0.5228 | 15.84s
+  Seed 44 selesai (102/288) | DBI=0.5419 | Silhouette=0.5228 | 15.75s
+
+[35/96] Menjalankan pop=20, gen=10, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (103/288) | DBI=0.5419 | Silhouette=0.5228 | 11.32s
+  Seed 43 selesai (104/288) | DBI=0.5418 | Silhouette=0.5227 | 11.51s
+  Seed 44 selesai (105/288) | DBI=0.5421 | Silhouette=0.5228 | 11.44s
+
+[36/96] Menjalankan pop=20, gen=10, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (106/288) | DBI=0.5421 | Silhouette=0.5228 | 15.69s
+  Seed 43 selesai (107/288) | DBI=0.5421 | Silhouette=0.5227 | 15.58s
+  Seed 44 selesai (108/288) | DBI=0.5421 | Silhouette=0.5228 | 16.07s
+
+[37/96] Menjalankan pop=20, gen=10, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (109/288) | DBI=0.5419 | Silhouette=0.5228 | 12.87s
+  Seed 43 selesai (110/288) | DBI=0.5419 | Silhouette=0.5228 | 10.94s
+  Seed 44 selesai (111/288) | DBI=0.5419 | Silhouette=0.5228 | 10.77s
+
+[38/96] Menjalankan pop=20, gen=10, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (112/288) | DBI=0.5419 | Silhouette=0.5228 | 15.51s
+  Seed 43 selesai (113/288) | DBI=0.5421 | Silhouette=0.5228 | 14.86s
+  Seed 44 selesai (114/288) | DBI=0.5419 | Silhouette=0.5228 | 17.19s
+
+[39/96] Menjalankan pop=20, gen=10, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (115/288) | DBI=0.5419 | Silhouette=0.5228 | 12.49s
+  Seed 43 selesai (116/288) | DBI=0.5419 | Silhouette=0.5228 | 10.69s
+  Seed 44 selesai (117/288) | DBI=0.5419 | Silhouette=0.5228 | 10.63s
+
+[40/96] Menjalankan pop=20, gen=10, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (118/288) | DBI=0.5419 | Silhouette=0.5228 | 15.63s
+  Seed 43 selesai (119/288) | DBI=0.5421 | Silhouette=0.5228 | 17.63s
+  Seed 44 selesai (120/288) | DBI=0.5418 | Silhouette=0.5227 | 14.82s
+
+[41/96] Menjalankan pop=20, gen=10, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (121/288) | DBI=0.5419 | Silhouette=0.5227 | 11.26s
+  Seed 43 selesai (122/288) | DBI=0.5421 | Silhouette=0.5227 | 13.28s
+  Seed 44 selesai (123/288) | DBI=0.5419 | Silhouette=0.5228 | 10.64s
+
+[42/96] Menjalankan pop=20, gen=10, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (124/288) | DBI=0.5419 | Silhouette=0.5228 | 14.74s
+  Seed 43 selesai (125/288) | DBI=0.5419 | Silhouette=0.5227 | 15.78s
+  Seed 44 selesai (126/288) | DBI=0.5419 | Silhouette=0.5228 | 16.56s
+
+[43/96] Menjalankan pop=20, gen=10, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (127/288) | DBI=0.5419 | Silhouette=0.5227 | 10.88s
+  Seed 43 selesai (128/288) | DBI=0.5419 | Silhouette=0.5227 | 10.83s
+  Seed 44 selesai (129/288) | DBI=0.5419 | Silhouette=0.5228 | 12.93s
+
+[44/96] Menjalankan pop=20, gen=10, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (130/288) | DBI=0.5419 | Silhouette=0.5228 | 15.12s
+  Seed 43 selesai (131/288) | DBI=0.5419 | Silhouette=0.5228 | 14.78s
+  Seed 44 selesai (132/288) | DBI=0.542 | Silhouette=0.5227 | 17.71s
+
+[45/96] Menjalankan pop=20, gen=10, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (133/288) | DBI=0.5421 | Silhouette=0.5227 | 11.04s
+  Seed 43 selesai (134/288) | DBI=0.5419 | Silhouette=0.5227 | 10.72s
+  Seed 44 selesai (135/288) | DBI=0.5421 | Silhouette=0.5228 | 10.91s
+
+[46/96] Menjalankan pop=20, gen=10, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (136/288) | DBI=0.5421 | Silhouette=0.5228 | 17.16s
+  Seed 43 selesai (137/288) | DBI=0.5421 | Silhouette=0.5228 | 15.90s
+  Seed 44 selesai (138/288) | DBI=0.5419 | Silhouette=0.5228 | 14.92s
+
+[47/96] Menjalankan pop=20, gen=10, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (139/288) | DBI=0.5421 | Silhouette=0.5227 | 12.29s
+  Seed 43 selesai (140/288) | DBI=0.5421 | Silhouette=0.5227 | 11.44s
+  Seed 44 selesai (141/288) | DBI=0.5421 | Silhouette=0.5228 | 11.11s
+
+[48/96] Menjalankan pop=20, gen=10, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (142/288) | DBI=0.5419 | Silhouette=0.5228 | 15.02s
+  Seed 43 selesai (143/288) | DBI=0.5419 | Silhouette=0.5227 | 17.47s
+  Seed 44 selesai (144/288) | DBI=0.5419 | Silhouette=0.5228 | 14.82s
+
+[49/96] Menjalankan pop=20, gen=25, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (145/288) | DBI=0.5419 | Silhouette=0.5227 | 10.72s
+  Seed 43 selesai (146/288) | DBI=0.5421 | Silhouette=0.5228 | 11.84s
+  Seed 44 selesai (147/288) | DBI=0.5419 | Silhouette=0.5228 | 13.61s
+
+[50/96] Menjalankan pop=20, gen=25, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (148/288) | DBI=0.5419 | Silhouette=0.5228 | 14.94s
+  Seed 43 selesai (149/288) | DBI=0.542 | Silhouette=0.5227 | 16.35s
+  Seed 44 selesai (150/288) | DBI=0.5419 | Silhouette=0.5228 | 17.41s
+
+[51/96] Menjalankan pop=20, gen=25, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (151/288) | DBI=0.5419 | Silhouette=0.5227 | 11.20s
+  Seed 43 selesai (152/288) | DBI=0.5421 | Silhouette=0.5228 | 11.13s
+  Seed 44 selesai (153/288) | DBI=0.5419 | Silhouette=0.5228 | 15.81s
+
+[52/96] Menjalankan pop=20, gen=25, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (154/288) | DBI=0.5419 | Silhouette=0.5228 | 15.29s
+  Seed 43 selesai (155/288) | DBI=0.542 | Silhouette=0.5227 | 15.86s
+  Seed 44 selesai (156/288) | DBI=0.5419 | Silhouette=0.5228 | 20.66s
+
+[53/96] Menjalankan pop=20, gen=25, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (157/288) | DBI=0.5419 | Silhouette=0.5227 | 10.86s
+  Seed 43 selesai (158/288) | DBI=0.5421 | Silhouette=0.5228 | 10.58s
+  Seed 44 selesai (159/288) | DBI=0.5419 | Silhouette=0.5228 | 14.45s
+
+[54/96] Menjalankan pop=20, gen=25, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (160/288) | DBI=0.5419 | Silhouette=0.5228 | 17.24s
+  Seed 43 selesai (161/288) | DBI=0.5419 | Silhouette=0.5228 | 16.01s
+  Seed 44 selesai (162/288) | DBI=0.5419 | Silhouette=0.5228 | 20.01s
+
+[55/96] Menjalankan pop=20, gen=25, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (163/288) | DBI=0.5419 | Silhouette=0.5227 | 11.25s
+  Seed 43 selesai (164/288) | DBI=0.5421 | Silhouette=0.5228 | 10.72s
+  Seed 44 selesai (165/288) | DBI=0.5419 | Silhouette=0.5228 | 12.88s
+
+[56/96] Menjalankan pop=20, gen=25, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (166/288) | DBI=0.5419 | Silhouette=0.5228 | 19.74s
+  Seed 43 selesai (167/288) | DBI=0.5419 | Silhouette=0.5228 | 15.66s
+  Seed 44 selesai (168/288) | DBI=0.5419 | Silhouette=0.5228 | 22.31s
+
+[57/96] Menjalankan pop=20, gen=25, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (169/288) | DBI=0.5419 | Silhouette=0.5228 | 11.40s
+  Seed 43 selesai (170/288) | DBI=0.5419 | Silhouette=0.5227 | 11.65s
+  Seed 44 selesai (171/288) | DBI=0.5419 | Silhouette=0.5228 | 13.22s
+
+[58/96] Menjalankan pop=20, gen=25, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (172/288) | DBI=0.5419 | Silhouette=0.5228 | 17.92s
+  Seed 43 selesai (173/288) | DBI=0.5418 | Silhouette=0.5227 | 14.99s
+  Seed 44 selesai (174/288) | DBI=0.5419 | Silhouette=0.5228 | 19.23s
+
+[59/96] Menjalankan pop=20, gen=25, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (175/288) | DBI=0.5419 | Silhouette=0.5228 | 13.63s
+  Seed 43 selesai (176/288) | DBI=0.5419 | Silhouette=0.5227 | 11.22s
+  Seed 44 selesai (177/288) | DBI=0.5419 | Silhouette=0.5228 | 11.07s
+
+[60/96] Menjalankan pop=20, gen=25, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (178/288) | DBI=0.5419 | Silhouette=0.5228 | 21.40s
+  Seed 43 selesai (179/288) | DBI=0.5418 | Silhouette=0.5227 | 15.26s
+  Seed 44 selesai (180/288) | DBI=0.5419 | Silhouette=0.5228 | 15.47s
+
+[61/96] Menjalankan pop=20, gen=25, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (181/288) | DBI=0.5419 | Silhouette=0.5228 | 14.54s
+  Seed 43 selesai (182/288) | DBI=0.5419 | Silhouette=0.5227 | 11.52s
+  Seed 44 selesai (183/288) | DBI=0.5419 | Silhouette=0.5228 | 10.76s
+
+[62/96] Menjalankan pop=20, gen=25, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (184/288) | DBI=0.5418 | Silhouette=0.5227 | 18.95s
+  Seed 43 selesai (185/288) | DBI=0.5421 | Silhouette=0.5228 | 17.03s
+  Seed 44 selesai (186/288) | DBI=0.5419 | Silhouette=0.5228 | 15.70s
+
+[63/96] Menjalankan pop=20, gen=25, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (187/288) | DBI=0.5419 | Silhouette=0.5228 | 14.65s
+  Seed 43 selesai (188/288) | DBI=0.5419 | Silhouette=0.5227 | 12.87s
+  Seed 44 selesai (189/288) | DBI=0.5419 | Silhouette=0.5228 | 10.88s
+
+[64/96] Menjalankan pop=20, gen=25, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (190/288) | DBI=0.5418 | Silhouette=0.5227 | 16.26s
+  Seed 43 selesai (191/288) | DBI=0.5421 | Silhouette=0.5228 | 20.93s
+  Seed 44 selesai (192/288) | DBI=0.5419 | Silhouette=0.5228 | 15.40s
+
+[65/96] Menjalankan pop=30, gen=10, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (193/288) | DBI=0.5419 | Silhouette=0.5227 | 17.52s
+  Seed 43 selesai (194/288) | DBI=0.5419 | Silhouette=0.5228 | 16.80s
+  Seed 44 selesai (195/288) | DBI=0.5419 | Silhouette=0.5228 | 14.82s
+
+[66/96] Menjalankan pop=30, gen=10, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (196/288) | DBI=0.5419 | Silhouette=0.5228 | 25.34s
+  Seed 43 selesai (197/288) | DBI=0.5419 | Silhouette=0.5227 | 20.20s
+  Seed 44 selesai (198/288) | DBI=0.5419 | Silhouette=0.5228 | 25.36s
+
+[67/96] Menjalankan pop=30, gen=10, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (199/288) | DBI=0.5419 | Silhouette=0.5227 | 16.67s
+  Seed 43 selesai (200/288) | DBI=0.5419 | Silhouette=0.5228 | 15.05s
+  Seed 44 selesai (201/288) | DBI=0.5419 | Silhouette=0.5228 | 14.63s
+
+[68/96] Menjalankan pop=30, gen=10, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (202/288) | DBI=0.5418 | Silhouette=0.5227 | 24.90s
+  Seed 43 selesai (203/288) | DBI=0.5419 | Silhouette=0.5227 | 20.54s
+  Seed 44 selesai (204/288) | DBI=0.5419 | Silhouette=0.5227 | 26.06s
+
+[69/96] Menjalankan pop=30, gen=10, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (205/288) | DBI=0.5419 | Silhouette=0.5227 | 14.33s
+  Seed 43 selesai (206/288) | DBI=0.5419 | Silhouette=0.5228 | 16.10s
+  Seed 44 selesai (207/288) | DBI=0.5419 | Silhouette=0.5228 | 19.33s
+
+[70/96] Menjalankan pop=30, gen=10, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (208/288) | DBI=0.5419 | Silhouette=0.5228 | 20.90s
+  Seed 43 selesai (209/288) | DBI=0.5419 | Silhouette=0.5228 | 26.15s
+  Seed 44 selesai (210/288) | DBI=0.5419 | Silhouette=0.5228 | 22.75s
+
+[71/96] Menjalankan pop=30, gen=10, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (211/288) | DBI=0.5419 | Silhouette=0.5227 | 17.52s
+  Seed 43 selesai (212/288) | DBI=0.5419 | Silhouette=0.5228 | 14.89s
+  Seed 44 selesai (213/288) | DBI=0.5419 | Silhouette=0.5228 | 16.18s
+
+[72/96] Menjalankan pop=30, gen=10, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (214/288) | DBI=0.5419 | Silhouette=0.5227 | 24.96s
+  Seed 43 selesai (215/288) | DBI=0.5419 | Silhouette=0.5228 | 21.09s
+  Seed 44 selesai (216/288) | DBI=0.5419 | Silhouette=0.5228 | 26.08s
+
+[73/96] Menjalankan pop=30, gen=10, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (217/288) | DBI=0.5419 | Silhouette=0.5228 | 14.35s
+  Seed 43 selesai (218/288) | DBI=0.5419 | Silhouette=0.5228 | 17.64s
+  Seed 44 selesai (219/288) | DBI=0.5419 | Silhouette=0.5227 | 17.89s
+
+[74/96] Menjalankan pop=30, gen=10, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (220/288) | DBI=0.5419 | Silhouette=0.5228 | 22.10s
+  Seed 43 selesai (221/288) | DBI=0.5419 | Silhouette=0.5228 | 24.30s
+  Seed 44 selesai (222/288) | DBI=0.5419 | Silhouette=0.5228 | 21.38s
+
+[75/96] Menjalankan pop=30, gen=10, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (223/288) | DBI=0.5419 | Silhouette=0.5228 | 19.11s
+  Seed 43 selesai (224/288) | DBI=0.5419 | Silhouette=0.5228 | 14.29s
+  Seed 44 selesai (225/288) | DBI=0.5419 | Silhouette=0.5227 | 16.31s
+
+[76/96] Menjalankan pop=30, gen=10, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (226/288) | DBI=0.5419 | Silhouette=0.5228 | 24.54s
+  Seed 43 selesai (227/288) | DBI=0.5419 | Silhouette=0.5228 | 21.28s
+  Seed 44 selesai (228/288) | DBI=0.5419 | Silhouette=0.5228 | 25.39s
+
+[77/96] Menjalankan pop=30, gen=10, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (229/288) | DBI=0.5419 | Silhouette=0.5228 | 15.10s
+  Seed 43 selesai (230/288) | DBI=0.5419 | Silhouette=0.5228 | 18.70s
+  Seed 44 selesai (231/288) | DBI=0.5419 | Silhouette=0.5228 | 15.61s
+
+[78/96] Menjalankan pop=30, gen=10, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (232/288) | DBI=0.5419 | Silhouette=0.5228 | 24.06s
+  Seed 43 selesai (233/288) | DBI=0.5418 | Silhouette=0.5226 | 23.76s
+  Seed 44 selesai (234/288) | DBI=0.5419 | Silhouette=0.5228 | 21.65s
+
+[79/96] Menjalankan pop=30, gen=10, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (235/288) | DBI=0.5419 | Silhouette=0.5228 | 20.77s
+  Seed 43 selesai (236/288) | DBI=0.5419 | Silhouette=0.5228 | 14.83s
+  Seed 44 selesai (237/288) | DBI=0.5419 | Silhouette=0.5228 | 18.80s
+
+[80/96] Menjalankan pop=30, gen=10, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (238/288) | DBI=0.5419 | Silhouette=0.5228 | 23.83s
+  Seed 43 selesai (239/288) | DBI=0.5419 | Silhouette=0.5227 | 24.59s
+  Seed 44 selesai (240/288) | DBI=0.5419 | Silhouette=0.5227 | 21.70s
+
+[81/96] Menjalankan pop=30, gen=25, mut=(0.2/0.1/0.01), stagnant=5
+  Seed 42 selesai (241/288) | DBI=0.5419 | Silhouette=0.5228 | 16.79s
+  Seed 43 selesai (242/288) | DBI=0.5419 | Silhouette=0.5228 | 17.89s
+  Seed 44 selesai (243/288) | DBI=0.5419 | Silhouette=0.5228 | 14.59s
+
+[82/96] Menjalankan pop=30, gen=25, mut=(0.2/0.1/0.01), stagnant=8
+  Seed 42 selesai (244/288) | DBI=0.5419 | Silhouette=0.5228 | 24.60s
+  Seed 43 selesai (245/288) | DBI=0.5418 | Silhouette=0.5227 | 21.60s
+  Seed 44 selesai (246/288) | DBI=0.5419 | Silhouette=0.5228 | 27.38s
+
+[83/96] Menjalankan pop=30, gen=25, mut=(0.2/0.1/0.05), stagnant=5
+  Seed 42 selesai (247/288) | DBI=0.5419 | Silhouette=0.5228 | 15.22s
+  Seed 43 selesai (248/288) | DBI=0.5419 | Silhouette=0.5228 | 15.95s
+  Seed 44 selesai (249/288) | DBI=0.5419 | Silhouette=0.5228 | 18.48s
+
+[84/96] Menjalankan pop=30, gen=25, mut=(0.2/0.1/0.05), stagnant=8
+  Seed 42 selesai (250/288) | DBI=0.5419 | Silhouette=0.5228 | 20.55s
+  Seed 43 selesai (251/288) | DBI=0.5418 | Silhouette=0.5227 | 28.60s
+  Seed 44 selesai (252/288) | DBI=0.5419 | Silhouette=0.5228 | 21.60s
+
+[85/96] Menjalankan pop=30, gen=25, mut=(0.2/0.14/0.01), stagnant=5
+  Seed 42 selesai (253/288) | DBI=0.5419 | Silhouette=0.5228 | 17.96s
+  Seed 43 selesai (254/288) | DBI=0.5419 | Silhouette=0.5228 | 17.32s
+  Seed 44 selesai (255/288) | DBI=0.5419 | Silhouette=0.5228 | 14.49s
+
+[86/96] Menjalankan pop=30, gen=25, mut=(0.2/0.14/0.01), stagnant=8
+  Seed 42 selesai (256/288) | DBI=0.5419 | Silhouette=0.5228 | 27.71s
+  Seed 43 selesai (257/288) | DBI=0.5418 | Silhouette=0.5227 | 20.51s
+  Seed 44 selesai (258/288) | DBI=0.5418 | Silhouette=0.5227 | 27.39s
+
+[87/96] Menjalankan pop=30, gen=25, mut=(0.2/0.14/0.05), stagnant=5
+  Seed 42 selesai (259/288) | DBI=0.5419 | Silhouette=0.5228 | 14.47s
+  Seed 43 selesai (260/288) | DBI=0.5419 | Silhouette=0.5228 | 18.46s
+  Seed 44 selesai (261/288) | DBI=0.5419 | Silhouette=0.5228 | 16.39s
+
+[88/96] Menjalankan pop=30, gen=25, mut=(0.2/0.14/0.05), stagnant=8
+  Seed 42 selesai (262/288) | DBI=0.5419 | Silhouette=0.5228 | 17.25s
+  Seed 43 selesai (263/288) | DBI=0.5418 | Silhouette=0.5227 | 24.48s
+  Seed 44 selesai (264/288) | DBI=0.5418 | Silhouette=0.5227 | 15.96s
+
+[89/96] Menjalankan pop=30, gen=25, mut=(0.28/0.1/0.01), stagnant=5
+  Seed 42 selesai (265/288) | DBI=0.5419 | Silhouette=0.5227 | 13.04s
+  Seed 43 selesai (266/288) | DBI=0.5419 | Silhouette=0.5227 | 16.67s
+  Seed 44 selesai (267/288) | DBI=0.5419 | Silhouette=0.5228 | 11.69s
+
+[90/96] Menjalankan pop=30, gen=25, mut=(0.28/0.1/0.01), stagnant=8
+  Seed 42 selesai (268/288) | DBI=0.5419 | Silhouette=0.5228 | 19.74s
+  Seed 43 selesai (269/288) | DBI=0.5419 | Silhouette=0.5228 | 18.11s
+  Seed 44 selesai (270/288) | DBI=0.5419 | Silhouette=0.5228 | 15.48s
+
+[91/96] Menjalankan pop=30, gen=25, mut=(0.28/0.1/0.05), stagnant=5
+  Seed 42 selesai (271/288) | DBI=0.5419 | Silhouette=0.5227 | 12.06s
+  Seed 43 selesai (272/288) | DBI=0.5419 | Silhouette=0.5227 | 17.20s
+  Seed 44 selesai (273/288) | DBI=0.5419 | Silhouette=0.5228 | 11.39s
+
+[92/96] Menjalankan pop=30, gen=25, mut=(0.28/0.1/0.05), stagnant=8
+  Seed 42 selesai (274/288) | DBI=0.5419 | Silhouette=0.5228 | 18.62s
+  Seed 43 selesai (275/288) | DBI=0.5419 | Silhouette=0.5228 | 20.37s
+  Seed 44 selesai (276/288) | DBI=0.5419 | Silhouette=0.5228 | 15.96s
+
+[93/96] Menjalankan pop=30, gen=25, mut=(0.28/0.14/0.01), stagnant=5
+  Seed 42 selesai (277/288) | DBI=0.5419 | Silhouette=0.5227 | 15.72s
+  Seed 43 selesai (278/288) | DBI=0.5419 | Silhouette=0.5227 | 14.28s
+  Seed 44 selesai (279/288) | DBI=0.5419 | Silhouette=0.5228 | 11.92s
+
+[94/96] Menjalankan pop=30, gen=25, mut=(0.28/0.14/0.01), stagnant=8
+  Seed 42 selesai (280/288) | DBI=0.5419 | Silhouette=0.5228 | 19.91s
+  Seed 43 selesai (281/288) | DBI=0.5419 | Silhouette=0.5228 | 17.58s
+  Seed 44 selesai (282/288) | DBI=0.5419 | Silhouette=0.5228 | 16.59s
+
+[95/96] Menjalankan pop=30, gen=25, mut=(0.28/0.14/0.05), stagnant=5
+  Seed 42 selesai (283/288) | DBI=0.5419 | Silhouette=0.5227 | 14.45s
+  Seed 43 selesai (284/288) | DBI=0.5419 | Silhouette=0.5227 | 12.96s
+  Seed 44 selesai (285/288) | DBI=0.5419 | Silhouette=0.5228 | 11.81s
+
+[96/96] Menjalankan pop=30, gen=25, mut=(0.28/0.14/0.05), stagnant=8
+  Seed 42 selesai (286/288) | DBI=0.5419 | Silhouette=0.5228 | 20.34s
+  Seed 43 selesai (287/288) | DBI=0.5419 | Silhouette=0.5228 | 17.87s
+  Seed 44 selesai (288/288) | DBI=0.5419 | Silhouette=0.5228 | 16.38s
+  ✅ Excel thesis-grade disimpan: outputs/ga_tuning/run_20260626_020633/ga_tuning_results.xlsx

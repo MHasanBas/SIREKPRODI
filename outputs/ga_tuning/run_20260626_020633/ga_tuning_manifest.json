@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-05-26T11:27:39+07:00",
-  "data_path": "models/model_32/data_gabungan_clean.pkl",
+  "created_at": "2026-06-26T04:50:17+07:00",
+  "data_path": "models/model_36/data_gabungan_clean.pkl",
   "n_data_rows": 9398,
-  "n_executions": 96,
+  "n_executions": 288,
   "n_clusters": 3,
   "seeds": [
     42,
@@ -11,7 +11,8 @@
   ],
   "pop_sizes": [
     10,
-    20
+    20,
+    30
   ],
   "generations": [
     10,
@@ -29,10 +30,12 @@
     0.01,
     0.05
   ],
+  "mutation_mode": "phase_schedule",
   "max_stagnants": [
+    5,
     8
   ],
-  "output_dir": "outputs/ga_tuning/run_20260526_110948",
+  "output_dir": "outputs/ga_tuning/run_20260626_020633",
   "notes": [
     "Pipeline tuning memakai _run_kmeans_single dari clustering.kmeans_module.",
     "Adaptive mutation schedule dituning eksplisit per fase: early, mid, dan late mutation rate.",
@@ -40,33 +43,33 @@
   ],
   "best_config": {
     "rank": 1.0,
-    "population_size": 10.0,
-    "generations": 10.0,
-    "early_mutation_rate": 0.28,
+    "population_size": 30.0,
+    "generations": 25.0,
+    "early_mutation_rate": 0.2,
     "mid_mutation_rate": 0.14,
-    "late_mutation_rate": 0.01,
-    "mutation_rate": 0.01,
+    "late_mutation_rate": 0.05,
+    "mutation_rate": 0.05,
     "max_stagnant": 8.0,
     "n_runs": 3.0,
-    "mean_runtime_seconds": 7.6478,
-    "std_runtime_seconds": 0.1022,
+    "mean_runtime_seconds": 19.2311,
+    "std_runtime_seconds": 3.7487,
     "mean_dbi_before_ga": 0.5599,
     "std_dbi_before_ga": 0.0,
-    "mean_dbi_after_ga": 0.5419,
+    "mean_dbi_after_ga": 0.5418,
     "std_dbi_after_ga": 0.0,
-    "mean_dbi_improvement_pct": 3.2167,
+    "mean_dbi_improvement_pct": 3.2233,
     "std_dbi_improvement_pct": 0.0094,
-    "mean_silhouette": 0.5228,
+    "mean_silhouette": 0.5227,
     "std_silhouette": 0.0,
-    "mean_ch_score": 577.9667,
-    "std_ch_score": 0.0412,
+    "mean_ch_score": 577.9405,
+    "std_ch_score": 0.038,
     "best_single_run_dbi": 0.5418,
     "best_single_run_silhouette": 0.5228
   },
   "files": {
-    "per_run_csv": "outputs/ga_tuning/run_20260526_110948/ga_tuning_per_run.csv",
-    "summary_csv": "outputs/ga_tuning/run_20260526_110948/ga_tuning_summary.csv",
-    "summary_xlsx": "outputs/ga_tuning/run_20260526_110948/ga_tuning_results.xlsx",
-    "manifest_json": "outputs/ga_tuning/run_20260526_110948/ga_tuning_manifest.json"
+    "per_run_csv": "outputs/ga_tuning/run_20260626_020633/ga_tuning_per_run.csv",
+    "summary_csv": "outputs/ga_tuning/run_20260626_020633/ga_tuning_summary.csv",
+    "summary_xlsx": "outputs/ga_tuning/run_20260626_020633/ga_tuning_results.xlsx",
+    "manifest_json": "outputs/ga_tuning/run_20260626_020633/ga_tuning_manifest.json"
   }
 }

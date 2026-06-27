@@ -8,12 +8,12 @@ import uuid
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from clustering.kmeans_module import _build_feature_matrix
 from services.model_service import load_active_model_name
 from services.training_config_service import load_active_training_config, save_active_training_config
 from utils.helpers import format_datetime_jakarta
-from tune_ga_ui_worker import JOB_STATE_DIR, job_state_path
+from tune_ga_ui_worker import JOB_STATE_DIR, job_state_path, UI_TUNING_CONFIG, compute_total_runs
 
 model_bp = Blueprint('model', __name__)
 
@@ -73,6 +73,50 @@ def _latest_tuning_best_config():
         }
     except Exception:
         return None
+
+
+def _all_tuning_results():
+    base = "outputs/ga_tuning"
+    if not os.path.isdir(base):
+        return []
+    run_dirs = sorted(
+        [name for name in os.listdir(base) if name.startswith("run_") and os.path.isdir(os.path.join(base, name))],
+        reverse=True
+    )
+    results = []
+    for run_name in run_dirs:
+        run_dir = os.path.join(base, run_name)
+        manifest_path = os.path.join(run_dir, "ga_tuning_manifest.json")
+        summary_path = os.path.join(run_dir, "ga_tuning_summary.csv")
+        if not os.path.exists(manifest_path):
+            continue
+        try:
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            best = {}
+            if os.path.exists(summary_path):
+                summary = pd.read_csv(summary_path)
+                best = summary.iloc[0].to_dict() if not summary.empty else {}
+            results.append({
+                "run_name": run_name,
+                "created_at": manifest.get("created_at"),
+                "n_executions": manifest.get("n_executions"),
+                "n_clusters": manifest.get("n_clusters"),
+                "best": best,
+                "seeds": manifest.get("seeds"),
+                "pop_sizes": manifest.get("pop_sizes"),
+                "generations": manifest.get("generations"),
+                "early_mutation_rates": manifest.get("early_mutation_rates"),
+                "mid_mutation_rates": manifest.get("mid_mutation_rates"),
+                "late_mutation_rates": manifest.get("late_mutation_rates"),
+                "max_stagnants": manifest.get("max_stagnants"),
+            })
+        except Exception:
+            continue
+    return results
+
+
+
 
 
 def _read_tuning_job(job_id):
@@ -292,6 +336,8 @@ def pelatihan_model():
         reverse=True,
     )
 
+    all_tuning_results = _all_tuning_results()
+
     return render_template(
         "pelatihan_model.html",
         model_list=model_list,
@@ -300,7 +346,11 @@ def pelatihan_model():
         latest_tuning_best_config=latest_tuning_best_config,
         active_training_config=active_training_config,
         current_tuning=current_tuning,
+        all_tuning_results=all_tuning_results,
+        ui_total_runs=compute_total_runs(UI_TUNING_CONFIG),
+        ui_tuning_config=UI_TUNING_CONFIG,
     )
+
 
 
 @model_bp.route('/tuning/start', methods=['POST'])
@@ -325,13 +375,14 @@ def start_tuning():
 
     job_id = uuid.uuid4().hex
     os.makedirs(JOB_STATE_DIR, exist_ok=True)
+    total_runs = compute_total_runs(UI_TUNING_CONFIG)
     initial_state = {
         "job_id": job_id,
         "status": "pending",
         "percent": 0,
         "message": "Menyiapkan tuning hyperparameter...",
         "completed_runs": 0,
-        "total_runs": 405,
+        "total_runs": total_runs,
     }
     with open(job_state_path(job_id), "w", encoding="utf-8") as f:
         json.dump(initial_state, f, indent=2)
@@ -356,6 +407,72 @@ def tuning_progress(job_id):
     if not job:
         return jsonify({"success": False, "error": "Job tuning tidak ditemukan."}), 404
     return jsonify({"success": True, "job_id": job_id, **job})
+
+
+@model_bp.route('/tuning/cancel/<job_id>', methods=['POST'])
+def cancel_tuning(job_id):
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    job = _read_tuning_job(job_id)
+    if not job:
+        return jsonify({"success": False, "error": "Job tuning tidak ditemukan."}), 404
+
+    # If it is running or pending, terminate it
+    pid = job.get("pid")
+    if pid:
+        try:
+            import signal
+            os.kill(int(pid), signal.SIGTERM)
+            print(f"Terminated tuning job process {pid}")
+        except Exception as e:
+            print(f"Failed to kill process {pid}: {e}")
+
+    # Update job status in json
+    job["status"] = "cancelled"
+    job["message"] = "Tuning dibatalkan oleh pengguna."
+    try:
+        with open(job_state_path(job_id), "w", encoding="utf-8") as f:
+            json.dump(job, f, indent=2)
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Gagal memperbarui status job: {e}"}), 500
+
+    return jsonify({"success": True, "message": "Tuning berhasil dibatalkan."})
+
+
+@model_bp.route('/tuning/download/<run_name>')
+def download_tuning_excel(run_name):
+    """Download Excel hasil hyperparameter tuning untuk run tertentu."""
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    # Validasi nama run agar tidak bisa akses path sembarang
+    if not run_name.startswith("run_") or ".." in run_name or "/" in run_name:
+        return jsonify({"success": False, "error": "Nama run tidak valid."}), 400
+
+    run_dir = os.path.join("outputs", "ga_tuning", run_name)
+    xlsx_path = os.path.join(run_dir, "ga_tuning_results.xlsx")
+    csv_path  = os.path.join(run_dir, "ga_tuning_summary.csv")
+
+    if os.path.exists(xlsx_path):
+        download_name = f"tuning_{run_name}_thesis.xlsx"
+        return send_file(
+            os.path.abspath(xlsx_path),
+            as_attachment=True,
+            download_name=download_name,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+    elif os.path.exists(csv_path):
+        # Fallback: kirim CSV jika Excel belum ada (tuning masih berjalan)
+        download_name = f"tuning_{run_name}_summary.csv"
+        return send_file(
+            os.path.abspath(csv_path),
+            as_attachment=True,
+            download_name=download_name,
+            mimetype="text/csv",
+        )
+    else:
+        return jsonify({"success": False, "error": "File hasil tuning belum tersedia."}), 404
 
 
 @model_bp.route('/tuning/apply-best', methods=['POST'])

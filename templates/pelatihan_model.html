@@ -218,9 +218,11 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="space-y-1">
             <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Hyperparameter Tuning GA</p>
-            <h2 class="text-lg font-extrabold text-slate-900">Jalankan tuning 405 eksperimen dari model aktif</h2>
+            <h2 class="text-lg font-extrabold text-slate-900">Jalankan tuning {{ ui_total_runs }} eksperimen dari model aktif</h2>
             <p class="text-sm text-slate-600">
-              Grid: pop 10/20/30, generasi 10/25/50, mutation 0.01/0.05/0.1, stagnant 5/8/12, seed 42-46.
+              Grid: pop {{ ui_tuning_config.pop_sizes }}, generasi {{ ui_tuning_config.generations }},
+              early/mid/late mut {{ ui_tuning_config.early_mutation_rates }}/{{ ui_tuning_config.mid_mutation_rates }}/{{ ui_tuning_config.late_mutation_rates }},
+              stagnant {{ ui_tuning_config.max_stagnants }}, seed {{ ui_tuning_config.seeds }}.
             </p>
             {% if latest_tuning %}
             <p class="text-xs text-slate-500">
@@ -234,7 +236,7 @@
           </div>
           <div class="flex flex-col gap-2 min-w-[260px]">
             <button id="start-tuning-btn" type="button" class="btn-primary justify-center text-sm">
-              Jalankan Tuning 405
+              Jalankan Tuning {{ ui_total_runs }}
             </button>
             <button id="apply-best-tuning-btn" type="button" class="btn-ghost justify-center text-sm border border-slate-200">
               Terapkan Hasil Tuning Terbaik
@@ -247,8 +249,17 @@
               <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div id="tuning-bar" class="h-full w-0 rounded-full bg-emerald-500 transition-all"></div>
               </div>
-              <p id="tuning-detail" class="mt-2 text-[11px] text-slate-500">0/405 eksperimen</p>
+              <p id="tuning-detail" class="mt-2 text-[11px] text-slate-500">0/{{ ui_total_runs }} eksperimen</p>
+              <div id="cancel-tuning-btn-wrap" class="mt-3 flex justify-end hidden">
+                <button id="cancel-tuning-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-bold shadow-xs transition duration-150">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  Batalkan Tuning
+                </button>
+              </div>
             </div>
+
           </div>
         </div>
         <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -288,7 +299,86 @@
             <p id="apply-best-status" class="mt-3 text-[11px] text-slate-500"></p>
           </div>
         </div>
+
+        <!-- Riwayat Tuning Section -->
+        {% if all_tuning_results %}
+        <div class="mt-4 border-t border-emerald-100/50 pt-4">
+          <details class="group bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <summary class="flex items-center justify-between p-4 cursor-pointer select-none hover:bg-slate-50 transition">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 group-open:rotate-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Riwayat Eksperimen Tuning ({{ all_tuning_results|length }})</span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium">Klik untuk melihat detail run</span>
+            </summary>
+            <div class="border-t border-slate-100 p-4 overflow-x-auto">
+              <table class="min-w-full text-xs text-left">
+                <thead>
+                  <tr class="text-[10px] text-slate-400 uppercase font-bold border-b border-slate-100 pb-2">
+                    <th class="pb-2">Waktu Run / Folder</th>
+                    <th class="pb-2 text-center">Jumlah Eksperimen</th>
+                    <th class="pb-2 text-center">k</th>
+                    <th class="pb-2">Seed diuji</th>
+                    <th class="pb-2">Populasi diuji</th>
+                    <th class="pb-2">Generasi diuji</th>
+                    <th class="pb-2 text-center">Best DBI</th>
+                    <th class="pb-2 text-center">Best Silhouette</th>
+                    <th class="pb-2 text-center">Unduh</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  {% for run in all_tuning_results %}
+                  <tr class="hover:bg-slate-50/50 transition">
+                    <td class="py-2.5 font-mono text-[11px] text-slate-800">
+                      <div class="font-bold text-slate-900">{{ run.run_name }}</div>
+                      <div class="text-[10px] text-slate-400">{{ run.created_at }}</div>
+                    </td>
+                    <td class="py-2.5 text-center font-bold text-slate-700">{{ run.n_executions }}</td>
+                    <td class="py-2.5 text-center font-semibold text-slate-600">{{ run.n_clusters }}</td>
+                    <td class="py-2.5 text-slate-600 truncate max-w-[120px]" title="{{ run.seeds|join(', ') }}">{{ run.seeds|join(', ') }}</td>
+                    <td class="py-2.5 text-slate-600 truncate max-w-[120px]" title="{{ run.pop_sizes|join(', ') }}">{{ run.pop_sizes|join(', ') }}</td>
+                    <td class="py-2.5 text-slate-600 truncate max-w-[120px]" title="{{ run.generations|join(', ') }}">{{ run.generations|join(', ') }}</td>
+                    <td class="py-2.5 text-center">
+                      {% if run.best and run.best.mean_dbi_after_ga is not none %}
+                      <span class="inline-flex bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full text-[10px]">
+                        {{ "%.4f"|format(run.best.mean_dbi_after_ga) }}
+                      </span>
+                      {% else %}
+                      <span class="text-slate-300">—</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-2.5 text-center">
+                      {% if run.best and run.best.mean_silhouette is not none %}
+                      <span class="inline-flex bg-blue-50 text-blue-800 font-bold px-2 py-0.5 rounded-full text-[10px]">
+                        {{ "%.4f"|format(run.best.mean_silhouette) }}
+                      </span>
+                      {% else %}
+                      <span class="text-slate-300">—</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-2.5 text-center">
+                      <a href="{{ url_for('model.download_tuning_excel', run_name=run.run_name) }}"
+                        title="Unduh Excel hasil tuning {{ run.run_name }}"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[10px] font-bold shadow-sm transition duration-150 whitespace-nowrap">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 3v12"/>
+                        </svg>
+                        Excel
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+        {% endif %}
       </section>
+
 
       <!-- Tabel -->
       <div class="max-h-[720px] overflow-auto rounded-2xl shadow-2xl border border-emerald-50 bg-white">
@@ -780,6 +870,9 @@
     const tuningBar = document.getElementById('tuning-bar');
     const tuningDetail = document.getElementById('tuning-detail');
     const applyBestStatus = document.getElementById('apply-best-status');
+    const cancelTuningBtnWrap = document.getElementById('cancel-tuning-btn-wrap');
+    const cancelTuningBtn = document.getElementById('cancel-tuning-btn');
+    let currentJobId = null;
     let tuningPollTimer = null;
 
     function updateActiveTrainingConfig(config) {
@@ -798,6 +891,9 @@
     }
 
     function updateTuningStatus(data) {
+      if (data.job_id) {
+        currentJobId = data.job_id;
+      }
       tuningStatus?.classList.remove('hidden');
       const percent = Math.max(0, Math.min(100, Number(data.percent || 0)));
       if (tuningBar) tuningBar.style.width = `${percent}%`;
@@ -809,15 +905,25 @@
         const output = data.output_dir ? ` · ${data.output_dir}` : '';
         tuningDetail.textContent = `${completed}/${total} eksperimen${output}`;
       }
-      if (data.status === 'completed' || data.status === 'failed') {
+
+      if (data.status === 'running' || data.status === 'pending') {
+        if (cancelTuningBtnWrap) cancelTuningBtnWrap.classList.remove('hidden');
+      } else {
+        if (cancelTuningBtnWrap) cancelTuningBtnWrap.classList.add('hidden');
+      }
+
+      if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
         if (startTuningBtn) startTuningBtn.disabled = false;
         if (data.status === 'completed' && tuningMessage) {
           const best = data.best || {};
           tuningMessage.textContent = `Tuning selesai. Best DBI=${best.mean_dbi_after_ga ?? '-'}, Silhouette=${best.mean_silhouette ?? '-'}`;
+        } else if (data.status === 'cancelled' && tuningMessage) {
+          tuningMessage.textContent = 'Tuning dibatalkan oleh pengguna.';
         }
         if (tuningPollTimer) clearInterval(tuningPollTimer);
       }
     }
+
 
     applyBestTuningBtn?.addEventListener('click', async () => {
       if (!confirm('Terapkan konfigurasi best tuning terbaru sebagai default training untuk upload berikutnya?')) return;
@@ -877,6 +983,29 @@
         startTuningBtn.disabled = false;
       }
     });
+
+    cancelTuningBtn?.addEventListener('click', async () => {
+      if (!currentJobId) return;
+      if (!confirm('Apakah Anda yakin ingin membatalkan proses tuning ini?')) return;
+      cancelTuningBtn.disabled = true;
+      try {
+        const response = await fetch(`/tuning/cancel/${currentJobId}`, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Gagal membatalkan tuning.');
+        if (tuningMessage) tuningMessage.textContent = 'Tuning dibatalkan oleh pengguna.';
+        if (tuningPollTimer) clearInterval(tuningPollTimer);
+        if (startTuningBtn) startTuningBtn.disabled = false;
+        if (cancelTuningBtnWrap) cancelTuningBtnWrap.classList.add('hidden');
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        cancelTuningBtn.disabled = false;
+      }
+    });
+
 
     {% if current_tuning %}
     tuningStatus?.classList.remove('hidden');
