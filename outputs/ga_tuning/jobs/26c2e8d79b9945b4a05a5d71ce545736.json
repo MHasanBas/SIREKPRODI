@@ -1,0 +1,13 @@
+{
+  "job_id": "26c2e8d79b9945b4a05a5d71ce545736",
+  "status": "cancelled",
+  "percent": 12,
+  "message": "Tuning dibatalkan oleh pengguna.",
+  "output_dir": "outputs/ga_tuning/run_20260628_141420",
+  "data_path": "models/model_36/data_gabungan_clean.pkl",
+  "completed_runs": 621,
+  "total_runs": 4860,
+  "current_combo": "pop=10, gen=20, mut=(0.3/0.2/0.15), stagnant=10",
+  "pid": 33681,
+  "updated_at": "2026-06-28T15:44:12+07:00"
+}

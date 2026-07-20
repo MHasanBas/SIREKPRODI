@@ -9,6 +9,7 @@ from routes.auth import auth_bp
 from routes.upload import upload_bp
 from routes.dashboard import dashboard_bp
 from routes.model import model_bp
+from routes.event import event_bp
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or secrets.token_hex(32)
@@ -27,6 +28,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(upload_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(model_bp)
+app.register_blueprint(event_bp)
 
 
 @app.before_request

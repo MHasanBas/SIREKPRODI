@@ -35,9 +35,9 @@ def main():
     with open(os.path.join(new_model_path, "data_gabungan_clean.pkl"), "wb") as f:
         pickle.dump(df, f)
 
-    # 5. Run K-Means training with K=3 (manual selection)
+    # 5. Run K-Means training with Elbow Method (optimal K)
     print("Starting K-Means + GA training. This might take a moment...")
-    jalankan_kmeans(df, n_clusters=3, save_path=new_model_path)
+    jalankan_kmeans(df, n_clusters=None, save_path=new_model_path)
 
     # 6. Set new model as active
     with open("models/active_model.txt", "w") as f:

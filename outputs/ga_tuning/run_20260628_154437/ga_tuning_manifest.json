@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-06-28T18:12:34+07:00",
+  "data_path": "models/model_36/data_gabungan_clean.pkl",
+  "n_data_rows": 9398,
+  "n_executions": 480,
+  "n_clusters": 3,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "pop_sizes": [
+    20,
+    30,
+    50
+  ],
+  "generations": [
+    25,
+    50
+  ],
+  "early_mutation_rates": [
+    0.5,
+    0.3
+  ],
+  "mid_mutation_rates": [
+    0.3,
+    0.25
+  ],
+  "late_mutation_rates": [
+    0.1,
+    0.15
+  ],
+  "mutation_mode": "phase_schedule",
+  "max_stagnants": [
+    5,
+    10
+  ],
+  "output_dir": "outputs/ga_tuning/run_20260628_154437",
+  "notes": [
+    "Pipeline tuning memakai _run_kmeans_single dari clustering.kmeans_module.",
+    "Adaptive mutation schedule dituning eksplisit per fase: early, mid, dan late mutation rate.",
+    "Baseline KMeans di pipeline memakai random_state tetap 42, bukan seed tuning per run."
+  ],
+  "best_config": {
+    "rank": 1.0,
+    "population_size": 50.0,
+    "generations": 50.0,
+    "early_mutation_rate": 0.5,
+    "mid_mutation_rate": 0.3,
+    "late_mutation_rate": 0.15,
+    "mutation_rate": 0.15,
+    "max_stagnant": 10.0,
+    "n_runs": 5.0,
+    "mean_runtime_seconds": 31.5193,
+    "std_runtime_seconds": 0.5965,
+    "mean_dbi_before_ga": 0.5599,
+    "std_dbi_before_ga": 0.0,
+    "mean_dbi_after_ga": 0.5419,
+    "std_dbi_after_ga": 0.0,
+    "mean_dbi_improvement_pct": 3.218,
+    "std_dbi_improvement_pct": 0.0098,
+    "mean_silhouette": 0.5228,
+    "std_silhouette": 0.0,
+    "mean_ch_score": 577.9599,
+    "std_ch_score": 0.0403,
+    "best_single_run_dbi": 0.5418,
+    "best_single_run_silhouette": 0.5228
+  },
+  "files": {
+    "per_run_csv": "outputs/ga_tuning/run_20260628_154437/ga_tuning_per_run.csv",
+    "summary_csv": "outputs/ga_tuning/run_20260628_154437/ga_tuning_summary.csv",
+    "summary_xlsx": "outputs/ga_tuning/run_20260628_154437/ga_tuning_results.xlsx",
+    "manifest_json": "outputs/ga_tuning/run_20260628_154437/ga_tuning_manifest.json"
+  }
+}

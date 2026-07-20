@@ -1,10 +1,10 @@
 {
-  "population_size": 30,
-  "generations": 10,
-  "mutation_rate": 0.1,
-  "early_mutation_rate": 0.1,
-  "mid_mutation_rate": 0.1,
-  "late_mutation_rate": 0.1,
-  "max_stagnant": 8,
-  "hyperparameter_source": "run_20260526_133404_rank_1"
+  "population_size": 50,
+  "generations": 50,
+  "mutation_rate": 0.15,
+  "early_mutation_rate": 0.5,
+  "mid_mutation_rate": 0.3,
+  "late_mutation_rate": 0.15,
+  "max_stagnant": 10,
+  "hyperparameter_source": "run_20260628_154437_rank_1"
 }

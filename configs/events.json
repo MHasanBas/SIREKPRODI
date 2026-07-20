@@ -1,0 +1,18 @@
+[
+  {
+    "id": "evt_2aff567b1974",
+    "nama": "expo",
+    "tanggal": "2026-06-30",
+    "lokasi": "malang",
+    "keterangan": "",
+    "tipe_sasaran": "sekolah",
+    "sekolah": [
+      "SMKN 4 MALANG",
+      "SMKN 5 MALANG",
+      "SMKN 6 MALANG"
+    ],
+    "prodi": [],
+    "dibuat_pada": "2026-06-28T11:06:28+07:00",
+    "diperbarui_pada": "2026-06-28T11:06:28+07:00"
+  }
+]

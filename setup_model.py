@@ -14,8 +14,8 @@ df = proses_upload_data('uploads')
 model_folder = 'models/model_utama'
 os.makedirs(model_folder, exist_ok=True)
 
-# 2. Run K-Means with fixed K=3
-jalankan_kmeans(df, n_clusters=3, save_path=model_folder)
+# 2. Run K-Means with Elbow Method (optimal K)
+jalankan_kmeans(df, n_clusters=None, save_path=model_folder)
 with open(os.path.join(model_folder, "data_gabungan_clean.pkl"), "wb") as f:
     pickle.dump(df, f)
 
@@ -23,7 +23,7 @@ with open(os.path.join(model_folder, "data_gabungan_clean.pkl"), "wb") as f:
 meta = {
     "nama_data": "Dataset Mhs Polinema 1",
     "uploaded_at": datetime.now(ZoneInfo("Asia/Jakarta")).isoformat(timespec="seconds"),
-    "k_selection": "manual_k_3",
+    "k_selection": "elbow",
 }
 with open(os.path.join(model_folder, "meta.json"), "w") as f:
     json.dump(meta, f)

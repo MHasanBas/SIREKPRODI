@@ -34,14 +34,16 @@ def write_state(job_id, payload):
 
 # ── Konfigurasi Grid Tuning (ubah di sini untuk mengubah tombol UI) ──────────
 UI_TUNING_CONFIG = {
-    "seeds":               "42,43,44",
-    "pop_sizes":           "10,20,30",
-    "generations":         "10,25",
-    "early_mutation_rates": "0.2,0.28",
-    "mid_mutation_rates":   "0.1,0.14",
-    "late_mutation_rates":  "0.01,0.05",
-    "max_stagnants":        "5,8",
+    "seeds":               "42,43,44,45,46",
+    "pop_sizes":           "20,30,50",
+    "generations":         "25,50",
+    "early_mutation_rates": "0.5,0.3",
+    "mid_mutation_rates":   "0.3,0.25",
+    "late_mutation_rates":  "0.1,0.15",
+    "max_stagnants":        "5,10",
 }
+
+
 
 
 def compute_total_runs(config):

@@ -39,12 +39,12 @@ TUNING_PRESETS = {
     },
     "full": {
         "seeds": "42,43,44,45,46",
-        "pop_sizes": "10,20,30",
-        "generations": "10,25,50",
-        "early_mutation_rates": "0.2,0.28,0.35",
-        "mid_mutation_rates": "0.1,0.14,0.2",
-        "late_mutation_rates": "0.01,0.05,0.1",
-        "max_stagnants": "5,8,12",
+        "pop_sizes": "20,30,50",
+        "generations": "25,50",
+        "early_mutation_rates": "0.5,0.3",
+        "mid_mutation_rates": "0.3,0.25",
+        "late_mutation_rates": "0.1,0.15",
+        "max_stagnants": "5,10",
     },
 }
 

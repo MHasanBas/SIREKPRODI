@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="SIREKPRODI — Manajemen event promosi universitas dengan sasaran multi-sekolah dan multi-program studi." />
+  <title>Sistem Event — SIREKPRODI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+
+  <style>
+    /* ── Multi-Select Dropdown Custom Styling ───────────────────────────── */
+    .ms-wrapper { position: relative; }
+    .ms-trigger {
+      width: 100%;
+      min-height: 42px;
+      padding: 6px 36px 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      background: #f8fafc;
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      font-size: 13px;
+      color: #64748b;
+      transition: border-color .15s, box-shadow .15s;
+      text-align: left;
+      position: relative;
+    }
+    .ms-trigger:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
+    .ms-trigger .ms-chevron {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      color: #94a3b8; pointer-events: none; transition: transform .2s;
+    }
+    .ms-trigger.open .ms-chevron { transform: translateY(-50%) rotate(180deg); }
+    .ms-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;
+      border-radius: 6px; padding: 2px 6px; font-size: 11px; font-weight: 600;
+      max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ms-tag-remove {
+      cursor: pointer; color: #059669; font-size: 12px; line-height: 1;
+      flex-shrink: 0;
+    }
+    .ms-tag-remove:hover { color: #dc2626; }
+    .ms-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 10px 30px -5px rgba(0,0,0,0.12);
+      z-index: 500; max-height: 280px; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .ms-dropdown.hidden { display: none; }
+    .ms-search {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      flex-shrink: 0;
+    }
+    .ms-search input {
+      width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; background: #f8fafc;
+      outline: none; color: #1e293b;
+    }
+    .ms-search input:focus { border-color: #10b981; }
+    .ms-options {
+      overflow-y: auto; flex: 1;
+      padding: 4px 0;
+    }
+    .ms-option {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px; cursor: pointer; font-size: 12px; color: #374151;
+      transition: background .1s;
+    }
+    .ms-option:hover { background: #f0fdf4; }
+    .ms-option input[type=checkbox] { accent-color: #10b981; flex-shrink: 0; }
+    .ms-option.selected { background: #f0fdf4; font-weight: 600; color: #065f46; }
+    .ms-option.hidden-opt { display: none; }
+    .ms-empty {
+      padding: 16px 12px; text-align: center; color: #94a3b8; font-size: 12px;
+    }
+    .ms-actions {
+      display: flex; gap: 8px; padding: 8px 12px;
+      border-top: 1px solid #f1f5f9; flex-shrink: 0;
+    }
+    .ms-actions button {
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 6px; border: 1px solid #e2e8f0; cursor: pointer;
+      transition: background .1s;
+    }
+    .ms-actions .ms-select-all { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .ms-actions .ms-clear-all { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .ms-count {
+      background: #10b981; color: white; border-radius: 999px;
+      font-size: 10px; font-weight: 700; padding: 1px 6px; min-width: 18px;
+      text-align: center; flex-shrink: 0;
+    }
+
+    /* ── Event Card ─────────────────────────────────────── */
+    .event-card {
+      background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 20px; display: flex; flex-direction: column; gap: 12px;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .event-card:hover { box-shadow: 0 8px 24px -4px rgba(16,185,129,.12); border-color: #a7f3d0; }
+    .event-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600;
+      border: 1px solid;
+    }
+    .chip-school { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .chip-prodi  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .chip-more   { background: #f8fafc; color: #64748b; border-color: #e2e8f0; cursor: default; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── Modal: Tambah / Edit Event ─────────────────────────────────────── -->
+  <div id="eventModal"
+    class="hidden fixed inset-0 z-[200] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
+        <div>
+          <h3 id="modalTitle" class="text-base font-bold text-slate-900">Tambah Event Baru</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Tentukan sekolah sasaran dan prodi yang dipromosikan</p>
+        </div>
+        <button type="button" onclick="closeEventModal()"
+          class="h-8 w-8 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 flex items-center justify-center transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body (scrollable) -->
+      <div class="overflow-y-auto flex-1 px-6 py-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left Column: Form -->
+          <div class="lg:col-span-6 space-y-4">
+            <form id="eventForm" method="POST" action="{{ url_for('event.event_tambah') }}" class="space-y-4">
+              <input type="hidden" name="event_id" id="formEventId">
+
+              <!-- Nama Event -->
+              <div class="space-y-1.5">
+                <label for="formNama" class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Nama Event <span class="text-red-500">*</span></label>
+                <input type="text" id="formNama" name="nama" required
+                  class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+                  placeholder="Contoh: Expo Promosi Juli 2026, Kunjungan SMA Malang">
+              </div>
+
+              <!-- Tanggal + Lokasi -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label for="formTanggal" class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Tanggal</label>
+                  <input type="date" id="formTanggal" name="tanggal"
+                    class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                </div>
+                <div class="space-y-1.5">
+                  <label for="formLokasi" class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Lokasi</label>
+                  <input type="text" id="formLokasi" name="lokasi"
+                    class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+                    placeholder="Kota / Venue">
+                </div>
+              </div>
+
+              <!-- Tipe Sasaran / Metode Analisis -->
+              <div class="space-y-1.5 bg-slate-50 border border-slate-200/60 p-3.5 rounded-xl">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Fokus Rekomendasi Event</label>
+                <div class="flex flex-col sm:flex-row gap-3 mt-2">
+                  <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input type="radio" name="tipe_sasaran" value="sekolah" checked onchange="onTipeSasaranChange(this.value)" class="accent-emerald-500">
+                    <span>Input Sekolah Sasaran (Cari Rekomendasi Prodi)</span>
+                  </label>
+                  <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input type="radio" name="tipe_sasaran" value="prodi" onchange="onTipeSasaranChange(this.value)" class="accent-emerald-500">
+                    <span>Input Prodi Promosi (Cari Rekomendasi Sekolah)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Multi-Select: Sekolah Sasaran -->
+              <div class="space-y-1.5" id="input-sekolah-container">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide">
+                  Sekolah Sasaran
+                  <span class="text-[10px] font-normal text-slate-400 normal-case ml-1">(sekolah yang jadi target promosi — pilih satu atau lebih)</span>
+                </label>
+                <div class="ms-wrapper" id="ms-sekolah-wrapper">
+                  <button type="button" id="ms-sekolah-trigger" class="ms-trigger" onclick="toggleDropdown('sekolah')">
+                    <span id="ms-sekolah-placeholder" class="text-slate-400">Pilih sekolah sasaran…</span>
+                    <span id="ms-sekolah-tags" class="contents"></span>
+                    <span id="ms-sekolah-count" class="ms-count hidden"></span>
+                    <svg class="ms-chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div id="ms-sekolah-dropdown" class="ms-dropdown hidden">
+                    <div class="ms-search">
+                      <input type="text" id="ms-sekolah-search" placeholder="Cari nama sekolah sasaran…"
+                        oninput="filterOptions('sekolah', this.value)">
+                    </div>
+                    <div class="ms-options" id="ms-sekolah-options">
+                      {% if sekolah_list %}
+                        {% for sekolah in sekolah_list %}
+                        <label class="ms-option" data-value="{{ sekolah }}" data-lower="{{ sekolah|lower }}">
+                          <input type="checkbox" name="sekolah" value="{{ sekolah }}"
+                            onchange="onCheckChange('sekolah', this)">
+                          <span>{{ sekolah }}</span>
+                        </label>
+                        {% endfor %}
+                      {% else %}
+                        <div class="ms-empty">
+                          Belum ada data sekolah.<br>Upload dataset terlebih dahulu.
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="ms-actions">
+                      <button type="button" class="ms-select-all" onclick="selectAll('sekolah')">Pilih Semua</button>
+                      <button type="button" class="ms-clear-all" onclick="clearAll('sekolah')">Hapus Semua</button>
+                      <span id="ms-sekolah-counter" class="text-[11px] text-slate-400 ml-auto self-center">0 dipilih</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi-Select: Program Studi yang Dipromosikan -->
+              <div class="space-y-1.5 hidden" id="input-prodi-container">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide">
+                  Program Studi yang Dipromosikan
+                  <span class="text-[10px] font-normal text-slate-400 normal-case ml-1">(prodi yang ditawarkan di event ini — pilih satu atau lebih)</span>
+                </label>
+                <div class="ms-wrapper" id="ms-prodi-wrapper">
+                  <button type="button" id="ms-prodi-trigger" class="ms-trigger" onclick="toggleDropdown('prodi')">
+                    <span id="ms-prodi-placeholder" class="text-slate-400">Pilih prodi yang dipromosikan…</span>
+                    <span id="ms-prodi-tags" class="contents"></span>
+                    <span id="ms-prodi-count" class="ms-count hidden"></span>
+                    <svg class="ms-chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div id="ms-prodi-dropdown" class="ms-dropdown hidden">
+                    <div class="ms-search">
+                      <input type="text" id="ms-prodi-search" placeholder="Cari program studi…"
+                        oninput="filterOptions('prodi', this.value)">
+                    </div>
+                    <div class="ms-options" id="ms-prodi-options">
+                      {% if prodi_list %}
+                        {% for prodi in prodi_list %}
+                        <label class="ms-option" data-value="{{ prodi }}" data-lower="{{ prodi|lower }}">
+                          <input type="checkbox" name="prodi" value="{{ prodi }}"
+                            onchange="onCheckChange('prodi', this)">
+                          <span>{{ prodi }}</span>
+                        </label>
+                        {% endfor %}
+                      {% else %}
+                        <div class="ms-empty">
+                          Belum ada data program studi.<br>Upload dataset terlebih dahulu.
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="ms-actions">
+                      <button type="button" class="ms-select-all" onclick="selectAll('prodi')">Pilih Semua</button>
+                      <button type="button" class="ms-clear-all" onclick="clearAll('prodi')">Hapus Semua</button>
+                      <span id="ms-prodi-counter" class="text-[11px] text-slate-400 ml-auto self-center">0 dipilih</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Keterangan -->
+              <div class="space-y-1.5">
+                <label for="formKeterangan" class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Keterangan</label>
+                <textarea id="formKeterangan" name="keterangan" rows="3"
+                  class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition resize-none"
+                  placeholder="Contoh: Expo jurusan teknik, sasaran siswa kelas 12 IPA…"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right Column: Live Recommendations Panel -->
+          <div class="lg:col-span-6 flex flex-col border border-slate-200 rounded-2xl p-4 bg-slate-50/50 min-h-[460px] max-h-[500px]">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-3 flex-shrink-0">
+              <div>
+                <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Analisis Rekomendasi Pintar (Live)
+                </h4>
+                <p class="text-[10px] text-slate-500 mt-0.5">Analisis sasaran berdasarkan data alumni model klaster aktif</p>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-1.5 mb-3 bg-slate-200/50 p-1 rounded-xl flex-shrink-0">
+              <button type="button" id="recom-tab-prodi-btn" onclick="switchRecomTab('prodi')"
+                class="flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition-all">
+                Rekomendasi Prodi
+              </button>
+              <button type="button" id="recom-tab-sekolah-btn" onclick="switchRecomTab('sekolah')"
+                class="flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 transition-all">
+                Sekolah Sasaran
+              </button>
+            </div>
+
+            <!-- Tab Content: Prodi recommendations (based on selected schools) -->
+            <div id="recom-tab-prodi" class="flex-1 flex flex-col min-h-0">
+              <div id="recom-prodi-placeholder" class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400 gap-2">
+                <svg class="w-8 h-8 opacity-40 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <p class="text-xs font-medium">Pilih sekolah sasaran di sebelah kiri untuk melihat rekomendasi program studi terbaik.</p>
+              </div>
+              <div id="recom-prodi-list-container" class="hidden overflow-y-auto space-y-2 pr-1 flex-1">
+                <!-- dynamically loaded list -->
+              </div>
+            </div>
+
+            <!-- Tab Content: School recommendations (based on selected prodis) -->
+            <div id="recom-tab-sekolah" class="flex-1 flex flex-col min-h-0 hidden">
+              <div id="recom-sekolah-placeholder" class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400 gap-2">
+                <svg class="w-8 h-8 opacity-40 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <p class="text-xs font-medium">Pilih program studi di sebelah kiri untuk melihat rekomendasi sekolah sasaran terbaik.</p>
+              </div>
+              <div id="recom-sekolah-list-container" class="hidden overflow-y-auto space-y-2 pr-1 flex-1">
+                <!-- dynamically loaded list -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0 bg-slate-50/50">
+        <button type="button" onclick="closeEventModal()" class="btn-ghost text-sm">Batal</button>
+        <button type="button" onclick="submitEventForm()" id="modalSubmitBtn"
+          class="btn-main text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span id="modalSubmitLabel">Simpan Event</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal konfirmasi hapus -->
+  <div id="confirm-modal"
+    class="hidden fixed inset-0 z-[200] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4 mb-20">
+      <div class="flex items-start gap-3">
+        <div id="confirm-icon"
+          class="h-10 w-10 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <div class="space-y-0.5">
+          <h3 id="confirm-title" class="text-base font-bold text-slate-900">Konfirmasi</h3>
+          <p id="confirm-message" class="text-sm text-slate-500">Apakah Anda yakin?</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel" type="button" class="btn-ghost text-sm">Batal</button>
+        <form id="hapus-form" method="POST" action="#" class="inline">
+          <button type="submit" class="btn-danger text-sm">Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-anchor"></div>
+
+  <div class="app-container">
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="h-10 w-10 rounded-xl brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-brand">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+        </div>
+        <span class="sidebar-brand-text">SIREKPRODI</span>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">MENU</p>
+        <nav class="sidebar-nav">
+          {% set current = request.endpoint %}
+          <a href="{{ url_for('dashboard.dashboard') }}"
+            class="sidebar-item {% if current == 'dashboard.dashboard' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            Dashboard
+          </a>
+          <a href="{{ url_for('dashboard.data_cluster') }}"
+            class="sidebar-item {% if current == 'dashboard.data_cluster' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            Data Cluster
+          </a>
+          <a href="{{ url_for('upload.upload') }}"
+            class="sidebar-item {% if current == 'upload.upload' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            Upload
+          </a>
+          <a href="{{ url_for('model.pelatihan_model') }}"
+            class="sidebar-item {% if current == 'model.pelatihan_model' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            Pelatihan Model
+          </a>
+          <a href="{{ url_for('event.event_list') }}"
+            class="sidebar-item {% if current == 'event.event_list' %}is-active{% endif %}">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            Event
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section mt-auto">
+        <p class="sidebar-label">OTHER</p>
+        <nav class="sidebar-nav">
+          <a href="{{ url_for('auth.logout') }}" class="sidebar-item nav-danger" data-confirm
+            data-confirm-title="Konfirmasi Logout"
+            data-confirm-message="Anda akan keluar dari dashboard. Pastikan pekerjaan sudah tersimpan."
+            data-confirm-accent="red">
+            <div class="sidebar-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            Logout
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ─────────────────────────────────────────── -->
+    <main class="main-content animate-page-in">
+      <div class="main-content-inner">
+
+        <!-- ── Top Bar ────────────────────────────────────────────── -->
+        <div class="top-bar">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Sistem Event</h1>
+            <p class="text-slate-500 font-medium">Kelola event promosi dan sekolah sasaran</p>
+          </div>
+          <div class="flex items-center gap-6">
+            <div class="relative">
+              <button id="profileDropdownBtn" class="flex items-center gap-3 focus:outline-none group">
+                <div class="text-right hidden md:block">
+                  <p class="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Admin SIREK</p>
+                  <p class="text-[10px] font-medium text-slate-400">Petugas Promosi</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden group-hover:border-emerald-200 transition-all">
+                  <img src="https://ui-avatars.com/api/?name=Admin+Sirek&background=10b981&color=fff" alt="Avatar">
+                </div>
+              </button>
+              <div id="profileDropdownMenu"
+                class="hidden absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[300]">
+                <a href="{{ url_for('auth.logout') }}" data-confirm data-confirm-title="Logout"
+                  data-confirm-message="Yakin ingin keluar?"
+                  class="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for category, message in messages %}
+          <div class="px-4 py-3 rounded-xl text-sm font-medium border flex items-center gap-2
+            {% if category == 'error' %}bg-red-50 text-red-700 border-red-200
+            {% elif category == 'success' %}bg-emerald-50 text-emerald-700 border-emerald-200
+            {% else %}bg-slate-50 text-slate-700 border-slate-200{% endif %}">
+            {% if category == 'success' %}
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {% elif category == 'error' %}
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {% endif %}
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- ── Summary Strip ─────────────────────────────────────── -->
+        <section class="summary-strip mb-6">
+          <div class="summary-main">
+            <p class="summary-kicker">Kelola Kegiatan Promosi</p>
+            <h2 class="summary-title">Event & Sasaran Sekolah</h2>
+            <p class="summary-copy">Satu event (misal: expo, kunjungan) dapat menargetkan beberapa sekolah sasaran dan beberapa program studi sekaligus.</p>
+          </div>
+          <div class="summary-stat">
+            <p class="summary-label">Total Event</p>
+            <p class="summary-value">{{ total_events }}</p>
+            <p class="summary-subvalue">Tersimpan</p>
+          </div>
+          <div class="summary-stat">
+            <p class="summary-label">Sekolah Tersedia</p>
+            <p class="summary-value">{{ sekolah_list|length }}</p>
+            <p class="summary-subvalue">Dari dataset aktif</p>
+          </div>
+          <div class="summary-stat">
+            <p class="summary-label">Prodi Tersedia</p>
+            <p class="summary-value">{{ prodi_list|length }}</p>
+            <p class="summary-subvalue">Dari dataset aktif</p>
+          </div>
+        </section>
+
+        <!-- ── Action Bar ─────────────────────────────────────────── -->
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">
+              Daftar Event
+              {% if total_events > 0 %}
+              <span class="ml-2 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">{{ total_events }}</span>
+              {% endif %}
+            </p>
+          </div>
+          <button type="button" id="btnTambahEvent" onclick="openAddModal()"
+            class="btn-main text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Event
+          </button>
+        </div>
+
+        <!-- ── Event Cards Grid ───────────────────────────────────── -->
+        {% if events %}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="eventGrid">
+          {% for evt in events %}
+          <div class="event-card group" id="card-{{ evt.id }}">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-bold text-slate-900 leading-snug truncate text-[15px]" title="{{ evt.nama }}">{{ evt.nama }}</h3>
+                <div class="flex items-center gap-3 mt-1 flex-wrap">
+                  {% if evt.tanggal %}
+                  <span class="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {{ evt.tanggal }}
+                  </span>
+                  {% endif %}
+                  {% if evt.lokasi %}
+                  <span class="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {{ evt.lokasi }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="flex gap-1.5 flex-shrink-0">
+                <button type="button" title="Edit event"
+                  onclick='openEditModal({{ evt | tojson | safe }})'
+                  class="h-7 w-7 rounded-lg border border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 flex items-center justify-center transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button type="button" title="Hapus event"
+                  onclick="confirmHapus('{{ evt.id }}', '{{ evt.nama | replace("'", "\\'") }}')"
+                  class="h-7 w-7 rounded-lg border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tipe Sasaran Label -->
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border
+                {% if evt.tipe_sasaran == 'sekolah' %}bg-blue-50 text-blue-700 border-blue-100
+                {% else %}bg-emerald-50 text-emerald-700 border-emerald-100{% endif %}">
+                Fokus: {% if evt.tipe_sasaran == 'sekolah' %}Sekolah Sasaran{% else %}Prodi Promosi{% endif %}
+              </span>
+            </div>
+
+            <!-- Sekolah Chips (If input is Sekolah) -->
+            {% if evt.tipe_sasaran == 'sekolah' and evt.sekolah %}
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                Sekolah Sasaran
+                <span class="ml-1 font-bold text-blue-600">({{ evt.sekolah|length }})</span>
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for s in evt.sekolah[:5] %}
+                <span class="event-chip chip-school" title="{{ s }}">{{ s[:28] }}{% if s|length > 28 %}…{% endif %}</span>
+                {% endfor %}
+                {% if evt.sekolah|length > 5 %}
+                <span class="event-chip chip-more">+{{ evt.sekolah|length - 5 }} sekolah</span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Top Recommended Prodi for these schools -->
+            {% if evt.rekomendasi_prodi %}
+            <div class="bg-slate-50 border border-slate-100/80 rounded-xl p-3">
+              <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block mb-2">Rekomendasi Prodi Terbaik (Top 3)</span>
+              <div class="space-y-1.5">
+                {% for rp in evt.rekomendasi_prodi %}
+                <div class="flex items-center justify-between text-[11px] text-slate-700 font-medium">
+                  <span class="truncate max-w-[150px] font-semibold text-slate-800" title="{{ rp.prodi }}">{{ rp.prodi }}</span>
+                  <span class="text-[10px] text-slate-500">IPK: <strong class="text-slate-700 font-bold">{{ rp.ipk }}</strong> ({{ rp.mahasiswa }} mhs)</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- Program Studi Chips (If input is Prodi) -->
+            {% if evt.tipe_sasaran == 'prodi' and evt.prodi %}
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prodi Dipromosikan</p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for p in evt.prodi[:4] %}
+                <span class="event-chip chip-prodi" title="{{ p }}">{{ p[:30] }}{% if p|length > 30 %}…{% endif %}</span>
+                {% endfor %}
+                {% if evt.prodi|length > 4 %}
+                <span class="event-chip chip-more">+{{ evt.prodi|length - 4 }} lainnya</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Top Recommended Schools for these prodis -->
+            {% if evt.rekomendasi_sekolah %}
+            <div class="bg-slate-50 border border-slate-100/80 rounded-xl p-3">
+              <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block mb-2">Rekomendasi Sekolah Sasaran (Top 3)</span>
+              <div class="space-y-1.5">
+                {% for rs in evt.rekomendasi_sekolah %}
+                <div class="flex items-center justify-between text-[11px] text-slate-700 font-medium">
+                  <span class="truncate max-w-[150px] font-semibold text-slate-800" title="{{ rs.sekolah }}">{{ rs.sekolah }}</span>
+                  <span class="text-[10px] text-slate-500">IPK: <strong class="text-slate-700 font-bold">{{ rs.ipk }}</strong> ({{ rs.kota }})</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- Keterangan -->
+            {% if evt.keterangan %}
+            <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{{ evt.keterangan }}</p>
+            {% endif %}
+
+            <!-- Footer & Analysis Expandable section -->
+            <div class="border-t border-slate-100 pt-3 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-400">
+                  Dibuat: {{ evt.dibuat_pada[:10] if evt.dibuat_pada else '—' }}
+                </span>
+                <div class="flex gap-3 text-[11px] font-semibold">
+                  <span class="text-slate-500">{{ evt.sekolah|length }} sekolah</span>
+                  <span class="text-slate-300">•</span>
+                  <span class="text-slate-500">{{ evt.prodi|length }} prodi</span>
+                </div>
+              </div>
+
+              <!-- Live recommendation toggle button -->
+              <div class="flex gap-2">
+                <button type="button" onclick='toggleCardRecom(this, "{{ evt.id }}", {{ evt.sekolah | tojson | safe }}, {{ evt.prodi | tojson | safe }})'
+                  class="flex-1 py-1.5 px-3 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 flex items-center justify-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span>Analisis Rekomendasi</span>
+                  <svg class="w-3 h-3 text-slate-400 chevron-icon transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Collapsible recommendations section -->
+              <div id="card-recom-{{ evt.id }}" class="hidden border-t border-slate-100 pt-3 space-y-3">
+                <div class="space-y-2">
+                  <div class="flex gap-2.5 border-b border-slate-100 pb-1.5 flex-shrink-0">
+                    <span class="text-[10px] font-extrabold text-slate-700 uppercase tracking-widest">
+                      {% if evt.tipe_sasaran == 'sekolah' %}
+                        Analisis Rekomendasi Program Studi
+                      {% else %}
+                        Analisis Rekomendasi Sekolah Sasaran
+                      {% endif %}
+                    </span>
+                  </div>
+                  
+                  {% if evt.tipe_sasaran == 'sekolah' %}
+                  <!-- Tab content: Prodi -->
+                  <div id="card-tab-prodi-{{ evt.id }}" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    <div class="text-[10px] text-slate-400 text-center py-3">Memuat rekomendasi prodi...</div>
+                  </div>
+                  {% else %}
+                  <!-- Tab content: Sekolah -->
+                  <div id="card-tab-sekolah-{{ evt.id }}" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    <div class="text-[10px] text-slate-400 text-center py-3">Memuat rekomendasi sekolah...</div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="card flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div class="h-16 w-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-base font-bold text-slate-800">Belum ada event</p>
+            <p class="text-sm text-slate-400 mt-1">Klik tombol <strong>Tambah Event</strong> untuk mulai membuat kegiatan promosi.</p>
+          </div>
+          <button type="button" onclick="openAddModal()" class="btn-main text-sm mt-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Event Pertama
+          </button>
+        </div>
+        {% endif %}
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ─── JavaScript ──────────────────────────────────────────────────────── -->
+  <script>
+    // ═══ Multi-Select State ═══════════════════════════════════════════════════
+    const msState = {
+      sekolah: new Set(),
+      prodi: new Set(),
+    };
+
+    function findCheckbox(key, value) {
+      const inputs = document.querySelectorAll(`#ms-${key}-options input[type="checkbox"]`);
+      for (let input of inputs) {
+        if (input.value === value) {
+          return input;
+        }
+      }
+      return null;
+    }
+
+    function toggleDropdown(key) {
+      const dropdown = document.getElementById(`ms-${key}-dropdown`);
+      const trigger  = document.getElementById(`ms-${key}-trigger`);
+      const isOpen   = !dropdown.classList.contains('hidden');
+
+      // Close all dropdowns first
+      ['sekolah', 'prodi'].forEach(k => {
+        document.getElementById(`ms-${k}-dropdown`).classList.add('hidden');
+        document.getElementById(`ms-${k}-trigger`).classList.remove('open');
+      });
+
+      if (!isOpen) {
+        dropdown.classList.remove('hidden');
+        trigger.classList.add('open');
+        // Focus search input
+        const search = document.getElementById(`ms-${key}-search`);
+        if (search) setTimeout(() => search.focus(), 50);
+      }
+    }
+
+    function filterOptions(key, query) {
+      const q = query.toLowerCase().trim();
+      const options = document.querySelectorAll(`#ms-${key}-options .ms-option`);
+      let visibleCount = 0;
+      options.forEach(opt => {
+        const lower = opt.getAttribute('data-lower') || '';
+        if (!q || lower.includes(q)) {
+          opt.classList.remove('hidden-opt');
+          visibleCount++;
+        } else {
+          opt.classList.add('hidden-opt');
+        }
+      });
+      const emptyEl = document.querySelector(`#ms-${key}-options .ms-empty`);
+      if (emptyEl) emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    function onCheckChange(key, checkbox) {
+      const value = checkbox.value;
+      const optEl = checkbox.closest('.ms-option');
+      if (checkbox.checked) {
+        msState[key].add(value);
+        optEl?.classList.add('selected');
+      } else {
+        msState[key].delete(value);
+        optEl?.classList.remove('selected');
+      }
+      renderTags(key);
+      fetchRecommendations();
+    }
+
+    function renderTags(key) {
+      const set = msState[key];
+      const tagContainer = document.getElementById(`ms-${key}-tags`);
+      const placeholder  = document.getElementById(`ms-${key}-placeholder`);
+      const countBadge   = document.getElementById(`ms-${key}-count`);
+      const counter      = document.getElementById(`ms-${key}-counter`);
+
+      // Clear existing tags
+      tagContainer.innerHTML = '';
+
+      if (set.size === 0) {
+        placeholder.classList.remove('hidden');
+        countBadge.classList.add('hidden');
+      } else {
+        placeholder.classList.add('hidden');
+        // Show first 3 as tags, rest as count badge
+        const items = [...set];
+        const showItems = items.slice(0, 3);
+        const remaining = items.length - showItems.length;
+
+        showItems.forEach(val => {
+          const tag = document.createElement('span');
+          tag.className = 'ms-tag';
+          tag.title = val;
+          const label = val.length > 20 ? val.slice(0, 19) + '…' : val;
+          tag.innerHTML = `${label} <span class="ms-tag-remove" onclick="removeTag(event,'${key}','${val.replace(/'/g,"\\'")}')">×</span>`;
+          tagContainer.appendChild(tag);
+        });
+
+        if (remaining > 0) {
+          countBadge.textContent = `+${remaining}`;
+          countBadge.classList.remove('hidden');
+        } else {
+          countBadge.classList.add('hidden');
+        }
+      }
+      if (counter) counter.textContent = `${set.size} dipilih`;
+    }
+
+    function removeTag(event, key, value) {
+      event.stopPropagation();
+      const cb = findCheckbox(key, value);
+      if (cb) { cb.checked = false; cb.closest('.ms-option')?.classList.remove('selected'); }
+      msState[key].delete(value);
+      renderTags(key);
+      fetchRecommendations();
+    }
+
+    function selectAll(key) {
+      document.querySelectorAll(`#ms-${key}-options .ms-option:not(.hidden-opt) input[type=checkbox]`).forEach(cb => {
+        cb.checked = true;
+        msState[key].add(cb.value);
+        cb.closest('.ms-option')?.classList.add('selected');
+      });
+      renderTags(key);
+      fetchRecommendations();
+    }
+
+    function clearAll(key) {
+      document.querySelectorAll(`#ms-${key}-options input[type=checkbox]`).forEach(cb => {
+        cb.checked = false;
+        cb.closest('.ms-option')?.classList.remove('selected');
+      });
+      msState[key].clear();
+      renderTags(key);
+      fetchRecommendations();
+    }
+
+    // ═══ Live Recommendations API & UI Handling ══════════════════════════════
+    async function fetchRecommendations() {
+      const selectedSchools = [...msState.sekolah];
+      const selectedProdis  = [...msState.prodi];
+
+      const recomProdiPlaceholder = document.getElementById('recom-prodi-placeholder');
+      const recomProdiList        = document.getElementById('recom-prodi-list-container');
+      const recomSekolahPlaceholder = document.getElementById('recom-sekolah-placeholder');
+      const recomSekolahList        = document.getElementById('recom-sekolah-list-container');
+
+      if (selectedSchools.length === 0) {
+        recomProdiPlaceholder.classList.remove('hidden');
+        recomProdiList.classList.add('hidden');
+      } else {
+        recomProdiPlaceholder.classList.add('hidden');
+        recomProdiList.classList.remove('hidden');
+      }
+
+      if (selectedProdis.length === 0) {
+        recomSekolahPlaceholder.classList.remove('hidden');
+        recomSekolahList.classList.add('hidden');
+      } else {
+        recomSekolahPlaceholder.classList.add('hidden');
+        recomSekolahList.classList.remove('hidden');
+      }
+
+      if (selectedSchools.length === 0 && selectedProdis.length === 0) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/event/recommendations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sekolah: selectedSchools, prodi: selectedProdis })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          renderProdiRecommendations(data.prodi_recommendations);
+          renderSekolahRecommendations(data.sekolah_recommendations);
+        }
+      } catch (err) {
+        console.error('Failed to fetch recommendations:', err);
+      }
+    }
+
+    function renderProdiRecommendations(recoms) {
+      const container = document.getElementById('recom-prodi-list-container');
+      container.innerHTML = '';
+      if (!recoms || recoms.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 p-4 text-center">Tidak ada rekomendasi prodi dari sekolah terpilih.</div>';
+        return;
+      }
+      recoms.forEach(item => {
+        const isSelected = msState.prodi.has(item.prodi);
+        const row = document.createElement('div');
+        row.className = `p-3 rounded-xl border flex items-center justify-between gap-3 text-xs bg-white transition-all ${isSelected ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200/60 hover:border-slate-300'}`;
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="font-bold text-slate-800 truncate">${item.prodi}</div>
+            <div class="flex items-center gap-2.5 text-[10px] text-slate-500 mt-1 flex-wrap font-medium">
+              <span>Rata IPK: <strong class="text-slate-700">${item.ipk.toFixed(2)}</strong></span>
+              <span>Alumni: <strong class="text-slate-700">${item.mahasiswa}</strong></span>
+              <span class="text-slate-300">•</span>
+              <span>Poin: Akd ${item.poin_akademik} / Non-Akd ${item.poin_non_akademik}</span>
+            </div>
+          </div>
+          <button type="button" class="btn-ghost shrink-0 !text-xs !py-1 !px-2.5 ${isSelected ? '!text-red-600 hover:!bg-red-50' : '!text-emerald-700 hover:!bg-emerald-50'}"
+            onclick="toggleRecomSelection('prodi', '${item.prodi.replace(/'/g, "\\'")}', ${!isSelected})">
+            ${isSelected ? 'Hapus' : 'Tambah'}
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderSekolahRecommendations(recoms) {
+      const container = document.getElementById('recom-sekolah-list-container');
+      container.innerHTML = '';
+      if (!recoms || recoms.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 p-4 text-center">Tidak ada rekomendasi sekolah dari prodi terpilih.</div>';
+        return;
+      }
+      recoms.forEach(item => {
+        const isSelected = msState.sekolah.has(item.sekolah);
+        const row = document.createElement('div');
+        row.className = `p-3 rounded-xl border flex items-center justify-between gap-3 text-xs bg-white transition-all ${isSelected ? 'border-blue-300 bg-blue-50/20' : 'border-slate-200/60 hover:border-slate-300'}`;
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="font-bold text-slate-800 truncate">${item.sekolah}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${item.kota}, ${item.provinsi}</div>
+            <div class="flex items-center gap-2.5 text-[10px] text-slate-500 mt-1 flex-wrap font-medium">
+              <span>Rata IPK: <strong class="text-slate-700">${item.ipk.toFixed(2)}</strong></span>
+              <span>Alumni: <strong class="text-slate-700">${item.mahasiswa}</strong></span>
+              <span class="text-slate-300">•</span>
+              <span>Poin: Akd ${item.poin_akademik} / Non-Akd ${item.poin_non_akademik}</span>
+            </div>
+          </div>
+          <button type="button" class="btn-ghost shrink-0 !text-xs !py-1 !px-2.5 ${isSelected ? '!text-red-600 hover:!bg-red-50' : '!text-blue-700 hover:!bg-blue-50'}"
+            onclick="toggleRecomSelection('sekolah', '${item.sekolah.replace(/'/g, "\\'")}', ${!isSelected})">
+            ${isSelected ? 'Hapus' : 'Tambah'}
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function toggleRecomSelection(key, value, toAdd) {
+      const cb = findCheckbox(key, value);
+      if (cb) {
+        cb.checked = toAdd;
+        if (toAdd) {
+          cb.closest('.ms-option')?.classList.add('selected');
+        } else {
+          cb.closest('.ms-option')?.classList.remove('selected');
+        }
+      }
+      if (toAdd) {
+        msState[key].add(value);
+      } else {
+        msState[key].delete(value);
+      }
+      renderTags(key);
+      fetchRecommendations();
+    }
+
+    let activeRecomTab = 'prodi';
+    function switchRecomTab(tab) {
+      activeRecomTab = tab;
+      const btnProdi = document.getElementById('recom-tab-prodi-btn');
+      const btnSekolah = document.getElementById('recom-tab-sekolah-btn');
+      const panelProdi = document.getElementById('recom-tab-prodi');
+      const panelSekolah = document.getElementById('recom-tab-sekolah');
+      
+      if (tab === 'prodi') {
+        btnProdi.className = 'flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm border border-slate-200/50 transition-all';
+        btnSekolah.className = 'flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-white/30 transition-all';
+        panelProdi.classList.remove('hidden');
+        panelSekolah.classList.add('hidden');
+      } else {
+        btnSekolah.className = 'flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm border border-slate-200/50 transition-all';
+        btnProdi.className = 'flex-1 text-center py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-white/30 transition-all';
+        panelSekolah.classList.remove('hidden');
+        panelProdi.classList.add('hidden');
+      }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', e => {
+      ['sekolah', 'prodi'].forEach(key => {
+        const wrapper = document.getElementById(`ms-${key}-wrapper`);
+        if (wrapper && !wrapper.contains(e.target)) {
+          document.getElementById(`ms-${key}-dropdown`).classList.add('hidden');
+          document.getElementById(`ms-${key}-trigger`).classList.remove('open');
+        }
+      });
+    });
+
+    // ═══ Target Type Toggle Handling ══════════════════════════════════════════
+    function onTipeSasaranChange(value) {
+      const containerSekolah = document.getElementById('input-sekolah-container');
+      const containerProdi   = document.getElementById('input-prodi-container');
+      const tabProdiBtn      = document.getElementById('recom-tab-prodi-btn');
+      const tabSekolahBtn    = document.getElementById('recom-tab-sekolah-btn');
+
+      if (value === 'sekolah') {
+        containerSekolah.classList.remove('hidden');
+        containerProdi.classList.add('hidden');
+        
+        // Hide unused tab in the live recommendations panel
+        tabProdiBtn.style.display = 'block';
+        tabSekolahBtn.style.display = 'none';
+        
+        clearAll('prodi');
+        switchRecomTab('prodi');
+      } else {
+        containerProdi.classList.remove('hidden');
+        containerSekolah.classList.add('hidden');
+        
+        // Hide unused tab in the live recommendations panel
+        tabSekolahBtn.style.display = 'block';
+        tabProdiBtn.style.display = 'none';
+        
+        clearAll('sekolah');
+        switchRecomTab('sekolah');
+      }
+    }
+
+    // ═══ Modal Management ═════════════════════════════════════════════════════
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Tambah Event Baru';
+      document.getElementById('modalSubmitLabel').textContent = 'Simpan Event';
+      document.getElementById('eventForm').action = '{{ url_for("event.event_tambah") }}';
+      document.getElementById('formEventId').value = '';
+      document.getElementById('formNama').value = '';
+      document.getElementById('formTanggal').value = '';
+      document.getElementById('formLokasi').value = '';
+      document.getElementById('formKeterangan').value = '';
+
+      // Reset target type radio button to default 'sekolah'
+      const radioSekolah = document.querySelector('input[name="tipe_sasaran"][value="sekolah"]');
+      if (radioSekolah) {
+        radioSekolah.checked = true;
+        onTipeSasaranChange('sekolah');
+      }
+
+      clearAll('sekolah');
+      clearAll('prodi');
+      
+      // Reset search filters
+      const ssearch = document.getElementById('ms-sekolah-search');
+      const psearch = document.getElementById('ms-prodi-search');
+      if (ssearch) { ssearch.value = ''; filterOptions('sekolah', ''); }
+      if (psearch) { psearch.value = ''; filterOptions('prodi', ''); }
+
+      document.getElementById('eventModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('formNama').focus(), 100);
+    }
+
+    function openEditModal(evt) {
+      document.getElementById('modalTitle').textContent = 'Edit Event';
+      document.getElementById('modalSubmitLabel').textContent = 'Simpan Perubahan';
+      document.getElementById('eventForm').action = `/event/edit/${evt.id}`;
+      document.getElementById('formEventId').value = evt.id;
+      document.getElementById('formNama').value = evt.nama || '';
+      document.getElementById('formTanggal').value = evt.tanggal || '';
+      document.getElementById('formLokasi').value = evt.lokasi || '';
+      document.getElementById('formKeterangan').value = evt.keterangan || '';
+
+      // Initialize radio button and show/hide fields based on tipe_sasaran
+      const tipe = evt.tipe_sasaran || 'sekolah';
+      const radioBtn = document.querySelector(`input[name="tipe_sasaran"][value="${tipe}"]`);
+      if (radioBtn) {
+        radioBtn.checked = true;
+      }
+      onTipeSasaranChange(tipe);
+
+      // Reset then set sekolah
+      clearAll('sekolah');
+      if (evt.sekolah && evt.sekolah.length > 0) {
+        evt.sekolah.forEach(s => {
+          const cb = findCheckbox('sekolah', s);
+          if (cb) { cb.checked = true; msState.sekolah.add(s); cb.closest('.ms-option')?.classList.add('selected'); }
+          else {
+            msState.sekolah.add(s);
+          }
+        });
+        renderTags('sekolah');
+      }
+
+      // Reset then set prodi
+      clearAll('prodi');
+      if (evt.prodi && evt.prodi.length > 0) {
+        evt.prodi.forEach(p => {
+          const cb = findCheckbox('prodi', p);
+          if (cb) { cb.checked = true; msState.prodi.add(p); cb.closest('.ms-option')?.classList.add('selected'); }
+          else { msState.prodi.add(p); }
+        });
+        renderTags('prodi');
+      }
+
+      // Reset search filters
+      const ssearch = document.getElementById('ms-sekolah-search');
+      const psearch = document.getElementById('ms-prodi-search');
+      if (ssearch) { ssearch.value = ''; filterOptions('sekolah', ''); }
+      if (psearch) { psearch.value = ''; filterOptions('prodi', ''); }
+
+      fetchRecommendations();
+
+      document.getElementById('eventModal').classList.remove('hidden');
+    }
+
+    function closeEventModal() {
+      document.getElementById('eventModal').classList.add('hidden');
+      // Close any open dropdowns
+      ['sekolah', 'prodi'].forEach(key => {
+        document.getElementById(`ms-${key}-dropdown`).classList.add('hidden');
+        document.getElementById(`ms-${key}-trigger`).classList.remove('open');
+      });
+    }
+
+    function submitEventForm() {
+      const form = document.getElementById('eventForm');
+      form.requestSubmit ? form.requestSubmit() : form.submit();
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeEventModal();
+        document.getElementById('confirm-modal').classList.add('hidden');
+      }
+    });
+
+    // ═══ Confirm Hapus ════════════════════════════════════════════════════════
+    function confirmHapus(eventId, eventNama) {
+      document.getElementById('confirm-title').textContent = 'Hapus Event';
+      document.getElementById('confirm-message').textContent =
+        `Yakin ingin menghapus event "${eventNama}"? Tindakan ini tidak dapat dibatalkan.`;
+      document.getElementById('hapus-form').action = `/event/hapus/${eventId}`;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('confirm-cancel').addEventListener('click', () => {
+      document.getElementById('confirm-modal').classList.add('hidden');
+    });
+
+    // ═══ Card Expandable Recommendation Logic ═════════════════════════════════
+    const cardRecomCache = {};
+
+    async function toggleCardRecom(btn, eventId, sekolahList, prodiList) {
+      const container = document.getElementById(`card-recom-${eventId}`);
+      const chevron = btn.querySelector('.chevron-icon');
+      const isOpen = !container.classList.contains('hidden');
+
+      if (isOpen) {
+        container.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      } else {
+        container.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+        
+        // Fetch recommendations if not cached
+        if (!cardRecomCache[eventId]) {
+          try {
+            const res = await fetch('/api/event/recommendations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sekolah: sekolahList, prodi: prodiList })
+            });
+            const data = await res.json();
+            if (data.ok) {
+              cardRecomCache[eventId] = data;
+              renderCardRecommendations(eventId, data);
+            }
+          } catch (err) {
+            console.error('Failed to fetch recommendations for card:', err);
+          }
+        } else {
+          renderCardRecommendations(eventId, cardRecomCache[eventId]);
+        }
+      }
+    }
+
+    function renderCardRecommendations(eventId, data) {
+      const prodiPanel = document.getElementById(`card-tab-prodi-${eventId}`);
+      const sekolahPanel = document.getElementById(`card-tab-sekolah-${eventId}`);
+
+      // 1. Render Prodi recoms if panel is present
+      if (prodiPanel) {
+        prodiPanel.innerHTML = '';
+        const prodis = data.prodi_recommendations || [];
+        if (prodis.length === 0) {
+          prodiPanel.innerHTML = '<div class="text-[10px] text-slate-400 text-center py-4">Pilih sekolah sasaran di event ini untuk melihat rekomendasi prodi.</div>';
+        } else {
+          prodis.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'p-2 rounded-lg bg-slate-50 border border-slate-100 text-[10px] flex items-center justify-between gap-2';
+            div.innerHTML = `
+              <div class="min-w-0">
+                <span class="font-bold text-slate-800 block truncate">${item.prodi}</span>
+                <span class="text-slate-500 text-[9px] block mt-0.5">Rata IPK: ${item.ipk.toFixed(2)} | Alumni: ${item.mahasiswa}</span>
+              </div>
+              <span class="font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1 text-[9px]">Skor ${item.skor.toFixed(1)}</span>
+            `;
+            prodiPanel.appendChild(div);
+          });
+        }
+      }
+
+      // 2. Render Sekolah recoms if panel is present
+      if (sekolahPanel) {
+        sekolahPanel.innerHTML = '';
+        const sekolahs = data.sekolah_recommendations || [];
+        if (sekolahs.length === 0) {
+          sekolahPanel.innerHTML = '<div class="text-[10px] text-slate-400 text-center py-4">Pilih prodi di event ini untuk melihat rekomendasi sekolah.</div>';
+        } else {
+          sekolahs.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'p-2 rounded-lg bg-slate-50 border border-slate-100 text-[10px] flex items-center justify-between gap-2';
+            div.innerHTML = `
+              <div class="min-w-0">
+                <span class="font-bold text-slate-800 block truncate" title="${item.sekolah}">${item.sekolah}</span>
+                <span class="text-slate-500 text-[9px] block mt-0.5">Rata IPK: ${item.ipk.toFixed(2)} | ${item.kota}</span>
+              </div>
+              <span class="font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded px-1 text-[9px]">Skor ${item.skor.toFixed(1)}</span>
+            `;
+            sekolahPanel.appendChild(div);
+          });
+        }
+      }
+    }
+
+    // ═══ Profile Dropdown ═════════════════════════════════════════════════════
+    const profileBtn  = document.getElementById('profileDropdownBtn');
+    const profileMenu = document.getElementById('profileDropdownMenu');
+    if (profileBtn && profileMenu) {
+      profileBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        profileMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', () => profileMenu.classList.add('hidden'));
+    }
+  </script>
+</body>
+</html>

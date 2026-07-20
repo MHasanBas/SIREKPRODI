@@ -98,6 +98,7 @@
             </div>
             Pelatihan Model
           </a>
+
         </nav>
       </div>
 
@@ -629,18 +630,29 @@
 
       <!-- Footer inside main-content -->
       <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
-        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
               <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
             </div>
-            <div>
-              <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
-              <p class="text-[11px] text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-50 border border-slate-100 p-0.5 shadow-sm">
+              <img src="{{ url_for('static', filename='logo_jti.png') }}" alt="Logo JTI" class="w-full h-full object-contain">
+            </div>
+            <div class="border-l border-slate-200 pl-3">
+              <p class="text-sm font-bold text-slate-800">SIREKPRODI</p>
+              <p class="text-[11px] text-slate-500 leading-tight">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
+              <p class="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"/>
+                </svg>
+                Dikembangkan oleh Lab IVSS JTI Polinema
               </p>
             </div>
           </div>
-          <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
+          <div class="text-left md:text-right">
+            <p class="text-[11px] font-semibold text-slate-400">&copy; 2026 SIREKPRODI &middot; JTI Polinema</p>
+            <p class="text-[9px] text-slate-300 mt-0.5">All Rights Reserved</p>
+          </div>
         </div>
       </footer>
     </main>

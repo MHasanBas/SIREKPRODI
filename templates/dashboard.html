@@ -549,24 +549,39 @@
               class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">{{
               rekom_prodi_per_sekolah|length }} sekolah</span>
           </div>
-          <div class="relative">
-            <input type="text" id="searchSekolahUnggulan" placeholder="Cari nama sekolah..."
-              class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
-              oninput="filterSekolahUnggulan(this)">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input type="text" id="searchSekolahUnggulan" placeholder="Cari nama sekolah..."
+                class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
+                oninput="filterSekolahUnggulan(this)">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <div class="relative shrink-0">
+              <select id="global-prodi-limit-select" onchange="setGlobalProdiLimit(this.value)" class="text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-800 font-semibold focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer">
+                <option value="" disabled selected>Expand Semua Kartu</option>
+                <option value="3">Tampilkan 3 Prodi (Default)</option>
+                <option value="5">Tampilkan 5 Prodi</option>
+                <option value="10">Tampilkan 10 Prodi</option>
+                <option value="all">Tampilkan Semua</option>
+              </select>
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1"
             id="sekolahUnggulanList">
             {% if rekom_prodi_per_sekolah %}
             {% for item in rekom_prodi_per_sekolah %}
-            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
+            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow relative"
               data-school-card data-school-name="{{ item.sekolah|lower }}"
               data-prodi-rows="{{ item.top_prodi|length }}">
-              <div class="flex items-start justify-between gap-2">
+              <!-- Checkbox Event Multi-select -->
+              <div class="absolute top-4 right-4 z-10">
+                <input type="checkbox" data-school-select-cb value="{{ item.sekolah }}" onchange="onSchoolCardSelected()" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded cursor-pointer" title="Pilih sekolah untuk event">
+              </div>
+              <div class="flex items-start justify-between gap-2 pr-6">
                 <div class="min-w-0">
                   <h4 class="font-bold text-slate-900 leading-snug truncate">{{ item.sekolah }}</h4>
                   <p class="text-xs text-slate-500 truncate">{{ item.kota }}, {{ item.provinsi }}</p>
@@ -667,23 +682,38 @@
               {% endfor %}
             </select>
           </div>
-          <div class="relative mt-2">
-            <input type="text" id="searchSekolahSasaran" placeholder="Cari nama sekolah..."
-              class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-              oninput="filterSekolahInProdiSasaran(this)">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+          <div class="flex gap-2 mt-2">
+            <div class="relative flex-1">
+              <input type="text" id="searchSekolahSasaran" placeholder="Cari nama sekolah..."
+                class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+                oninput="filterSekolahInProdiSasaran(this)">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <div class="relative shrink-0">
+              <select id="global-sekolah-limit-select" onchange="setGlobalSekolahLimit(this.value)" class="text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-800 font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                <option value="" disabled selected>Expand Semua Kartu</option>
+                <option value="3">Tampilkan 3 Sekolah (Default)</option>
+                <option value="5">Tampilkan 5 Sekolah</option>
+                <option value="10">Tampilkan 10 Sekolah</option>
+                <option value="all">Tampilkan Semua</option>
+              </select>
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[640px] overflow-y-auto pr-1" id="prodiSasaranList">
             {% if rekom_sekolah_per_prodi %}
             {% for item in rekom_sekolah_per_prodi %}
-            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow"
+            <div class="border border-slate-100 rounded-xl p-4 space-y-3 bg-white hover:shadow-md transition-shadow relative"
               data-prodi-card data-prodi-name="{{ item.prodi|lower }}" data-sekolah-rows="{{ item.top_sekolah|length }}"
               data-prodi="{{ item.prodi }}">
-              <div class="flex items-start justify-between gap-2">
+              <!-- Checkbox Event Multi-select (Tab 3 - Prodi) -->
+              <div class="absolute top-4 right-4 z-10">
+                <input type="checkbox" data-prodi-select-cb value="{{ item.prodi }}" onchange="onProdiCardSelected()" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer" title="Pilih prodi">
+              </div>
+              <div class="flex items-start justify-between gap-2 pr-6">
                 <div class="min-w-0">
                   <h4 class="font-bold text-slate-900 leading-snug">{{ item.prodi }}</h4>
                   <p class="text-xs text-slate-500 mt-0.5">Agregat seluruh mahasiswa pada prodi ini</p>
@@ -768,21 +798,34 @@
 
       </div><!-- /main-content-inner -->
 
+      <!-- Footer inside main-content -->
       <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
-        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
               <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
             </div>
-            <div>
-              <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-50 border border-slate-100 p-0.5 shadow-sm">
+              <img src="{{ url_for('static', filename='logo_jti.png') }}" alt="Logo JTI" class="w-full h-full object-contain">
+            </div>
+            <div class="border-l border-slate-200 pl-3">
+              <p class="text-sm font-bold text-slate-800">SIREKPRODI</p>
               <div class="flex items-center gap-3">
                 <a href="{{ url_for('upload.upload') }}" class="text-[11px] text-slate-500 hover:text-emerald-600 transition-colors">Upload</a>
                 <a href="{{ url_for('model.pelatihan_model') }}" class="text-[11px] text-slate-500 hover:text-emerald-600 transition-colors">Pelatihan Model</a>
               </div>
+              <p class="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"/>
+                </svg>
+                Dikembangkan oleh Lab IVSS JTI Polinema
+              </p>
             </div>
           </div>
-          <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
+          <div class="text-left md:text-right">
+            <p class="text-[11px] font-semibold text-slate-400">&copy; 2026 SIREKPRODI &middot; JTI Polinema</p>
+            <p class="text-[9px] text-slate-300 mt-0.5">All Rights Reserved</p>
+          </div>
         </div>
       </footer>
     </main>
@@ -960,6 +1003,10 @@
         {% endfor %}
         {% endfor %}
 
+        // Global selection states for multi-select
+        var isFocusedOnSelected = false;
+        var activeSelectionType = 'school';
+
         // Tab switcher
         function switchTab(tabId) {
           document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
@@ -1004,6 +1051,9 @@
           card.querySelectorAll('.school-prodi-row').forEach((row, i) => {
             row.classList.toggle('hidden', i >= n);
           });
+          
+          // Re-apply filter to respect focus state if active
+          filterSekolahUnggulan();
         }
 
         document.querySelectorAll('[data-school-card] select[data-prodi-limit-select]').forEach((sel) => {
@@ -1019,8 +1069,7 @@
           const n = v === 'all' ? totalRows : Math.min(parseInt(v, 10) || 0, totalRows);
           card.dataset.sekolahLimit = String(n);
           // apply without changing filter query
-          const input = document.getElementById('searchSekolahSasaran');
-          filterSekolahInProdiSasaran(input || { value: '' });
+          filterSekolahInProdiSasaran();
         }
 
         // init default limit untuk setiap kartu prodi
@@ -1030,6 +1079,7 @@
 
         // Live search kartu Prodi di Sekolah Unggulan (scoped ke container)
         function filterSekolahUnggulan(input) {
+          if (!input) input = document.getElementById('searchSekolahUnggulan') || { value: '' };
           const query = input.value.toLowerCase().trim();
           const list = document.getElementById('sekolahUnggulanList');
           if (!list) return;
@@ -1039,7 +1089,16 @@
           let visible = 0;
           cards.forEach(card => {
             const name = card.dataset.schoolName || '';
-            const match = !query || name.includes(query);
+            let match = !query || name.includes(query);
+            
+            // Integrasikan state Fokus Terpilih
+            if (isFocusedOnSelected && activeSelectionType === 'school') {
+              const cb = card.querySelector('input[data-school-select-cb]');
+              if (cb && !cb.checked) {
+                match = false;
+              }
+            }
+            
             card.style.display = match ? '' : 'none';
             if (match) visible++;
           });
@@ -1064,12 +1123,12 @@
           });
 
           // Step 2: re-apply filter sekolah + limit (yang juga akan update counter & empty state)
-          const sekolahInput = document.getElementById('searchSekolahSasaran');
-          filterSekolahInProdiSasaran(sekolahInput || { value: '' });
+          filterSekolahInProdiSasaran();
         }
 
         // Live search sekolah di dalam setiap kartu Prodi (Sasaran per Prodi)
         function filterSekolahInProdiSasaran(input) {
+          if (!input) input = document.getElementById('searchSekolahSasaran') || { value: '' };
           const q = input.value.toLowerCase().trim();
           const list = document.getElementById('prodiSasaranList');
           if (!list) return;
@@ -1083,7 +1142,15 @@
           cards.forEach(card => {
             // Cek kecocokan prodi (dari dropdown)
             const prodiName = (card.dataset.prodiName || '').toLowerCase();
-            const prodiMatch = !selectedProdi || prodiName === selectedProdi;
+            let prodiMatch = !selectedProdi || prodiName === selectedProdi;
+
+            // Integrasikan state Fokus Terpilih
+            if (isFocusedOnSelected && activeSelectionType === 'prodi') {
+              const cb = card.querySelector('input[data-prodi-select-cb]');
+              if (cb && !cb.checked) {
+                prodiMatch = false;
+              }
+            }
 
             if (!prodiMatch) {
               card.style.display = 'none';
@@ -1168,7 +1235,146 @@
 
         // Load global flash messages for theme.js
         window.__FLASH_MESSAGES__ = {{ get_flashed_messages(with_categories = true) | tojson }};
-      </script>
-</body>
 
-</html>
+        function setGlobalProdiLimit(val) {
+          document.querySelectorAll('[data-school-card] select[data-prodi-limit-select]').forEach(selectEl => {
+            selectEl.value = val;
+            setSchoolProdiLimit(selectEl);
+          });
+        }
+
+        function setGlobalSekolahLimit(val) {
+          document.querySelectorAll('[data-prodi-card] select[data-sekolah-limit-select]').forEach(selectEl => {
+            selectEl.value = val;
+            setProdiSekolahLimit(selectEl);
+          });
+        }
+
+        // ===== MULTI-SELECT SEKOLAH & PRODI UNTUK FILTER =====
+
+        function onSchoolCardSelected() {
+          const checkedBoxes = document.querySelectorAll('input[data-school-select-cb]:checked');
+          const bar = document.getElementById('floating-event-bar');
+          const countSpan = document.getElementById('selected-schools-count');
+          const labelSpan = document.getElementById('selected-item-label');
+          const focusBtn = document.getElementById('btn-focus-selected');
+          
+          if (checkedBoxes.length > 0) {
+            activeSelectionType = 'school';
+            countSpan.textContent = checkedBoxes.length;
+            labelSpan.textContent = 'sekolah terpilih';
+            bar.classList.remove('translate-y-24', 'opacity-0');
+            
+            // Uncheck prodis
+            document.querySelectorAll('input[data-prodi-select-cb]:checked').forEach(cb => cb.checked = false);
+          } else {
+            bar.classList.add('translate-y-24', 'opacity-0');
+          }
+        }
+
+        function onProdiCardSelected() {
+          const checkedBoxes = document.querySelectorAll('input[data-prodi-select-cb]:checked');
+          const bar = document.getElementById('floating-event-bar');
+          const countSpan = document.getElementById('selected-schools-count');
+          const labelSpan = document.getElementById('selected-item-label');
+          const focusBtn = document.getElementById('btn-focus-selected');
+          
+          if (checkedBoxes.length > 0) {
+            activeSelectionType = 'prodi';
+            countSpan.textContent = checkedBoxes.length;
+            labelSpan.textContent = 'prodi terpilih';
+            bar.classList.remove('translate-y-24', 'opacity-0');
+            
+            // Uncheck schools
+            document.querySelectorAll('input[data-school-select-cb]:checked').forEach(cb => cb.checked = false);
+          } else {
+            bar.classList.add('translate-y-24', 'opacity-0');
+          }
+        }
+
+        function toggleFocusSelected() {
+          const list2 = document.getElementById('sekolahUnggulanList');
+          const list3 = document.getElementById('prodiSasaranList');
+          const focusBtn = document.getElementById('btn-focus-selected');
+          
+          isFocusedOnSelected = !isFocusedOnSelected;
+          
+          if (isFocusedOnSelected) {
+            if (activeSelectionType === 'school' && list2) {
+              list2.querySelectorAll('[data-school-card]').forEach(card => {
+                const cb = card.querySelector('input[data-school-select-cb]');
+                if (cb && !cb.checked) {
+                  card.style.display = 'none';
+                }
+              });
+            } else if (activeSelectionType === 'prodi' && list3) {
+              list3.querySelectorAll('[data-prodi-card]').forEach(card => {
+                const cb = card.querySelector('input[data-prodi-select-cb]');
+                if (cb && !cb.checked) {
+                  card.style.display = 'none';
+                }
+              });
+            }
+            
+            focusBtn.innerHTML = `
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Tampilkan Semua
+            `;
+          } else {
+            restoreNormalView();
+          }
+        }
+
+        function restoreNormalView() {
+          const input2 = document.getElementById('searchSekolahUnggulan');
+          if (typeof filterSekolahUnggulan === 'function') filterSekolahUnggulan(input2 || { value: '' });
+          
+          const input3 = document.getElementById('searchSekolahSasaran');
+          if (typeof filterSekolahInProdiSasaran === 'function') filterSekolahInProdiSasaran(input3 || { value: '' });
+          
+          const focusBtn = document.getElementById('btn-focus-selected');
+          if (focusBtn) {
+            focusBtn.innerHTML = `
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Fokus Terpilih
+            `;
+          }
+        }
+
+        function clearSelectedItems() {
+          document.querySelectorAll('input[data-school-select-cb], input[data-prodi-select-cb]').forEach(cb => {
+            cb.checked = false;
+          });
+          isFocusedOnSelected = false;
+          restoreNormalView();
+          onSchoolCardSelected();
+          onProdiCardSelected();
+        }
+      </script>
+      
+      <!-- Floating Action Bar for Selected Items -->
+      <div id="floating-event-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 z-50 transition-all duration-300 translate-y-24 opacity-0">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-sm font-medium"><span id="selected-schools-count" class="font-bold">0</span> <span id="selected-item-label">sekolah terpilih</span></span>
+        </div>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-focus-selected" onclick="toggleFocusSelected()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-full transition-colors flex items-center gap-1.5 focus:outline-none">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Fokus Terpilih
+          </button>
+          <button type="button" onclick="clearSelectedItems()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-4 py-2 rounded-full transition-colors focus:outline-none">
+            Batalkan Pilihan
+          </button>
+        </div>
+      </div>
+  </body>
+  </html>

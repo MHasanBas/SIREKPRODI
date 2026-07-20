@@ -104,6 +104,7 @@
           </div>
           Pelatihan Model
         </a>
+
       </nav>
     </div>
 
@@ -312,6 +313,85 @@
       </div>
     </div>
 
+    <!-- Template & Preview Card -->
+    <div class="card space-y-4">
+      <div>
+        <p class="section-label mb-0.5">Format &amp; Template</p>
+        <h2 class="text-lg font-bold text-slate-900">Format Kolom Dataset</h2>
+        <p class="text-sm text-slate-500 mt-1">Unduh template Excel atau perhatikan contoh susunan kolom berikut agar data dapat diproses dengan benar oleh sistem.</p>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="{{ url_for('static', filename='template_dataset.xlsx') }}" download class="btn-main text-sm inline-flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Unduh Template Dataset (.xlsx)
+        </a>
+      </div>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-xl bg-slate-50 p-2 max-w-4xl">
+        <table class="w-full text-left border-collapse bg-white rounded-lg overflow-hidden text-xs">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
+              <th class="p-3">NPSN</th>
+              <th class="p-3">SEKOLAH</th>
+              <th class="p-3">KOTA_SEKOLAH</th>
+              <th class="p-3">PROP_SEKOLAH</th>
+              <th class="p-3">JURUSAN_SEKOLAH</th>
+              <th class="p-3">PROGRAM_STUDI</th>
+              <th class="p-3">JURUSAN</th>
+              <th class="p-3">STATUS</th>
+              <th class="p-3">IPK</th>
+              <th class="p-3">PRESTASI_1</th>
+              <th class="p-3">PRESTASI_2</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-600">
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3 font-mono">20517732</td>
+              <td class="p-3 font-medium text-slate-800">SMAN 1 PAGAK</td>
+              <td class="p-3">Kab. Malang</td>
+              <td class="p-3">Prop. Jawa Timur</td>
+              <td class="p-3">MIPA</td>
+              <td class="p-3 text-emerald-600 font-medium">Teknik Mesin</td>
+              <td class="p-3">TEKNIK MESIN</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Aktif</span></td>
+              <td class="p-3 font-semibold text-slate-800">3.01</td>
+              <td class="p-3 text-slate-400">—</td>
+              <td class="p-3 text-slate-400">—</td>
+            </tr>
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3 font-mono">20514344</td>
+              <td class="p-3 font-medium text-slate-800">SMAN 01 TALUN</td>
+              <td class="p-3">Kab. Blitar</td>
+              <td class="p-3">Prop. Jawa Timur</td>
+              <td class="p-3">IPA</td>
+              <td class="p-3 text-emerald-600 font-medium">Teknik Mesin</td>
+              <td class="p-3">TEKNIK MESIN</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Aktif</span></td>
+              <td class="p-3 font-semibold text-slate-800">3.61</td>
+              <td class="p-3 text-slate-400">—</td>
+              <td class="p-3 text-slate-400">—</td>
+            </tr>
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3 font-mono">20584775</td>
+              <td class="p-3 font-medium text-slate-800">MAS MANBAIL FUTUH</td>
+              <td class="p-3">Kab. Tuban</td>
+              <td class="p-3">Prop. Jawa Timur</td>
+              <td class="p-3">IPA</td>
+              <td class="p-3 text-emerald-600 font-medium">Teknik Mesin</td>
+              <td class="p-3">TEKNIK MESIN</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Aktif</span></td>
+              <td class="p-3 font-semibold text-slate-800">2.93</td>
+              <td class="p-3 text-slate-400">—</td>
+              <td class="p-3 text-slate-400">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Guide Card -->
     <div class="card space-y-4">
       <div>
@@ -347,17 +427,29 @@
 
     <!-- Footer inside main-content -->
     <footer class="w-full bg-white border-t border-slate-100 py-6 mt-auto">
-      <div class="max-w-6xl mx-auto px-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="h-7 w-7 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg brand-mark flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-full h-full object-cover">
           </div>
-          <div>
-            <p class="text-sm font-semibold text-slate-800">SIREKPRODI</p>
-            <p class="text-[11px] text-slate-400">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
+          <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-50 border border-slate-100 p-0.5 shadow-sm">
+            <img src="{{ url_for('static', filename='logo_jti.png') }}" alt="Logo JTI" class="w-full h-full object-contain">
+          </div>
+          <div class="border-l border-slate-200 pl-3">
+            <p class="text-sm font-bold text-slate-800">SIREKPRODI</p>
+            <p class="text-[11px] text-slate-500 leading-tight">Sistem rekomendasi promosi prodi berbasis clustering data alumni.</p>
+            <p class="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"/>
+              </svg>
+              Dikembangkan oleh Lab IVSS JTI Polinema
+            </p>
           </div>
         </div>
-        <p class="text-[11px] text-slate-300">&copy; 2026 SIREKPRODI &middot; Polinema</p>
+        <div class="text-left md:text-right">
+          <p class="text-[11px] font-semibold text-slate-400">&copy; 2026 SIREKPRODI &middot; JTI Polinema</p>
+          <p class="text-[9px] text-slate-300 mt-0.5">All Rights Reserved</p>
+        </div>
       </div>
     </footer>
   </main>

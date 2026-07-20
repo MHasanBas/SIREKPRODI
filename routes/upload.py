@@ -191,7 +191,7 @@ def upload():
         _set_upload_progress(job_id, 20, "Memulai training model dengan konfigurasi aktif...", 0, DEFAULT_TRAINING_RUNS)
         jalankan_kmeans(
             df_baru,
-            n_clusters=3,
+            n_clusters=None,
             save_path=model_folder,
             progress_callback=training_progress,
             ga_pop_size=active_training_config["population_size"],
